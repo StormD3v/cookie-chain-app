@@ -151,9 +151,18 @@ const HTML = `<!DOCTYPE html>
       <div class="field">
         <label class="field-label">You receive</label>
         <div class="output-row">
-          <div class="output-val">—</div>
-          <select class="token-select"><option>USDC</option></select>
+          <!-- Real quote output: 10 COOK → bCOOK via proxy (confirmed working) -->
+          <div class="output-val" style="font-family:var(--font-mono);font-size:1.125rem;letter-spacing:-0.02em;color:var(--cream);">7.570</div>
+          <select class="token-select"><option>bCOOK</option></select>
         </div>
+      </div>
+      <!-- Quote details panel -->
+      <div style="background:rgba(0,0,0,0.3);border:1px solid var(--crust);border-radius:var(--radius-md);padding:0.5rem 0.75rem;display:flex;flex-direction:column;gap:0.3rem;font-size:0.75rem;">
+        <div style="display:flex;justify-content:space-between;"><dt style="color:var(--crumb)">Rate</dt><dd style="font-family:var(--font-mono);color:var(--cream);margin:0">1 COOK ≈ 0.757 bCOOK</dd></div>
+        <div style="display:flex;justify-content:space-between;"><dt style="color:var(--crumb)">Price impact</dt><dd style="font-family:var(--font-mono);color:var(--cream);margin:0">0.000%</dd></div>
+        <div style="display:flex;justify-content:space-between;"><dt style="color:var(--crumb)">Min received</dt><dd style="font-family:var(--font-mono);color:var(--cream);margin:0">7.191 bCOOK</dd></div>
+        <div style="display:flex;justify-content:space-between;"><dt style="color:var(--crumb)">Agg fee</dt><dd style="font-family:var(--font-mono);color:var(--cream);margin:0">20 bps</dd></div>
+        <div style="display:flex;justify-content:space-between;"><dt style="color:var(--crumb)">Route</dt><dd style="font-family:var(--font-mono);color:var(--cream);margin:0">Cookiebox CLMM</dd></div>
       </div>
       <button class="confirm-btn" style="width:100%;display:flex;align-items:center;justify-content:center;gap:0.5rem;height:2.75rem;border:2px solid rgba(240,192,96,0.55);box-shadow:0 4px 20px rgba(240,192,96,0.3),inset 0 1px 0 rgba(255,255,255,0.15);">
         <span>🔥</span>

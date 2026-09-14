@@ -224,7 +224,7 @@ export function useSwap(): UseSwapResult {
         }
         inlineSignature = await sendTransaction(tx as Parameters<typeof sendTransaction>[0], connection);
       } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : "Send failed";
+        const msg = (err instanceof Error ? err.message : String(err)).trim() || "Unknown error — please try again";
         const isRejection =
           msg.toLowerCase().includes("reject") ||
           msg.toLowerCase().includes("cancel") ||
