@@ -1,0 +1,192 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.headRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.heading {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--cream);
+  letter-spacing: -0.02em;
+}
+
+.refreshBtn {
+  background: transparent;
+  border: 1px solid var(--crust);
+  border-radius: var(--radius-sm);
+  color: var(--crumb);
+  font-size: 1rem;
+  width: 1.875rem;
+  height: 1.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, transform 0.2s;
+  padding: 0;
+  line-height: 1;
+}
+
+.refreshBtn:hover {
+  border-color: var(--butter);
+  color: var(--butter);
+  transform: rotate(45deg);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
+  gap: 0.75rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* ── Shared state panel ─────────────────────────────────────── */
+
+.state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.stateIcon {
+  font-size: 2.5rem;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.stateText {
+  color: var(--crumb);
+  font-size: 1rem;
+  margin: 0;
+}
+
+.stateSubtext {
+  color: var(--chip);
+  font-size: 0.8125rem;
+  margin: 0;
+  max-width: 28ch;
+}
+
+.errorTitle {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--error);
+  margin: 0;
+}
+
+.errorDetail {
+  font-size: 0.8125rem;
+  color: var(--crumb);
+  margin: 0;
+  max-width: 34ch;
+}
+
+.retryBtn {
+  margin-top: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--crust);
+  background: var(--ganache);
+  color: var(--cream);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-family: var(--font-body);
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.retryBtn:hover {
+  border-color: var(--butter);
+  background: var(--truffle);
+}
+
+/* ── Spinner ────────────────────────────────────────────────── */
+
+.spinner {
+  display: block;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 3px solid var(--crust);
+  border-top-color: var(--butter);
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── BalanceCard skeleton ───────────────────────────────────────────────── */
+
+/* Matches .card padding, border, shadow — same visual footprint */
+.skeletonCard {
+  background: var(--ganache);
+  border: 1px solid rgba(74, 46, 26, 0.35);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.25rem 0.875rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Symbol + pill row */
+.skeletonRow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.125rem;
+}
+
+/* Matches .symbol font-size ≈ 0.6875rem → ~10px tall, ~44px wide */
+.skeletonLabel {
+  display: block;
+  height: 10px;
+  width: 44px;
+  border-radius: 3px;
+}
+
+/* Matches .nativePill — small pill shape */
+.skeletonPill {
+  display: block;
+  height: 10px;
+  width: 28px;
+  border-radius: 999px;
+}
+
+/* Matches .amount font-size 1.25rem → ~19px tall, ~130px wide */
+.skeletonAmount {
+  display: block;
+  height: 19px;
+  width: 130px;
+  border-radius: 4px;
+  /* Slightly brighter than label blocks — it's the hero row */
+  background: rgba(62, 38, 18, 1.0);
+}
+
+/* Matches .usd → ~10px tall, ~40px wide */
+.skeletonUsd {
+  display: block;
+  height: 10px;
+  width: 40px;
+  border-radius: 3px;
+  opacity: 0.7;
+}

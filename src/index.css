@@ -1,0 +1,215 @@
+/* ── Google Fonts ─────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@400;500;600&display=swap');
+
+/* ── Design tokens ─────────────────────────────────────────────────────────── */
+:root {
+  /* Palette — deep near-black base → warm brown cards → cream text
+   *
+   * Lightness values (HSL L):
+   *   --choco   L= 4.9%  page background
+   *   --ganache L=12.0%  card surface      (+7.1% above bg — clearly distinct)
+   *   --truffle L=16.1%  elevated surface  (+4.1% above card)
+   *   --crust   L=24.7%  border            (+8.6% above card — visible)
+   *
+   * Old range was L=6.7% → 19.6% (12.9% total).
+   * New range is  L=4.9% → 24.7% (19.8% total) — 53% wider value range.
+   */
+  --choco: #0f0c0a;
+  /* page bg — near-black, subtle warmth */
+  --ganache: #321c0b;
+  /* card surface — distinct step above bg */
+  --truffle: #3e2612;
+  /* elevated surface (inputs, modals) */
+  --crust: #5c3c22;
+  /* border — visibly distinct from card */
+  --crumb: #8a6848;
+  /* muted / placeholder text */
+  --cream: #f5e6c8;
+  /* primary text */
+  --butter: #f0c060;
+  /* primary accent — warm amber */
+  --caramel: #c87820;
+  /* accent hover / secondary */
+  --chip: #7c4a1e;
+  /* disabled states */
+  --error: #e05050;
+  /* error red */
+  --success: #60c080;
+  /* success green */
+
+  /* Typography */
+  --font-display: 'Syne', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+
+  /* Spacing scale */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+}
+
+/* ── Reset ────────────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  background: var(--choco);
+  color: var(--cream);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Focus styles — visible and accessible ───────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--butter);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+/* ── Selection ───────────────────────────────────────────────────────────── */
+::selection {
+  background: var(--caramel);
+  color: var(--choco);
+}
+
+/* ── Scrollbar (Webkit) ───────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--choco);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--crust);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--crumb);
+}
+
+/* ── Wallet-adapter overrides ─────────────────────────────────────────────── */
+.wallet-adapter-button {
+  background: var(--butter) !important;
+  color: var(--choco) !important;
+  font-family: var(--font-body) !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  border-radius: var(--radius-md) !important;
+  height: 2.375rem !important;
+  padding: 0 1.125rem !important;
+  transition: background 0.15s, opacity 0.15s !important;
+  border: none !important;
+}
+
+.wallet-adapter-button:not([disabled]):hover {
+  background: var(--caramel) !important;
+  opacity: 1 !important;
+}
+
+.wallet-adapter-button-trigger {
+  background: var(--butter) !important;
+}
+
+.wallet-adapter-modal-wrapper {
+  background: var(--ganache) !important;
+  border: 1px solid var(--crust) !important;
+  border-radius: var(--radius-xl) !important;
+}
+
+.wallet-adapter-modal-title {
+  color: var(--cream) !important;
+  font-family: var(--font-display) !important;
+}
+
+.wallet-adapter-modal-list .wallet-adapter-button {
+  background: var(--truffle) !important;
+  color: var(--cream) !important;
+  border: 1px solid var(--crust) !important;
+  border-radius: var(--radius-md) !important;
+}
+
+.wallet-adapter-modal-list .wallet-adapter-button:hover {
+  background: var(--crust) !important;
+}
+
+/* ── Shared utility ───────────────────────────────────────────────────────── */
+
+/* Cookie-themed inline SVG used as a background texture helper */
+.cookie-noise {
+  background-image:
+    radial-gradient(circle at 20% 35%, rgba(200, 120, 32, 0.07) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(240, 192, 96, 0.05) 0%, transparent 45%);
+}
+
+/* ── Reduced motion ───────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Skeleton shimmer ─────────────────────────────────────────────────────── */
+/*
+ * Base block colour sits between --ganache and --truffle.
+ * The shimmer sweep uses a translucent highlight that moves left→right.
+ * Applied via class="skeleton" on any element — works on any shape.
+ */
+.skeleton {
+  background: var(--truffle);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+  /* Prevent text content if accidentally left in */
+  color: transparent;
+  user-select: none;
+}
+
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.07) 40%,
+      rgba(255, 255, 255, 0.13) 50%,
+      rgba(255, 255, 255, 0.07) 60%,
+      transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% center;
+  }
+
+  100% {
+    background-position: -200% center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after {
+    animation: none;
+  }
+}

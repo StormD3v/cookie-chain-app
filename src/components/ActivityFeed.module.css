@@ -1,0 +1,341 @@
+.feed {
+  /* Flat section — no card border/shadow/radius.
+   * Crumbs is a list section, not a boxed card.
+   * Rows already have their own hairline dividers.
+   * Differentiated from SwapPanel (hero) and BalanceCard (subordinate card). */
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0.25rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  box-shadow: none;
+}
+
+/* ── Header row ────────────────────────────────────────────── */
+
+.headRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.heading {
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0;
+  color: var(--cream);
+  flex: 1;
+}
+
+.refreshBtn {
+  background: transparent;
+  border: 1px solid var(--crust);
+  border-radius: var(--radius-sm);
+  color: var(--crumb);
+  font-size: 1rem;
+  width: 1.875rem;
+  height: 1.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, transform 0.2s;
+  padding: 0;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.refreshBtn:hover:not(:disabled) {
+  border-color: var(--butter);
+  color: var(--butter);
+  transform: rotate(45deg);
+}
+
+.refreshBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── State panels ──────────────────────────────────────────── */
+
+.state {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 1rem 0;
+  color: var(--crumb);
+  font-size: 0.875rem;
+}
+
+.stateText {
+  color: var(--crumb);
+}
+
+.emptyIcon {
+  font-size: 1.125rem;
+  line-height: 1;
+}
+
+.errorMsg {
+  color: var(--error);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.retryBtn {
+  margin-left: 0.5rem;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid var(--crust);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--cream);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  font-family: var(--font-body);
+}
+
+.retryBtn:hover {
+  border-color: var(--butter);
+}
+
+/* ── Spinner (kept for potential future use) ────────────────── */
+
+.spinner {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--crust);
+  border-top-color: var(--butter);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── Transaction list ──────────────────────────────────────── */
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: grid;
+  /* icon | body | badge | link */
+  grid-template-columns: 1.5rem 1fr auto auto;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5625rem 0;
+  border-bottom: 1px solid rgba(74, 46, 26, 0.5);
+  transition: background 0.12s;
+  min-width: 0;
+  max-width: 100%;
+  /* Rounded corners for hover background */
+  border-radius: var(--radius-sm);
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.row:hover {
+  /* Shadow lift on hover — no negative margin, no bounce */
+  background: rgba(255, 255, 255, 0.03);
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+}
+
+/* ── Directional icon wrapper ──────────────────────────────── */
+
+.iconWrap {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.iconOk {
+  background: rgba(96, 192, 128, 0.12);
+  color: var(--success);
+  border: 1px solid rgba(96, 192, 128, 0.22);
+}
+
+.iconFailed {
+  background: rgba(224, 80, 80, 0.1);
+  color: var(--error);
+  border: 1px solid rgba(224, 80, 80, 0.2);
+}
+
+/* ── Row body ───────────────────────────────────────────────── */
+
+.rowBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.desc {
+  font-size: 0.875rem;
+  color: var(--cream);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.time {
+  font-size: 0.6875rem;
+  color: var(--crumb);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Status badge ───────────────────────────────────────────── */
+
+.badge {
+  font-size: 0.5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-radius: 999px;
+  padding: 0.2em 0.6em;
+  line-height: 1.6;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.badgeOk {
+  background: rgba(96, 192, 128, 0.12);
+  color: var(--success);
+  border: 1px solid rgba(96, 192, 128, 0.25);
+}
+
+.badgeFailed {
+  background: rgba(224, 80, 80, 0.1);
+  color: var(--error);
+  border: 1px solid rgba(224, 80, 80, 0.2);
+}
+
+/* ── Explorer link ─────────────────────────────────────────── */
+
+.explorerLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--crumb);
+  text-decoration: none;
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s, background 0.15s;
+}
+
+.explorerLink:hover {
+  color: var(--butter);
+  background: rgba(240, 192, 96, 0.08);
+}
+
+/* ── Mobile ─────────────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+  /* On very narrow screens hide the badge — icon + desc + link is enough */
+  @media (max-width: 360px) {
+    .badge {
+      display: none;
+    }
+  }
+}
+
+/* ── Activity row skeletons ─────────────────────────────────────────────── */
+/* Each skeleton row uses the same grid as .row: 1.5rem | 1fr | auto | auto */
+
+/* Icon circle — matches .iconWrap 1.5rem × 1.5rem */
+.skelIcon {
+  display: block;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Description line — ~60% width of body column */
+.skelDesc {
+  display: block;
+  height: 12px;
+  width: 60%;
+  border-radius: 3px;
+}
+
+/* Timestamp line — ~35% width, shorter */
+.skelTime {
+  display: block;
+  height: 9px;
+  width: 35%;
+  border-radius: 3px;
+  opacity: 0.6;
+}
+
+/* Badge pill */
+.skelBadge {
+  display: block;
+  height: 14px;
+  width: 52px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+/* Link icon square */
+.skelLink {
+  display: block;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+/* Stagger shimmer delay across rows so they don't all pulse in sync */
+.list>li:nth-child(1) .skelDesc,
+.list>li:nth-child(1) .skelTime,
+.list>li:nth-child(1) .skelBadge,
+.list>li:nth-child(1) .skelIcon,
+.list>li:nth-child(1) .skelLink {
+  animation-delay: 0s;
+}
+
+.list>li:nth-child(2) .skelDesc,
+.list>li:nth-child(2) .skelTime,
+.list>li:nth-child(2) .skelBadge,
+.list>li:nth-child(2) .skelIcon,
+.list>li:nth-child(2) .skelLink {
+  animation-delay: 0.2s;
+}
+
+.list>li:nth-child(3) .skelDesc,
+.list>li:nth-child(3) .skelTime,
+.list>li:nth-child(3) .skelBadge,
+.list>li:nth-child(3) .skelIcon,
+.list>li:nth-child(3) .skelLink {
+  animation-delay: 0.4s;
+}

@@ -1,0 +1,25 @@
+# ── Dependencies ─────────────────────────────────────────────
+node_modules/
+server/node_modules/
+
+# ── Build output ──────────────────────────────────────────────
+dist/
+server/dist/
+
+# ── Environment — NEVER commit secrets ───────────────────────
+.env
+.env.local
+.env.*.local
+
+# ── Editor / OS ───────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.suo
+.vscode/settings.json
+
+# ── Logs ─────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+
+# ── Dev screenshots (Playwright output — not project assets) ──
+screenshots/

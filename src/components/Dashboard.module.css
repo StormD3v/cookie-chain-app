@@ -1,0 +1,318 @@
+/* ── Root containment — prevents any child from causing page-level horizontal scroll */
+.root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--choco);
+  color: var(--cream);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1.5rem;
+  border-bottom: 1px solid var(--crust);
+  background: var(--ganache);
+  box-shadow: 0 1px 0 rgba(240, 192, 96, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  /* Prevent header items shrinking below their minimum */
+  gap: 0.75rem;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  /* Don't let the brand grow and push the wallet button off screen */
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.brandCookie {
+  font-size: 1.5rem;
+  line-height: 1;
+  display: inline-block;
+  flex-shrink: 0;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.brand:hover .brandCookie {
+  transform: rotate(20deg) scale(1.15);
+}
+
+.brandName {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.1875rem;
+  letter-spacing: -0.03em;
+  color: var(--cream);
+  white-space: nowrap;
+  background-image: linear-gradient(var(--butter), var(--butter));
+  background-size: 0% 2px;
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  transition: background-size 0.25s ease;
+}
+
+.brand:hover .brandName {
+  background-size: 100% 2px;
+}
+
+/* Hide the text label on narrow viewports — keep just the cookie emoji */
+@media (max-width: 479px) {
+  .brandName {
+    display: none;
+  }
+}
+
+/* ── Main content ─────────────────────────────────────────────────────────── */
+
+.main {
+  /* flex: none — don't stretch to fill the viewport height.
+   * The grid content determines the height; dead space was caused by
+   * flex: 1 pulling .main to fill the remaining viewport. */
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  max-width: 1080px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem;
+  overflow-x: hidden;
+}
+
+/* ── Connected layout ─────────────────────────────────────────────────────── */
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  align-items: start;
+  width: 100%;
+}
+
+/* Every direct grid child must have min-width: 0 so it respects the 1fr
+   track constraint and can't overflow the grid by defaulting to min-width: auto */
+.grid>* {
+  min-width: 0;
+  width: 100%;
+}
+
+@media (min-width: 780px) {
+  .grid {
+    grid-template-columns: 1fr 440px;
+    gap: 2rem;
+    align-items: start;
+  }
+}
+
+/* Activity feed spans full grid width */
+.feedRow {
+  grid-column: 1 / -1;
+}
+
+/* ── Empty / disconnected state ───────────────────────────────────────────── */
+
+.empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* No extra gap here — spacing is controlled inside children */
+  gap: 0;
+  /* Remove the outer padding that was adding dead space */
+  padding: 0 1rem 1.5rem;
+}
+
+/* ── Banner with text overlay ─────────────────────────────────────────────── */
+
+.bannerWrap {
+  position: relative;
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto 1.75rem;
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+}
+
+.bannerImg {
+  display: block;
+  width: 100%;
+  /* Fixed height on desktop so it doesn't consume all vertical space */
+  height: auto;
+  max-height: 380px;
+  object-fit: cover;
+  /* Default: show centre of image */
+  object-position: center center;
+  filter: brightness(0.82);
+}
+
+.bannerOverlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  /* Widened from 42% — needs room for "Cookie Chain" on one line */
+  width: 52%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 0 8% 0 3%;
+  gap: 0.15em;
+  background: linear-gradient(to right,
+      transparent 0%,
+      rgba(20, 10, 4, 0.55) 35%,
+      rgba(20, 10, 4, 0.72) 100%);
+}
+
+.bannerTitle {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.125rem, 2.75vw, 2rem);
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  color: var(--butter);
+  text-shadow: 0 2px 16px rgba(200, 120, 32, 0.5);
+  /* nowrap only on desktop — at mobile widths the 5px overflow clips the
+     last character. Wrapping to two lines is intentional on small screens. */
+  white-space: normal;
+}
+
+@media (min-width: 541px) {
+  .bannerTitle {
+    white-space: nowrap;
+  }
+}
+
+.bannerSub {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(0.875rem, 2.2vw, 1.375rem);
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--caramel);
+  opacity: 0.92;
+  text-shadow: 0 2px 12px rgba(200, 120, 32, 0.4);
+}
+
+/* ── CTA block below the banner ───────────────────────────────────────────── */
+
+.emptyInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: center;
+  max-width: 360px;
+  /* Soft radial glow behind the CTA area — warmth without distraction */
+  position: relative;
+}
+
+.emptyInner::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 340px;
+  height: 220px;
+  background: radial-gradient(ellipse at center,
+      rgba(200, 120, 32, 0.14) 0%,
+      rgba(240, 192, 96, 0.06) 45%,
+      transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Lift CTA content above the glow layer */
+.emptyInner>* {
+  position: relative;
+  z-index: 1;
+}
+
+.emptyHeading {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.625rem;
+  letter-spacing: -0.03em;
+  color: var(--cream);
+  margin: 0;
+}
+
+.emptyBody {
+  color: var(--crumb);
+  font-size: 0.9375rem;
+  margin: 0 0 0.25rem;
+  line-height: 1.6;
+}
+
+/* ── Mobile overrides (390px target — iPhone 12 Pro) ─────────────────────── */
+
+@media (max-width: 540px) {
+  .main {
+    /* Restore flex: 1 on mobile so the disconnected empty state
+       can center vertically in the remaining viewport height */
+    flex: 1;
+    padding: 0 0.75rem 1.25rem;
+    justify-content: center;
+  }
+
+  .empty {
+    flex: 1;
+    padding: 0 0 1.25rem;
+    gap: 0;
+    /* Center the banner + CTA block vertically within the available space */
+    justify-content: center;
+  }
+
+  .bannerWrap {
+    /* Edge-to-edge, no rounded corners */
+    border-radius: 0;
+    margin-bottom: 1.25rem;
+    /* Explicit height — natural render at 390px wide is ~204px;
+       this pins it and prevents over-tall renders */
+    height: 210px;
+    max-height: 210px;
+    /* Disable the bottom vignette mask at this height — too subtle */
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+
+  .bannerImg {
+    height: 210px;
+    max-height: 210px;
+    /* Character lives in the left ~45% of the image;
+       pull focus there so the dark right side crops cleanly */
+    object-position: 25% center;
+  }
+
+  .bannerOverlay {
+    /* Mobile matches base 52% width — already correct */
+    width: 52%;
+    padding: 0 6% 0 3%;
+  }
+
+  .emptyInner {
+    padding: 0 1.25rem;
+    gap: 0.625rem;
+  }
+
+  .emptyHeading {
+    font-size: 1.375rem;
+  }
+
+  .emptyBody {
+    font-size: 0.875rem;
+  }
+}
