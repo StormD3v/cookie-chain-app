@@ -11,6 +11,7 @@ import {
   type ParsedInstruction,
   type PartiallyDecodedInstruction,
   type ConfirmedSignatureInfo,
+  type ParsedTransactionWithMeta,
 } from "@solana/web3.js";
 
 // ── Connection singleton ──────────────────────────────────────────────────────
@@ -31,25 +32,125 @@ export interface ActivityItem {
   blockTime: number | null;
   status: "confirmed" | "failed";
   description: string;
+  /** Best-effort amount string, e.g. "10 COOK → 7.57 bCOOK" or "3,530 COOK" */
+  amount: string | null;
   slot: number;
 }
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+
+/**
+ * Extract a human-readable amount string from pre/post token balances.
+ * For the wallet owner: find mints whose balance changed, then build
+ * "X TOKEN" or "X A → Y B" string.
+ *
+ * Returns null if no meaningful delta is found.
+ */
+function extractAmount(
+  tx: ParsedTransactionWithMeta | null,
+  walletAddress: string
+): string | null {
+  if (!tx?.meta) return null;
+
+  const pre = tx.meta.preTokenBalances ?? [];
+  const post = tx.meta.postTokenBalances ?? [];
+
+  // Map mint → { pre, post, decimals, symbol }
+  const byMint = new Map<string, { pre: number; post: number; decimals: number; symbol?: string }>();
+
+  for (const b of pre) {
+    if (b.owner !== walletAddress) continue;
+    byMint.set(b.mint, {
+      pre: b.uiTokenAmount.uiAmount ?? 0,
+      post: 0,
+      decimals: b.uiTokenAmount.decimals,
+      symbol: (b as { uiTokenAmount: { uiAmountString?: string }; mint: string; owner?: string }).uiTokenAmount.uiAmountString !== undefined ? undefined : undefined,
+    });
+  }
+  for (const b of post) {
+    if (b.owner !== walletAddress) continue;
+    const existing = byMint.get(b.mint);
+    if (existing) {
+      existing.post = b.uiTokenAmount.uiAmount ?? 0;
+    } else {
+      byMint.set(b.mint, {
+        pre: 0,
+        post: b.uiTokenAmount.uiAmount ?? 0,
+        decimals: b.uiTokenAmount.decimals,
+      });
+    }
+  }
+
+  // Also check native COOK (lamport) delta
+  const preLamports = tx.meta.preBalances?.[0] ?? null;
+  const postLamports = tx.meta.postBalances?.[0] ?? null;
+  const fee = tx.meta.fee ?? 0;
+  const cookDelta =
+    preLamports != null && postLamports != null
+      ? postLamports - preLamports + fee  // add fee back to see true send/receive
+      : null;
+
+  // Build delta list
+  const deltas: { mint: string; delta: number; decimals: number }[] = [];
+  for (const [mint, bal] of byMint.entries()) {
+    const delta = bal.post - bal.pre;
+    if (Math.abs(delta) > 0.000001) {
+      deltas.push({ mint, delta, decimals: bal.decimals });
+    }
+  }
+
+  // Known mint → symbol map (same tokens we show in the app)
+  const MINT_SYMBOLS: Record<string, string> = {
+    "So11111111111111111111111111111111111111112": "COOK",
+    "EkPafx58mgwkEnGwo62jXhXDAdJ37Z8G8MFBRPsr9uhz": "bCOOK",
+    "2wPK38gv8dWU89K5zDAAULAihnU1sRocbpzwPP6twY7Q": "CHAT",
+  };
+
+  function mintLabel(mint: string, _decimals: number, delta: number): string {
+    const sym = MINT_SYMBOLS[mint] ?? mint.slice(0, 4) + "…";
+    const amt = Math.abs(delta).toLocaleString("en-US", { maximumFractionDigits: 4 });
+    return `${amt} ${sym}`;
+  }
+
+  // Swap: one negative delta (spent) + one positive delta (received)
+  const spent = deltas.filter((d) => d.delta < 0);
+  const received = deltas.filter((d) => d.delta > 0);
+
+  if (spent.length === 1 && received.length === 1) {
+    return `${mintLabel(spent[0].mint, spent[0].decimals, spent[0].delta)} → ${mintLabel(received[0].mint, received[0].decimals, received[0].delta)}`;
+  }
+
+  // Single positive (received)
+  if (received.length === 1 && spent.length === 0) {
+    return mintLabel(received[0].mint, received[0].decimals, received[0].delta);
+  }
+
+  // Single negative (sent token)
+  if (spent.length === 1 && received.length === 0) {
+    return mintLabel(spent[0].mint, spent[0].decimals, spent[0].delta);
+  }
+
+  // Multi-delta (liquidity / complex): show largest absolute change
+  if (deltas.length > 0) {
+    const biggest = deltas.reduce((a, b) =>
+      Math.abs(a.delta) > Math.abs(b.delta) ? a : b
+    );
+    return mintLabel(biggest.mint, biggest.decimals, biggest.delta);
+  }
+
+  // Fallback: native COOK only (plain transfer)
+  if (cookDelta != null && Math.abs(cookDelta) > 5000) {
+    const cook = (Math.abs(cookDelta) / 1e9).toLocaleString("en-US", {
+      maximumFractionDigits: 4,
+    });
+    return `${cook} COOK`;
+  }
+
+  return null;
+}
+
 // ── Description extraction ────────────────────────────────────────────────────
-//
-// Priority (corrected order):
-//   1. Any outer opaque instruction → "Swap" (DEX programs are never fully
-//      parsed by the RPC; their presence means this is a DEX interaction,
-//      NOT a plain transfer). This must run BEFORE the token-transfer check
-//      to avoid swap legs being misclassified as "Token transfer".
-//   2. Log message contains swap/exchange/bridge/route keyword.
-//   3. Memo instruction text.
-//   4. SPL token transfer in outer instructions (only if no opaque ix found).
-//   5. System program transfer.
-//   6. "Transaction" fallback.
-//
-// Note: we intentionally do NOT scan inner instructions for token transfers.
-// Inner instructions are DEX internals (swap legs, fee transfers) — including
-// them caused swap transactions to be labelled "Token transfer".
 
 type ParsedTx = {
   meta?: { logMessages?: string[] | null } | null;
@@ -61,8 +162,6 @@ type ParsedTx = {
 } | null;
 
 function extractDescription(tx: ParsedTx, sigInfo?: ConfirmedSignatureInfo): string {
-  // If the RPC returned null for this tx (rate limit / timeout), fall back
-  // gracefully using the memo field from the signature info.
   if (!tx) {
     if (sigInfo?.memo?.trim()) return sigInfo.memo.trim().slice(0, 64);
     return "Transaction";
@@ -71,26 +170,18 @@ function extractDescription(tx: ParsedTx, sigInfo?: ConfirmedSignatureInfo): str
   const instructions = tx.transaction?.message?.instructions ?? [];
   const logs = tx.meta?.logMessages ?? [];
 
-  // ── 1. Opaque outer instruction = DEX / program interaction ──────────────
-  // An "opaque" instruction is one the RPC couldn't parse — it has `data`
-  // and `accounts` but no `parsed` object. Cookiebox CLMM, DAMM, and
-  // Hyperlane warp all appear this way. If ANY outer ix is opaque, this
-  // is not a plain transfer.
   const hasOpaqueOuter = instructions.some(
     (ix) => !("parsed" in ix) || ix.parsed == null
   );
 
   if (hasOpaqueOuter) {
-    // ── 2. Log message refines the opaque-ix label ────────────────────────
     for (const log of logs) {
       if (/bridge|warp|hyperlane/i.test(log)) return "Bridge";
       if (/swap|exchange|route/i.test(log)) return "Swap";
     }
-    // Unknown DEX interaction — better than "Token transfer"
     return "Transaction";
   }
 
-  // ── 3. Memo (only reached when all outer ixs are fully parsed) ───────────
   for (const ix of instructions) {
     if ("parsed" in ix && typeof ix.parsed === "string" && ix.parsed.trim()) {
       return ix.parsed.trim().slice(0, 64);
@@ -101,7 +192,6 @@ function extractDescription(tx: ParsedTx, sigInfo?: ConfirmedSignatureInfo): str
     }
   }
 
-  // ── 4. SPL token transfer ─────────────────────────────────────────────────
   for (const ix of instructions) {
     if ("parsed" in ix && ix.parsed && typeof ix.parsed === "object") {
       const p = ix.parsed as {
@@ -116,7 +206,6 @@ function extractDescription(tx: ParsedTx, sigInfo?: ConfirmedSignatureInfo): str
     }
   }
 
-  // ── 5. System program transfer (native COOK) ──────────────────────────────
   for (const ix of instructions) {
     if ("parsed" in ix && ix.parsed && typeof ix.parsed === "object") {
       const p = ix.parsed as { type?: string; info?: { lamports?: number } };
@@ -168,8 +257,6 @@ export async function getActivity(req: Request, res: Response): Promise<void> {
 
   try {
     const conn = getConnection();
-
-    // Step 1: fetch signatures — always succeeds, carries memo + blockTime
     const sigs = await conn.getSignaturesForAddress(pubkey, { limit });
 
     if (sigs.length === 0) {
@@ -177,9 +264,6 @@ export async function getActivity(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    // Step 2: fetch parsed transactions for richer description extraction.
-    // Non-fatal: if the call fails or returns null entries, extractDescription
-    // falls back gracefully using the sigInfo memo field.
     const sigStrings = sigs.map((s) => s.signature);
     let parsedTxs: (Awaited<ReturnType<typeof conn.getParsedTransactions>>[number])[] = [];
     try {
@@ -191,14 +275,17 @@ export async function getActivity(req: Request, res: Response): Promise<void> {
       parsedTxs = new Array(sigs.length).fill(null) as typeof parsedTxs;
     }
 
-    // Step 3: normalise — pass sigInfo so null-tx fallback can use memo
-    const transactions: ActivityItem[] = sigs.map((sig, i) => ({
-      signature: sig.signature,
-      blockTime: sig.blockTime ?? null,
-      status: sig.err ? "failed" : "confirmed",
-      description: extractDescription(parsedTxs[i] ?? null, sig),
-      slot: sig.slot,
-    }));
+    const transactions: ActivityItem[] = sigs.map((sig, i) => {
+      const tx = parsedTxs[i] ?? null;
+      return {
+        signature: sig.signature,
+        blockTime: sig.blockTime ?? null,
+        status: sig.err ? "failed" : "confirmed",
+        description: extractDescription(tx, sig),
+        amount: extractAmount(tx as ParsedTransactionWithMeta | null, wallet),
+        slot: sig.slot,
+      };
+    });
 
     console.log(`[activity] ${wallet.slice(0, 8)}… → ${transactions.length} txs`);
     res.json({ wallet, transactions });

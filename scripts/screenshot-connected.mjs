@@ -41,7 +41,7 @@ const HTML = `<!DOCTYPE html>
     --choco: #0f0c0a; --ganache: #321c0b; --truffle: #3e2612;
     --crust: #5c3c22; --crumb: #8a6848; --cream: #f5e6c8;
     --butter: #f0c060; --caramel: #c87820; --chip: #7c4a1e;
-    --error: #e05050; --success: #60c080;
+    --error: #e05050; --success: #60c080; --sky: #4a9eba;
     --font-display: 'Syne', system-ui, sans-serif;
     --font-body: 'Inter', system-ui, sans-serif;
     --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
@@ -70,9 +70,9 @@ const HTML = `<!DOCTYPE html>
   .balance-section h2 { font-family:var(--font-display); font-weight:700; font-size:1.125rem; margin:0 0 1rem; letter-spacing:-0.02em; }
   .card { background:var(--ganache); border:1px solid rgba(74,46,26,0.35); border-radius:var(--radius-lg); padding:1rem 1.25rem 0.875rem; display:flex; flex-direction:column; gap:0.125rem; box-shadow:0 2px 12px rgba(0,0,0,0.35),0 1px 3px rgba(0,0,0,0.25); }
   .card-top { display:flex; align-items:center; gap:0.4rem; margin-bottom:0.0625rem; }
-  .card-symbol { font-family:var(--font-body); font-weight:500; font-size:0.6875rem; color:var(--chip); letter-spacing:0.04em; text-transform:uppercase; }
+  .card-symbol { font-family:var(--font-body); font-weight:700; font-size:0.8125rem; color:var(--butter); letter-spacing:0.03em; text-transform:uppercase; }
   .card-name { font-size:0.625rem; color:var(--chip); opacity:0.7; }
-  .card-pill { font-size:0.5rem; font-weight:600; text-transform:uppercase; background:rgba(74,46,26,0.5); color:var(--chip); border:1px solid rgba(74,46,26,0.7); border-radius:999px; padding:0.1em 0.45em; letter-spacing:0.06em; }
+  .card-pill { font-size:0.5rem; font-weight:700; text-transform:uppercase; background:rgba(240,192,96,0.15); color:var(--butter); border:1px solid rgba(240,192,96,0.35); border-radius:999px; padding:0.1em 0.5em; letter-spacing:0.06em; }
   .card-amount { font-family:var(--font-mono); font-size:1.25rem; font-weight:700; color:var(--cream); margin:0.1rem 0 0; letter-spacing:-0.03em; line-height:1.05; }
   .card-usd { font-size:0.6875rem; color:var(--chip); opacity:0.75; margin:0.15rem 0 0; }
 
@@ -124,14 +124,22 @@ const HTML = `<!DOCTYPE html>
         <h2 style="font-family:var(--font-display);font-weight:700;font-size:1.125rem;margin:0;letter-spacing:-0.02em;">Your jar</h2>
         <button style="background:transparent;border:1px solid var(--crust);border-radius:6px;color:var(--crumb);width:1.875rem;height:1.875rem;cursor:pointer;font-size:1rem;">↻</button>
       </div>
-      <div class="card">
-        <div class="card-top">
-          <span class="card-symbol">COOK</span>
-          <span class="card-name">Cookie (native)</span>
-          <span class="card-pill">native</span>
+      <!-- Carousel: first card visible, dots indicate more -->
+      <div style="display:flex;flex-direction:column;gap:0.625rem;">
+        <div class="card" style="max-width:260px;">
+          <div class="card-top">
+            <span class="card-symbol">COOK</span>
+            <span class="card-pill">native</span>
+          </div>
+          <p class="card-amount">3,530.641219</p>
+          <p class="card-usd">≈ $0.29</p>
         </div>
-        <p class="card-amount">3,530.641219</p>
-        <p class="card-usd">≈ $0.29</p>
+        <!-- Dot indicators: active=sky, inactive=crust -->
+        <div style="display:flex;justify-content:center;gap:0.375rem;">
+          <div style="width:18px;height:6px;border-radius:3px;background:var(--sky,#4a9eba);"></div>
+          <div style="width:6px;height:6px;border-radius:50%;background:var(--crust);"></div>
+          <div style="width:6px;height:6px;border-radius:50%;background:var(--crust);"></div>
+        </div>
       </div>
     </section>
 

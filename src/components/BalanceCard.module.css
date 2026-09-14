@@ -30,12 +30,12 @@
 }
 
 .symbol {
-  /* Inter body font — this is a data label, not a heading */
   font-family: var(--font-body);
-  font-weight: 500;
-  font-size: 0.6875rem;
-  color: var(--chip);
-  letter-spacing: 0.04em;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  /* Amber accent — clearly readable against the brown card surface */
+  color: var(--butter);
+  letter-spacing: 0.03em;
   text-transform: uppercase;
 }
 
@@ -51,15 +51,15 @@
 
 .nativePill {
   font-size: 0.5rem;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  /* Very muted — should barely register visually */
-  background: rgba(74, 46, 26, 0.5);
-  color: var(--chip);
-  border: 1px solid rgba(74, 46, 26, 0.7);
+  /* Amber pill — matches the symbol colour, clearly readable */
+  background: rgba(240, 192, 96, 0.15);
+  color: var(--butter);
+  border: 1px solid rgba(240, 192, 96, 0.35);
   border-radius: 999px;
-  padding: 0.1em 0.45em;
+  padding: 0.1em 0.5em;
   line-height: 1.6;
 }
 

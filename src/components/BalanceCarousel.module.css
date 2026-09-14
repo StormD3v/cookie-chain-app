@@ -1,0 +1,83 @@
+.carousel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  min-width: 0;
+}
+
+/* ── Scroll track ─────────────────────────────────────────────────────────── */
+
+.track {
+  display: flex;
+  flex-direction: row;
+  gap: 0.75rem;
+  list-style: none;
+  padding: 0 0 0.25rem; /* small bottom padding so box-shadow isn't clipped */
+  margin: 0;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  /* Hide scrollbar — dots serve as navigation */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.track::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Each slide ───────────────────────────────────────────────────────────── */
+
+.slide {
+  /* Each card snaps to the start of the container */
+  scroll-snap-align: start;
+  flex-shrink: 0;
+  /* Full-width on mobile so one card fills the track */
+  width: 100%;
+  min-width: 185px;
+  /* On wider tracks let multiple cards show */
+  max-width: min(100%, 280px);
+  box-sizing: border-box;
+}
+
+/* ── Dot indicators ───────────────────────────────────────────────────────── */
+
+.dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: none;
+  background: var(--crust);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s, width 0.2s, border-radius 0.2s;
+  flex-shrink: 0;
+}
+
+.dot:hover {
+  background: var(--crumb);
+}
+
+/* Active dot: wider pill in sky-blue accent (defined in task 7) */
+.dotActive {
+  width: 18px;
+  border-radius: 3px;
+  background: var(--sky, #4a9eba);
+}
+
+/* ── Responsive: on wide screens show all cards side by side ──────────────── */
+
+@media (min-width: 480px) {
+  .slide {
+    /* Let cards size naturally so up to 2-3 fit before scrolling */
+    width: auto;
+    max-width: 240px;
+  }
+}

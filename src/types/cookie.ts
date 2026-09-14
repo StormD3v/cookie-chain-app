@@ -116,6 +116,8 @@ export interface ActivityItem {
   blockTime: number | null;
   status: "confirmed" | "failed";
   description: string;
+  /** Best-effort human-readable amount, e.g. "10 COOK → 7.57 bCOOK" */
+  amount: string | null;
   slot: number;
 }
 

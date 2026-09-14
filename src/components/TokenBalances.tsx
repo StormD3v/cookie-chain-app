@@ -1,45 +1,44 @@
 import { useTokenBalances } from "../hooks/useTokenBalances";
-import { BalanceCard } from "./BalanceCard";
+import { BalanceCarousel } from "./BalanceCarousel";
 import styles from "./TokenBalances.module.css";
 
 interface Props {
   walletAddress: string;
 }
 
-// ── BalanceCard skeleton — mirrors the real card's three-row layout ────────
+// ── Skeleton — single card placeholder while loading ─────────────────────────
 
 function BalanceCardSkeleton() {
   return (
     <div className={styles.skeletonCard} aria-hidden="true">
-      {/* Symbol/badge row */}
       <div className={styles.skeletonRow}>
         <span className={`skeleton ${styles.skeletonLabel}`} />
         <span className={`skeleton ${styles.skeletonPill}`} />
       </div>
-      {/* Amount — dominant block */}
       <span className={`skeleton ${styles.skeletonAmount}`} />
-      {/* USD value */}
       <span className={`skeleton ${styles.skeletonUsd}`} />
     </div>
   );
 }
 
+// ── Component ─────────────────────────────────────────────────────────────────
+
 export function TokenBalances({ walletAddress }: Props) {
   const { balances, loading, error, refetch } = useTokenBalances(walletAddress);
 
+  // ── Loading ─────────────────────────────────────────────
   if (loading) {
     return (
       <div className={styles.wrap} role="status" aria-label="Loading balances">
         <div className={styles.headRow}>
           <h2 className={styles.heading}>Your jar</h2>
         </div>
-        <ul className={styles.grid} role="list">
-          <li><BalanceCardSkeleton /></li>
-        </ul>
+        <BalanceCardSkeleton />
       </div>
     );
   }
 
+  // ── Error ───────────────────────────────────────────────
   if (error) {
     return (
       <div className={styles.state} role="alert">
@@ -53,6 +52,7 @@ export function TokenBalances({ walletAddress }: Props) {
     );
   }
 
+  // ── Empty ────────────────────────────────────────────────
   if (balances.length === 0) {
     return (
       <div className={styles.state}>
@@ -65,9 +65,11 @@ export function TokenBalances({ walletAddress }: Props) {
     );
   }
 
+  // ── Data ─────────────────────────────────────────────────
   return (
     <div className={styles.wrap}>
       <div className={styles.headRow}>
+        {/* Task 6: jar SVG icon replacing the bare ↻ */}
         <h2 className={styles.heading}>Your jar</h2>
         <button
           className={styles.refreshBtn}
@@ -75,16 +77,20 @@ export function TokenBalances({ walletAddress }: Props) {
           aria-label="Refresh balances"
           title="Refresh"
         >
-          ↻
+          {/* Cookie-jar icon */}
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path
+              d="M3 6h10M3 6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1M3 6v6a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V6"
+              stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"
+            />
+            <path d="M6 3V2.5a2 2 0 0 1 4 0V3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+            <circle cx="8" cy="9.5" r="1" fill="currentColor" />
+          </svg>
         </button>
       </div>
-      <ul className={styles.grid} role="list">
-        {balances.map((token) => (
-          <li key={token.mint}>
-            <BalanceCard token={token} />
-          </li>
-        ))}
-      </ul>
+
+      {/* Horizontal carousel with dot indicators */}
+      <BalanceCarousel balances={balances} />
     </div>
   );
 }

@@ -146,8 +146,8 @@
   transition: background 0.12s;
   min-width: 0;
   max-width: 100%;
-  /* Rounded corners for hover background */
   border-radius: var(--radius-sm);
+  cursor: pointer;
 }
 
 .row:last-child {
@@ -155,7 +155,6 @@
 }
 
 .row:hover {
-  /* Shadow lift on hover — no negative margin, no bounce */
   background: rgba(255, 255, 255, 0.03);
   padding-left: 0.25rem;
   padding-right: 0.25rem;
@@ -174,9 +173,9 @@
 }
 
 .iconOk {
-  background: rgba(96, 192, 128, 0.12);
-  color: var(--success);
-  border: 1px solid rgba(96, 192, 128, 0.22);
+  background: rgba(74, 158, 186, 0.12);
+  color: var(--sky);
+  border: 1px solid rgba(74, 158, 186, 0.22);
 }
 
 .iconFailed {
@@ -204,6 +203,18 @@
   max-width: 100%;
 }
 
+/* Amount — mono, muted amber, shown below description */
+.amount {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--butter);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  opacity: 0.85;
+}
+
 .time {
   font-size: 0.6875rem;
   color: var(--crumb);
@@ -225,9 +236,11 @@
 }
 
 .badgeOk {
-  background: rgba(96, 192, 128, 0.12);
-  color: var(--success);
-  border: 1px solid rgba(96, 192, 128, 0.25);
+  /* --sky: teal-blue does real work here as the confirmed-state colour,
+     distinct from --butter (amber) and --success (green) */
+  background: rgba(74, 158, 186, 0.14);
+  color: var(--sky);
+  border: 1px solid rgba(74, 158, 186, 0.3);
 }
 
 .badgeFailed {

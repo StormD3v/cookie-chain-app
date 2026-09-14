@@ -14,12 +14,17 @@ export function BalanceCard({ token }: Props) {
   const isNative = token.mint === COOK_MINT;
   const symbol = token.symbol ?? "???";
   const showMint = !isNative && token.mint;
+  // Suppress "(native)" suffix — the pill already conveys this
+  const showName = token.name &&
+    token.name !== symbol &&
+    !token.name.includes("(native)") &&
+    !token.name.toLowerCase().includes("native");
 
   return (
     <div className={styles.card}>
       <div className={styles.top}>
         <span className={styles.symbol}>{symbol}</span>
-        {token.name && token.name !== symbol && (
+        {showName && (
           <span className={styles.name}>{token.name}</span>
         )}
         {isNative && <span className={styles.nativePill}>native</span>}

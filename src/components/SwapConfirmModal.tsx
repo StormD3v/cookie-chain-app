@@ -6,7 +6,7 @@ import styles from "./SwapConfirmModal.module.css";
 
 // ── Explorer link ─────────────────────────────────────────────────────────────
 
-const EXPLORER = "https://explorer.cookiescan.io";
+const EXPLORER = "https://cookiescan.io";
 
 function explorerUrl(sig: string) {
   return `${EXPLORER}/tx/${sig}`;

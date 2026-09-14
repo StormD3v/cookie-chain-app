@@ -35,7 +35,9 @@
   --error: #e05050;
   /* error red */
   --success: #60c080;
-  /* success green */
+  /* success green — positive amounts, confirm states */
+  --sky: #4a9eba;
+  /* second accent — cool teal/blue; active dot indicator, confirmed badge */
 
   /* Typography */
   --font-display: 'Syne', system-ui, sans-serif;
