@@ -34,11 +34,12 @@ body{margin:0;background:var(--choco);color:var(--cream);font-family:var(--font-
 .shell{min-height:100vh;display:flex;overflow-x:hidden;}
 
 /* Sidebar */
-.sidebar{width:200px;flex-shrink:0;display:flex;flex-direction:column;background:rgba(50,28,11,0.6);backdrop-filter:blur(14px);border-right:1px solid var(--crust);position:sticky;top:0;height:100vh;overflow-y:auto;}
+.sidebar{width:240px;flex-shrink:0;display:flex;flex-direction:column;background:rgba(50,28,11,0.6);backdrop-filter:blur(14px);border-right:1px solid var(--crust);position:sticky;top:0;height:100vh;overflow-y:auto;}
 .sidebar-brand{display:flex;align-items:center;gap:0.625rem;padding:1.25rem 1rem 1rem;border-bottom:1px solid rgba(240,192,96,0.08);}
-.sidebar-logo{font-size:1.75rem;line-height:1;}
-.brand-name{font-family:var(--font-display);font-weight:800;font-size:0.9375rem;letter-spacing:-0.02em;color:var(--cream);}
-.brand-tag{font-size:0.625rem;color:var(--crumb);}
+.sidebar-logo{font-size:1.75rem;line-height:1;flex-shrink:0;width:2rem;text-align:center;}
+.brand-text{flex:1;min-width:0;overflow:hidden;display:flex;flex-direction:column;gap:0.1rem;}
+.brand-name{font-family:var(--font-display);font-weight:800;font-size:0.9375rem;letter-spacing:-0.02em;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.brand-tag{font-size:0.625rem;color:var(--crumb);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .nav{flex:1;padding:0.875rem 0.625rem 0.5rem;display:flex;flex-direction:column;gap:0.125rem;}
 .nav-label{font-size:0.5625rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--chip);padding:0.25rem 0.375rem 0.375rem;margin:0;}
 .nav-item{display:flex;align-items:center;gap:0.5rem;width:100%;padding:0.5rem 0.625rem;background:transparent;border:none;border-radius:var(--radius-sm);color:var(--crumb);font-size:0.875rem;cursor:pointer;text-decoration:none;}
@@ -134,8 +135,8 @@ body{margin:0;background:var(--choco);color:var(--cream);font-family:var(--font-
   <!-- Sidebar -->
   <aside class="sidebar">
     <div class="sidebar-brand">
-      <span class="sidebar-logo">🍪</span>
-      <div><div class="brand-name">Cookie Chain</div><div class="brand-tag">Your on-chain kitchen.</div></div>
+      <div class="sidebar-logo">🍪</div>
+      <div class="brand-text"><div class="brand-name">Cookie Chain</div><div class="brand-tag">Your on-chain kitchen.</div></div>
     </div>
     <nav class="nav">
       <p class="nav-label">Main</p>
