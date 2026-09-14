@@ -16,13 +16,15 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.875rem 1.5rem;
-  border-bottom: 1px solid var(--crust);
-  background: var(--ganache);
-  box-shadow: 0 1px 0 rgba(240, 192, 96, 0.08);
+  border-bottom: 1px solid rgba(240, 192, 96, 0.12);
+  /* Glassmorphism: translucent warm surface + blur */
+  background: rgba(50, 28, 11, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 1px 0 rgba(240, 192, 96, 0.1), 0 4px 20px rgba(0, 0, 0, 0.3);
   position: sticky;
   top: 0;
   z-index: 10;
-  /* Prevent header items shrinking below their minimum */
   gap: 0.75rem;
 }
 
@@ -75,9 +77,6 @@
 /* ── Main content ─────────────────────────────────────────────────────────── */
 
 .main {
-  /* flex: none — don't stretch to fill the viewport height.
-   * The grid content determines the height; dead space was caused by
-   * flex: 1 pulling .main to fill the remaining viewport. */
   flex: none;
   display: flex;
   flex-direction: column;
@@ -85,7 +84,8 @@
   max-width: 1080px;
   width: 100%;
   margin: 0 auto;
-  padding: 2.5rem 1.5rem;
+  /* Reduced top padding — TokenBalances .wrap carries its own top padding now */
+  padding: 0.75rem 1.5rem 2.5rem;
   overflow-x: hidden;
 }
 

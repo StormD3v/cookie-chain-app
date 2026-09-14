@@ -1,7 +1,9 @@
 .card {
-  background: var(--ganache);
-  /* Subtler border — rely on background contrast + shadow, not a heavy outline */
-  border: 1px solid rgba(74, 46, 26, 0.35);
+  /* Glassmorphism: translucent card surface + blur for depth */
+  background: rgba(50, 28, 11, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(240, 192, 96, 0.15);
   border-radius: var(--radius-lg);
   padding: 1rem 1.25rem 0.875rem;
   display: flex;
@@ -9,14 +11,19 @@
   gap: 0.125rem;
   transition: border-color 0.2s, box-shadow 0.2s;
   cursor: default;
-  /* Lighter shadow than SwapPanel — subordinate card, not the hero */
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3),
-    0 4px 20px rgba(4, 2, 12, 0.2);
+  box-shadow:
+    0 2px 12px rgba(0, 0, 0, 0.4),
+    0 1px 3px rgba(0, 0, 0, 0.3),
+    0 4px 20px rgba(4, 2, 12, 0.2),
+    0 0 0 1px rgba(240, 192, 96, 0.04) inset;
 }
 
 .card:hover {
-  border-color: rgba(240, 192, 96, 0.25);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(240, 192, 96, 0.08);
+  border-color: rgba(240, 192, 96, 0.3);
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(240, 192, 96, 0.12) inset,
+    0 0 24px rgba(240, 192, 96, 0.06);
 }
 
 /* ── Symbol row — strongly recedes behind the number ─────────── */

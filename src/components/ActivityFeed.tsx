@@ -97,7 +97,15 @@ export function ActivityFeed({ walletAddress, swapStage }: Props) {
             title="Refresh"
             disabled={loading}
           >
-            ↻
+            {/* Cookie-jar icon — same as TokenBalances for consistency */}
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path
+                d="M3 6h10M3 6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1M3 6v6a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V6"
+                stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"
+              />
+              <path d="M6 3V2.5a2 2 0 0 1 4 0V3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+              <circle cx="8" cy="9.5" r="1" fill="currentColor" />
+            </svg>
           </button>
         </div>
 
