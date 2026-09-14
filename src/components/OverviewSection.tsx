@@ -5,6 +5,7 @@ import { SwapPanel } from "./SwapPanel";
 import { TxDetailModal } from "./TxDetailModal";
 import type { ActivityItem } from "../types/cookie";
 import { useState } from "react";
+import { getTokenLogo } from "../lib/tokenLogos";
 import styles from "./OverviewSection.module.css";
 
 // ── Hyperlane bridge URL (same as AppShell) ───────────────────────────────────
@@ -187,9 +188,26 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
                 const symbol = token.symbol ?? "???";
                 return (
                   <li key={token.mint} className={styles.tokenRow}>
-                    {/* Token icon placeholder */}
+                    {/* Token icon — real logo if available, emoji fallback */}
                     <span className={styles.tokenIcon} aria-hidden="true">
-                      {symbol === "COOK" ? "🍪" : symbol === "bCOOK" ? "🔥" : "💬"}
+                      {getTokenLogo(token.mint) ? (
+                        <img
+                          src={getTokenLogo(token.mint)}
+                          alt={symbol}
+                          className={styles.tokenIconImg}
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).style.display = "none";
+                            const fb = e.currentTarget.nextElementSibling as HTMLElement | null;
+                            if (fb) fb.style.display = "inline";
+                          }}
+                        />
+                      ) : null}
+                      <span
+                        className={styles.tokenIconEmoji}
+                        style={getTokenLogo(token.mint) ? { display: "none" } : undefined}
+                      >
+                        {symbol === "COOK" ? "🍪" : symbol === "bCOOK" ? "🔥" : "💬"}
+                      </span>
                     </span>
                     <div className={styles.tokenInfo}>
                       <span className={styles.tokenSymbol}>{symbol}</span>

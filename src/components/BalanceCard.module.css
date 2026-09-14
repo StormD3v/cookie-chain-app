@@ -102,3 +102,34 @@
   margin: 0.25rem 0 0;
   opacity: 0.5;
 }
+
+/* ── Token logo ─────────────────────────────────────────────── */
+
+.logoWrap {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.logo {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  object-fit: cover;
+  /* Subtle amber ring so the logo sits in the palette */
+  box-shadow: 0 0 0 1px rgba(240, 192, 96, 0.25);
+}
+
+.logoEmoji {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 1.5rem;
+  line-height: 1;
+  border-radius: 50%;
+  background: rgba(240, 192, 96, 0.1);
+  border: 1px solid rgba(240, 192, 96, 0.2);
+}

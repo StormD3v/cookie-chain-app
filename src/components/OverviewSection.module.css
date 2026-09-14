@@ -248,6 +248,24 @@
   line-height: 1;
   text-align: center;
   flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tokenIconImg {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 0 0 1px rgba(240, 192, 96, 0.2);
+}
+
+.tokenIconEmoji {
+  font-size: 1.25rem;
+  line-height: 1;
 }
 
 .tokenInfo {

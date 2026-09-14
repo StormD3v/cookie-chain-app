@@ -13,6 +13,10 @@ const CHROME = resolve(env["USERPROFILE"] ?? "", "AppData/Local/ms-playwright/ch
 const OUT = resolve(__dirname, "../screenshots");
 await mkdir(OUT, { recursive: true });
 
+const logoDir = resolve(__dirname, "../public/logos");
+// Build file:// URLs for each logo so the static HTML can load them
+const logoUrl = (name) => `file:///${logoDir.replace(/\\/g, "/")}/${name}`;
+
 const HTML = `<!DOCTYPE html>
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -88,7 +92,9 @@ body{margin:0;background:var(--choco);color:var(--cream);font-family:var(--font-
 .manage{background:transparent;border:none;color:var(--butter);font-size:0.75rem;font-weight:600;cursor:pointer;padding:0;}
 .token-row{display:grid;grid-template-columns:2rem 1fr auto 80px auto;align-items:center;gap:0.625rem;padding:0.625rem 0;border-bottom:1px solid rgba(74,46,26,0.4);}
 .token-row:last-child{border-bottom:none;}
-.token-icon{font-size:1.25rem;line-height:1;text-align:center;}
+.token-icon{font-size:1.25rem;line-height:1;text-align:center;width:2rem;height:2rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.token-icon-img{width:2rem;height:2rem;border-radius:50%;object-fit:cover;box-shadow:0 0 0 1px rgba(240,192,96,0.2);}
+.token-icon-emoji{font-size:1.25rem;line-height:1;}
 .token-sym{font-weight:700;font-size:0.875rem;color:var(--butter);}
 .token-name{font-size:0.625rem;color:var(--crumb);}
 .token-amt{font-family:var(--font-mono);font-size:0.875rem;font-weight:600;text-align:right;}
@@ -211,9 +217,9 @@ body{margin:0;background:var(--choco);color:var(--cream);font-family:var(--font-
               <div><div class="pantry-title">Your Pantry</div><div class="pantry-sub">All your tokens in one place</div></div>
               <button class="manage">Manage →</button>
             </div>
-            <div class="token-row"><span class="token-icon">🍪</span><div><div class="token-sym">COOK</div><div class="token-name">Cookie (Native)</div></div><div><div class="token-amt">3,530.6412</div><div class="token-usd">$0.29</div></div><div class="alloc-wrap"><div class="alloc-bar"><div class="alloc-fill" style="width:72%"></div></div><span class="alloc-pct">72%</span></div><span class="chevron">›</span></div>
-            <div class="token-row"><span class="token-icon">🔥</span><div><div class="token-sym">bCOOK</div><div class="token-name">bakedCOOK</div></div><div><div class="token-amt">75.6104</div><div class="token-usd">$0.007</div></div><div class="alloc-wrap"><div class="alloc-bar"><div class="alloc-fill" style="width:25%"></div></div><span class="alloc-pct">25%</span></div><span class="chevron">›</span></div>
-            <div class="token-row"><span class="token-icon">💬</span><div><div class="token-sym">CHAT</div><div class="token-name">Cookie Chat</div></div><div><div class="token-amt">5,926.56</div><div class="token-usd">$0.007</div></div><div class="alloc-wrap"><div class="alloc-bar"><div class="alloc-fill" style="width:3%"></div></div><span class="alloc-pct">&nbsp;3%</span></div><span class="chevron">›</span></div>
+            <div class="token-row"><span class="token-icon"><img src="${logoUrl("cook.svg")}" alt="COOK" class="token-icon-img" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><span class="token-icon-emoji" style="display:none">🍪</span></span><div><div class="token-sym">COOK</div><div class="token-name">Cookie (Native)</div></div><div><div class="token-amt">3,530.6412</div><div class="token-usd">$0.29</div></div><div class="alloc-wrap"><div class="alloc-bar"><div class="alloc-fill" style="width:72%"></div></div><span class="alloc-pct">72%</span></div><span class="chevron">›</span></div>
+            <div class="token-row"><span class="token-icon"><img src="${logoUrl("bcook.svg")}" alt="bCOOK" class="token-icon-img" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><span class="token-icon-emoji" style="display:none">🔥</span></span><div><div class="token-sym">bCOOK</div><div class="token-name">bakedCOOK</div></div><div><div class="token-amt">75.6104</div><div class="token-usd">$0.007</div></div><div class="alloc-wrap"><div class="alloc-bar"><div class="alloc-fill" style="width:25%"></div></div><span class="alloc-pct">25%</span></div><span class="chevron">›</span></div>
+            <div class="token-row"><span class="token-icon"><img src="${logoUrl("chat.svg")}" alt="CHAT" class="token-icon-img" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><span class="token-icon-emoji" style="display:none">💬</span></span><div><div class="token-sym">CHAT</div><div class="token-name">Cookie Chat</div></div><div><div class="token-amt">5,926.56</div><div class="token-usd">$0.007</div></div><div class="alloc-wrap"><div class="alloc-bar"><div class="alloc-fill" style="width:3%"></div></div><span class="alloc-pct">&nbsp;3%</span></div><span class="chevron">›</span></div>
           </div>
         </div>
 
