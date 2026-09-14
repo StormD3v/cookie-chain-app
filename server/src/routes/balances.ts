@@ -7,14 +7,15 @@
  * Actual cookie-mcp 0.3.x response shape (confirmed from live MCP output):
  * {
  *   wallet: "...",
- *   cook: { amount: "3530.641219", usdValue: 0.29 },   ← native COOK
- *   tokens: [],                                          ← SPL tokens (may be empty)
- *   totalUsd: 0.29
+ *   cook: { amount: "3530.641219", usdValue: 0.29 },
+ *   tokens: [
+ *     { mint: "Ekpafx…", symbol: "bCOOK", amount: "75.610364908",
+ *       decimals: 9, usdValue: 0.007 }
+ *   ],
+ *   totalUsd: 0.25
  * }
  *
- * Note: the `cook` field uses a plain amount string, NOT the
- * { uiAmount, rawAmount, decimals } shape that was assumed when this handler
- * was first written against a different version of the tool.
+ * Both `cook` and each `tokens` entry use `amount` (string), not `uiAmount`.
  */
 
 import type { Request, Response } from "express";
@@ -32,9 +33,13 @@ interface McpSplEntry {
   mint: string;
   symbol?: string;
   name?: string;
-  /** Human-readable amount (post-decimals) */
+  /**
+   * cookie-mcp 0.3.x returns `amount` (string) for SPL tokens,
+   * matching the same field name as McpCookEntry — NOT `uiAmount`.
+   * `uiAmount` and `rawAmount` are kept for forward-compatibility only.
+   */
+  amount?: string;
   uiAmount?: number | null;
-  /** Raw integer amount string */
   rawAmount?: string;
   decimals?: number;
   usdValue?: number | null;
@@ -86,15 +91,18 @@ function cookEntryToNormalised(cook: McpCookEntry): NormalisedBalance {
 
 function splEntryToNormalised(t: McpSplEntry): NormalisedBalance {
   const dec = t.decimals ?? 6;
-  const uiAmount = t.uiAmount ?? null;
+  // cookie-mcp 0.3.x sends `amount` (string), not `uiAmount`.
+  // Fall through to `uiAmount` (number) for forward-compatibility.
+  const amountStr = t.amount ?? (t.uiAmount != null ? String(t.uiAmount) : null);
+  const uiAmount = amountStr != null ? Number(amountStr) : null;
   const rawAmount =
     t.rawAmount ??
-    (uiAmount != null ? amountStringToRaw(String(uiAmount), dec) : "0");
+    (amountStr != null ? amountStringToRaw(amountStr, dec) : "0");
   return {
     mint: t.mint,
     symbol: t.symbol ?? t.mint.slice(0, 6),
     name: t.name ?? t.symbol ?? t.mint.slice(0, 6),
-    uiAmount,
+    uiAmount: uiAmount != null && Number.isFinite(uiAmount) ? uiAmount : null,
     rawAmount,
     decimals: dec,
     usdValue: t.usdValue ?? null,
