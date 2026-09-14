@@ -14,16 +14,18 @@ export const KNOWN_TOKENS: SwapToken[] = [
     decimals: 9,
   },
   {
-    mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
-    symbol: "USDC",
-    name: "USD Coin",
-    decimals: 6,
+    // Real Cookie Chain bCOOK mint — liquid-staked COOK via the bCOOK stake pool
+    mint: "EkPafx58mgwkEnGwo62jXhXDAdJ37Z8G8MFBRPsr9uhz",
+    symbol: "bCOOK",
+    name: "bakedCOOK",
+    decimals: 9,
   },
   {
-    mint: "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So",
-    symbol: "bCOOK",
-    name: "Staked COOK",
-    decimals: 9,
+    // Highest 24h volume on Cookie Chain as of last pool check
+    mint: "2wPK38gv8dWU89K5zDAAULAihnU1sRocbpzwPP6twY7Q",
+    symbol: "CHAT",
+    name: "Cookie Chat",
+    decimals: 6,
   },
 ];
 
