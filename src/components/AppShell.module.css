@@ -1,0 +1,369 @@
+/* ── Shell layout ─────────────────────────────────────────────────────────── */
+
+.shell {
+  min-height: 100vh;
+  display: flex;
+  background: var(--choco);
+  color: var(--cream);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* ── Desktop sidebar ──────────────────────────────────────────────────────── */
+
+.sidebar {
+  width: 200px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--ganache);
+  border-right: 1px solid var(--crust);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 20;
+  /* Glassmorphism matches header */
+  background: rgba(50, 28, 11, 0.6);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.sidebarBrand {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 1.25rem 1rem 1rem;
+  border-bottom: 1px solid rgba(240, 192, 96, 0.08);
+  flex-shrink: 0;
+}
+
+.sidebarLogo {
+  font-size: 1.75rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.sidebarBrandText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.sidebarBrandName {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.9375rem;
+  letter-spacing: -0.02em;
+  color: var(--cream);
+  white-space: nowrap;
+}
+
+.sidebarBrandTag {
+  font-size: 0.625rem;
+  color: var(--crumb);
+  white-space: nowrap;
+}
+
+/* ── Sidebar nav ──────────────────────────────────────────────────────────── */
+
+.sidebarNav {
+  flex: 1;
+  padding: 0.875rem 0.625rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  overflow-y: auto;
+}
+
+.navLabel {
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--chip);
+  padding: 0.25rem 0.375rem 0.375rem;
+  margin: 0;
+}
+
+.navSpacer {
+  height: 0.75rem;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem 0.625rem;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--crumb);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  text-align: left;
+  text-decoration: none;
+  min-width: 0;
+}
+
+.navItem:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--cream);
+}
+
+.navItemActive {
+  background: rgba(240, 192, 96, 0.12);
+  color: var(--butter);
+  font-weight: 600;
+}
+
+.navIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+}
+
+.navLabel2 {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.navExternal {
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+/* ── Sidebar footer ───────────────────────────────────────────────────────── */
+
+.sidebarFooter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1rem;
+  border-top: 1px solid rgba(240, 192, 96, 0.06);
+  flex-shrink: 0;
+}
+
+.chainDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--success);
+  flex-shrink: 0;
+  box-shadow: 0 0 6px rgba(96, 192, 128, 0.6);
+}
+
+.chainDotSm {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+  flex-shrink: 0;
+  box-shadow: 0 0 5px rgba(96, 192, 128, 0.6);
+}
+
+.chainInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  min-width: 0;
+}
+
+.chainName {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--cream);
+  white-space: nowrap;
+}
+
+.chainStatus {
+  font-size: 0.5625rem;
+  color: var(--success);
+  white-space: nowrap;
+}
+
+/* ── Main body area ───────────────────────────────────────────────────────── */
+
+.body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+/* ── Top header bar ───────────────────────────────────────────────────────── */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid rgba(240, 192, 96, 0.1);
+  background: rgba(50, 28, 11, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.topbarLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.topbarRight {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.mobileBrand {
+  font-size: 1.375rem;
+  line-height: 1;
+  /* Show on mobile, hide on desktop */
+  display: none;
+}
+
+.mobileBrandName {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: -0.02em;
+  color: var(--cream);
+  white-space: nowrap;
+  /* Show on mobile, hide on desktop */
+  display: none;
+}
+
+.chainPill {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  background: rgba(96, 192, 128, 0.08);
+  border: 1px solid rgba(96, 192, 128, 0.2);
+  border-radius: 999px;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  color: var(--success);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.chainPillText {
+  font-size: 0.75rem;
+}
+
+/* ── Section content ──────────────────────────────────────────────────────── */
+
+.content {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-x: hidden;
+  min-width: 0;
+}
+
+/* ── Mobile bottom tab bar ────────────────────────────────────────────────── */
+
+.bottomBar {
+  display: none; /* shown on mobile via media query */
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  background: rgba(30, 15, 5, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(240, 192, 96, 0.1);
+  padding: 0.375rem 0 max(0.375rem, env(safe-area-inset-bottom));
+}
+
+.tabBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  flex: 1;
+  padding: 0.375rem 0.25rem;
+  background: transparent;
+  border: none;
+  color: var(--crumb);
+  font-family: var(--font-body);
+  font-size: 0.5625rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.12s;
+  letter-spacing: 0.02em;
+}
+
+.tabBtn:hover {
+  color: var(--cream);
+}
+
+.tabBtnActive {
+  color: var(--butter);
+}
+
+.tabIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.tabLabel {
+  text-transform: capitalize;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+
+@media (max-width: 780px) {
+  .sidebar {
+    display: none;
+  }
+
+  .mobileBrand,
+  .mobileBrandName {
+    display: block;
+  }
+
+  .bottomBar {
+    display: flex;
+    align-items: flex-start;
+  }
+
+  .content {
+    padding: 1rem 0.875rem 5rem; /* 5rem bottom clearance for tab bar */
+  }
+
+  .topbar {
+    padding: 0.625rem 0.875rem;
+  }
+}
+
+@media (min-width: 781px) {
+  /* On desktop the bottom bar stays hidden */
+  .bottomBar {
+    display: none !important;
+  }
+}
