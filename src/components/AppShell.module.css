@@ -157,32 +157,31 @@
   opacity: 0.5;
 }
 
-/* ── Sidebar decorative motifs ────────────────────────────────────────────── */
+/* ── Sidebar cookie cluster decoration ───────────────────────────────────── */
 
-.sidebarMotifs {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-around;
-  padding: 0.5rem 1rem 0.25rem;
-  flex-shrink: 0;
+.sidebarCookieCluster {
+  /* Absolute-positioned so it bleeds into the bottom-left corner of the
+     sidebar without disturbing nav layout. The sidebar is position:fixed
+     so this is positioned relative to it. */
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  /* Large enough that the biggest cookie reads at ~60px */
+  width: 160px;
+  height: auto;
+  /* Natural aspect ratio — no distortion */
+  object-fit: contain;
+  object-position: bottom left;
   pointer-events: none;
-  color: var(--caramel);
+  /* Sits behind the footer content */
+  z-index: 0;
 }
 
-.motifCookie {
-  width: 2rem;
-  height: 2rem;
-}
-
-.motifCrumb {
-  width: 1.375rem;
-  height: 1.375rem;
-}
-
-.motifDot {
-  width: 1rem;
-  height: 1rem;
-  margin-bottom: 0.25rem;
+/* Ensure nav and footer sit above the image */
+.sidebarNav,
+.sidebarFooter {
+  position: relative;
+  z-index: 1;
 }
 
 /* ── Sidebar footer ───────────────────────────────────────────────────────── */

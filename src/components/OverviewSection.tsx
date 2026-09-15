@@ -343,17 +343,21 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
               <svg
                 viewBox="0 0 120 40"
                 className={styles.sparklineSvg}
-                preserveAspectRatio="none"
                 aria-hidden="true"
               >
                 <path
                   d={sparklinePath}
                   fill="none"
-                  stroke="var(--butter)"
+                  stroke={
+                    !hasRealData || pctChange === null ? "var(--crumb)"
+                      : pctChange > 0.05 ? "var(--success)"
+                        : pctChange < -0.05 ? "var(--error)"
+                          : "var(--crumb)"
+                  }
                   strokeWidth="1.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  opacity={hasRealData ? 0.85 : 0.35}
+                  opacity={hasRealData ? 0.85 : 0.3}
                   vectorEffect="non-scaling-stroke"
                 />
               </svg>

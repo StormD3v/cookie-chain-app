@@ -7,6 +7,7 @@ import { OverviewSection } from "./OverviewSection";
 import { PantrySection } from "./PantrySection";
 import { BakeSection } from "./BakeSection";
 import { CrumbsSection } from "./CrumbsSection";
+import sidebarCookieCluster from "../assets/sidebar-cookie-cluster.png";
 import styles from "./AppShell.module.css";
 
 // ── Hyperlane bridge URL ──────────────────────────────────────────────────────
@@ -144,27 +145,13 @@ export function AppShell({ walletAddress }: Props) {
           </a>
         </nav>
 
-        {/* Decorative cookie motifs — purely cosmetic, low-opacity */}
-        <div className={styles.sidebarMotifs} aria-hidden="true">
-          <svg viewBox="0 0 40 40" className={styles.motifCookie}>
-            <circle cx="20" cy="20" r="17" fill="currentColor" opacity="0.18" />
-            <ellipse cx="13" cy="15" rx="3" ry="2.5" fill="var(--choco)" opacity="0.5" transform="rotate(-10 13 15)" />
-            <ellipse cx="24" cy="12" rx="2.5" ry="2" fill="var(--choco)" opacity="0.5" transform="rotate(8 24 12)" />
-            <ellipse cx="27" cy="23" rx="3" ry="2.5" fill="var(--choco)" opacity="0.5" transform="rotate(-5 27 23)" />
-            <ellipse cx="14" cy="26" rx="2.5" ry="2" fill="var(--choco)" opacity="0.5" transform="rotate(15 14 26)" />
-          </svg>
-          <svg viewBox="0 0 24 24" className={styles.motifCrumb}>
-            <circle cx="12" cy="12" r="9" fill="currentColor" opacity="0.12" />
-            <ellipse cx="8" cy="10" rx="2" ry="1.5" fill="var(--choco)" opacity="0.45" transform="rotate(-8 8 10)" />
-            <ellipse cx="15" cy="9" rx="1.5" ry="1.2" fill="var(--choco)" opacity="0.45" />
-            <ellipse cx="16" cy="15" rx="2" ry="1.5" fill="var(--choco)" opacity="0.45" transform="rotate(10 16 15)" />
-          </svg>
-          <svg viewBox="0 0 16 16" className={styles.motifDot}>
-            <circle cx="8" cy="8" r="5" fill="currentColor" opacity="0.1" />
-            <ellipse cx="5.5" cy="6.5" rx="1.2" ry="1" fill="var(--choco)" opacity="0.4" />
-            <ellipse cx="10" cy="8" rx="1" ry="0.8" fill="var(--choco)" opacity="0.4" />
-          </svg>
-        </div>
+        {/* Cookie cluster decoration — real asset, anchored to bottom-left corner */}
+        <img
+          src={sidebarCookieCluster}
+          alt=""
+          aria-hidden="true"
+          className={styles.sidebarCookieCluster}
+        />
 
         {/* Chain status footer */}
         <div className={styles.sidebarFooter}>

@@ -186,11 +186,9 @@
 
 .jarCardTop {
   display: flex;
-  align-items: stretch;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  /* min-height so card doesn't collapse when chart has no data */
-  min-height: 5rem;
 }
 
 .jarLabel {
@@ -261,11 +259,10 @@
 
 /* CSS sparkline — fills remaining width of jar card */
 .sparklinePlaceholder {
-  /* Take all remaining horizontal space after the balance text */
   flex: 1;
   min-width: 0;
-  /* Tall enough to show real curve shape */
-  min-height: 70px;
+  /* Fixed height — prevents the card ballooning when chart stretches wide */
+  height: 76px;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -286,9 +283,10 @@
 }
 
 .sparklineSvg {
-  flex: 1;
+  /* Fixed height, full width — no flex:1 which caused ballooning */
   width: 100%;
-  min-height: 60px;
+  height: 60px;
+  display: block;
   overflow: visible;
 }
 
