@@ -11,6 +11,7 @@ import { ReceiveModal } from "./ReceiveModal";
 import { SendModal } from "./SendModal";
 import cookieJarHug from "../assets/cookie-jar-hug.png";
 import cookingChefCookie from "../assets/cooking-chef-cookie.png";
+import cookieRunning from "../assets/cookie-running.png";
 import styles from "./OverviewSection.module.css";
 
 // ── Time-of-day greeting — uses visitor's LOCAL browser time via new Date() ──
@@ -237,10 +238,21 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
   ).length;
   // Token count from balances (non-zero holdings only)
   const tokenCount = balances.filter(b => (b.uiAmount ?? 0) > 0).length;
-  // Heat level: ≥10 confirmed txs = hot, ≥4 = warm, else cool
+
+  // ── Heat score — composite so the bar has real range to move in ───────────
+  // Formula: each tx = 1pt, each swap = 2pt extra (swaps already counted in
+  // txCount so add 2 more for the extra weight), each distinct token = 3pt.
+  // Ceiling = 100 points → represents a genuinely high activity session.
+  // Examples: 10 regular txs = 10%, 20 txs + 5 swaps + 4 tokens = 42%,
+  //           50 txs + 20 swaps + 8 tokens = 114 → clamped to 100%.
+  const heatScore = txCount + swapCount * 2 + tokenCount * 3;
+  const HEAT_CEILING = 100;
+  const heatPct = Math.min(100, Math.round((heatScore / HEAT_CEILING) * 100));
+
+  // Heat level thresholds match the new, wider scale
   const heatLevel: "hot" | "warm" | "cool" =
-    txCount >= 10 ? "hot" : txCount >= 4 ? "warm" : "cool";
-  const heatPct = Math.min(100, Math.round((txCount / 10) * 100));
+    heatPct >= 60 ? "hot" : heatPct >= 20 ? "warm" : "cool";
+
   const heatLabel = heatLevel === "hot" ? "Very active today 🔥"
     : heatLevel === "warm" ? "Building momentum 📈"
       : "Just warming up 🍪";
@@ -468,9 +480,47 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
 
         {/* ── Jar Heat ────────────────────────────────────── */}
         <section className={styles.heatCard}>
-          <div className={styles.heatHeader}>
-            <h2 className={styles.heatTitle}>🔥 Jar Heat</h2>
-            <p className={styles.heatSubtitle}>Your activity level on Cookie Chain</p>
+          <div className={styles.heatPromoRow}>
+            <div className={styles.heatHeader}>
+              <h2 className={styles.heatTitle}>
+                {/* Inline SVG flame — warm amber/orange, matches palette */}
+                <svg
+                  className={styles.flameIcon}
+                  width="16" height="18"
+                  viewBox="0 0 16 18"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M8 1C8 1 5 5 5 8.5C5 9.88 5.67 11.1 6.72 11.88C6.27 11.17 6 10.31 6 9.38C6 7.5 7.5 5.5 8 4C8.5 5.5 10 7.5 10 9.38C10 10.31 9.73 11.17 9.28 11.88C10.33 11.1 11 9.88 11 8.5C11 5 8 1 8 1Z"
+                    fill="url(#flameTopGrad)"
+                  />
+                  <path
+                    d="M8 17C10.76 17 13 14.76 13 12C13 9.24 10.5 7 10 5.5C10 5.5 9 7 9 9C9 10.1 9.9 11 11 11C10.5 12 9.38 13 8 13C6.62 13 5.5 12 5 11C6.1 11 7 10.1 7 9C7 7 6 5.5 6 5.5C5.5 7 3 9.24 3 12C3 14.76 5.24 17 8 17Z"
+                    fill="url(#flameBodyGrad)"
+                  />
+                  <defs>
+                    <linearGradient id="flameTopGrad" x1="8" y1="1" x2="8" y2="12" gradientUnits="userSpaceOnUse">
+                      <stop offset="0%" stopColor="#FFF0A0" />
+                      <stop offset="100%" stopColor="#F0A030" />
+                    </linearGradient>
+                    <linearGradient id="flameBodyGrad" x1="8" y1="5" x2="8" y2="17" gradientUnits="userSpaceOnUse">
+                      <stop offset="0%" stopColor="#F0C060" />
+                      <stop offset="60%" stopColor="#E06020" />
+                      <stop offset="100%" stopColor="#C03010" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                {" "}Jar Heat
+              </h2>
+              <p className={styles.heatSubtitle}>Your activity level on Cookie Chain</p>
+            </div>
+            <img
+              src={cookieRunning}
+              alt=""
+              aria-hidden="true"
+              className={styles.heatMascot}
+            />
           </div>
           <div className={styles.heatBarWrap}>
             <div className={styles.heatBarTrack}>
@@ -509,7 +559,7 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
         {/* Swap panel (internals untouched) */}
         <section className={styles.swapCard}>
           {/* Decorative promo row: chef illustration + label, inline flex */}
-          <div className={styles.swapPromoRow}>
+          < div className={styles.swapPromoRow} >
             <div className={styles.swapPromoText}>
               <p className={styles.swapPromoTitle}>🔥 Bake a Swap</p>
               <p className={styles.swapPromoSub}>Trade tokens on Cookie Chain</p>
@@ -520,12 +570,12 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
               aria-hidden="true"
               className={styles.swapChef}
             />
-          </div>
+          </div >
           <SwapPanel swap={swap} />
-        </section>
+        </section >
 
         {/* Crumbs feed (compact) */}
-        <section className={styles.crumbsCard}>
+        < section className={styles.crumbsCard} >
           <div className={styles.crumbsHeader}>
             <div>
               <h2 className={styles.crumbsTitle}>Crumbs</h2>
@@ -536,59 +586,62 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
             </button>
           </div>
 
-          {txLoading ? (
-            <div className={styles.crumbsLoading} aria-label="Loading">
-              {[0, 1, 2].map(i => (
-                <div key={i} className={`skeleton ${styles.crumbSkel}`} />
-              ))}
-            </div>
-          ) : transactions.length === 0 ? (
-            <p className={styles.emptyMsg}>No crumbs yet.</p>
-          ) : (
-            <ul className={styles.crumbsList}>
-              {transactions.slice(0, 5).map(tx => (
-                <li
-                  key={tx.signature}
-                  className={styles.crumbRow}
-                  onClick={() => setSelectedTx(tx)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={e => e.key === "Enter" && setSelectedTx(tx)}
-                >
-                  <span className={`${styles.crumbIcon} ${tx.status === "failed" ? styles.crumbIconFailed : styles.crumbIconOk}`}>
-                    {getRowIcon(tx.description)}
-                  </span>
-                  <div className={styles.crumbBody}>
-                    <span className={styles.crumbDesc}>{tx.description}</span>
-                    {tx.amount && <TxAmount amount={tx.amount} className={styles.crumbAmt} />}
-                  </div>
-                  <span className={styles.crumbTime}>
-                    {tx.blockTime ? relativeTime(tx.blockTime) : `slot ${tx.slot}`}
-                  </span>
-                  <span className={`${styles.crumbBadge} ${tx.status === "failed" ? styles.crumbBadgeFail : styles.crumbBadgeOk}`}>
-                    {tx.status === "confirmed" ? "Confirmed" : "Failed"}
-                  </span>
-                  <a
-                    className={styles.crumbLink}
-                    href={`${EXPLORER}/tx/${tx.signature}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={e => e.stopPropagation()}
-                    aria-label="View on explorer"
+          {
+            txLoading ? (
+              <div className={styles.crumbsLoading} aria-label="Loading">
+                {[0, 1, 2].map(i => (
+                  <div key={i} className={`skeleton ${styles.crumbSkel}`} />
+                ))}
+              </div>
+            ) : transactions.length === 0 ? (
+              <p className={styles.emptyMsg}>No crumbs yet.</p>
+            ) : (
+              <ul className={styles.crumbsList}>
+                {transactions.slice(0, 5).map(tx => (
+                  <li
+                    key={tx.signature}
+                    className={styles.crumbRow}
+                    onClick={() => setSelectedTx(tx)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={e => e.key === "Enter" && setSelectedTx(tx)}
                   >
-                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
-                      <path d="M2 8L8 2M8 2H4.5M8 2v3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      </div>
+                    <span className={`${styles.crumbIcon} ${tx.status === "failed" ? styles.crumbIconFailed : styles.crumbIconOk}`}>
+                      {getRowIcon(tx.description)}
+                    </span>
+                    <div className={styles.crumbBody}>
+                      <span className={styles.crumbDesc}>{tx.description}</span>
+                      {tx.amount && <TxAmount amount={tx.amount} className={styles.crumbAmt} />}
+                    </div>
+                    <span className={styles.crumbTime}>
+                      {tx.blockTime ? relativeTime(tx.blockTime) : `slot ${tx.slot}`}
+                    </span>
+                    <span className={`${styles.crumbBadge} ${tx.status === "failed" ? styles.crumbBadgeFail : styles.crumbBadgeOk}`}>
+                      {tx.status === "confirmed" ? "Confirmed" : "Failed"}
+                    </span>
+                    <a
+                      className={styles.crumbLink}
+                      href={`${EXPLORER}/tx/${tx.signature}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={e => e.stopPropagation()}
+                      aria-label="View on explorer"
+                    >
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+                        <path d="M2 8L8 2M8 2H4.5M8 2v3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )
+          }
+        </section >
+      </div >
 
       {/* TX detail modal */}
-      <TxDetailModal tx={selectedTx} onClose={() => setSelectedTx(null)} />
+      < TxDetailModal tx={selectedTx} onClose={() => setSelectedTx(null)
+      } />
 
       {/* Receive address modal */}
       <ReceiveModal
@@ -602,6 +655,6 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
         balances={balances}
         onClose={() => setShowSend(false)}
       />
-    </div>
+    </div >
   );
 }

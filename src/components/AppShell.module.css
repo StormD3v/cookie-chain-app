@@ -184,6 +184,12 @@
   z-index: 1;
 }
 
+/* Extra visual buffer: extend the footer's gradient reach upward by adding
+   a generous padding-top so the fade starts well above the text */
+.sidebarFooter {
+  padding-top: 2.5rem;
+}
+
 /* ── Sidebar footer ───────────────────────────────────────────────────────── */
 
 .sidebarFooter {
@@ -193,6 +199,13 @@
   padding: 0.875rem 1rem;
   border-top: 1px solid rgba(240, 192, 96, 0.06);
   flex-shrink: 0;
+  /* Gradient fade so the cookie-cluster image behind doesn't bleed into the
+     status text. Starts transparent ~40px above the footer, fully opaque at
+     the bottom edge — keeps the aesthetic while making text readable. */
+  background: linear-gradient(to bottom,
+      transparent 0%,
+      rgba(32, 16, 4, 0.92) 35%,
+      rgba(32, 16, 4, 0.97) 100%);
 }
 
 .chainDot {
