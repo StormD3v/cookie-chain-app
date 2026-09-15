@@ -6,6 +6,7 @@ import { TxDetailModal } from "./TxDetailModal";
 import type { ActivityItem } from "../types/cookie";
 import { useState } from "react";
 import { getTokenLogo } from "../lib/tokenLogos";
+import { TxAmount } from "./TxAmount";
 import cookieJarHug from "../assets/cookie-jar-hug.png";
 import cookingChefCookie from "../assets/cooking-chef-cookie.png";
 import styles from "./OverviewSection.module.css";
@@ -320,7 +321,7 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
                   </span>
                   <div className={styles.crumbBody}>
                     <span className={styles.crumbDesc}>{tx.description}</span>
-                    {tx.amount && <span className={styles.crumbAmt}>{tx.amount}</span>}
+                    {tx.amount && <TxAmount amount={tx.amount} className={styles.crumbAmt} />}
                   </div>
                   <span className={styles.crumbTime}>
                     {tx.blockTime ? relativeTime(tx.blockTime) : `slot ${tx.slot}`}

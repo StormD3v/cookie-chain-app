@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { ActivityItem, SwapStage } from "../types/cookie";
 import { useActivity } from "../hooks/useActivity";
 import { TxDetailModal } from "./TxDetailModal";
+import { TxAmount } from "./TxAmount";
 import styles from "./ActivityFeed.module.css";
 
 const EXPLORER = "https://cookiescan.io";
@@ -165,7 +166,7 @@ export function ActivityFeed({ walletAddress, swapStage }: Props) {
                   <div className={styles.rowBody}>
                     <span className={styles.desc}>{tx.description}</span>
                     {tx.amount && (
-                      <span className={styles.amount}>{tx.amount}</span>
+                      <TxAmount amount={tx.amount} className={styles.amount} />
                     )}
                     <span className={styles.time}>
                       {tx.blockTime ? relativeTime(tx.blockTime) : `slot ${tx.slot}`}
