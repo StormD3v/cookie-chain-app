@@ -1,6 +1,5 @@
 import { useState, useCallback, useRef } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { VersionedTransaction, Transaction } from "@solana/web3.js";
 import type {
   SwapStage,
   SwapQuote,
@@ -9,16 +8,8 @@ import type {
 import {
   fetchSwapQuote,
   buildSwapTx,
-  submitSwapTx,
-  fetchSwapConfirm,
 } from "../api/cookieMcp";
-
-// ── Constants ────────────────────────────────────────────────────────────────
-
-/** Poll confirmation every N ms until confirmed or timeout */
-const CONFIRM_POLL_MS = 2_500;
-/** Give up polling after this many ms (90 s) */
-const CONFIRM_TIMEOUT_MS = 90_000;
+import { signAndSubmit } from "../lib/signAndSubmit";
 
 // ── State shape ──────────────────────────────────────────────────────────────
 
@@ -117,26 +108,10 @@ export function useSwap(): UseSwapResult {
   // ── execute ───────────────────────────────────────────────────────────────
 
   const execute = useCallback(async () => {
-    // Read wallet state at call time, not from closure
-    const { publicKey: pk, signTransaction, sendTransaction } = walletRef.current;
+    const { publicKey: pk } = walletRef.current;
 
     if (!pk) {
       set({ stage: "error", error: "Wallet not connected" });
-      return;
-    }
-
-    // Nightly's adapter declares signTransaction — but guard defensively
-    // and log what's actually available for debugging.
-    const hasSendTx = typeof sendTransaction === "function";
-    const hasSignTx = typeof signTransaction === "function";
-
-    console.log("[swap] wallet methods available:", {
-      signTransaction: hasSignTx,
-      sendTransaction: hasSendTx,
-    });
-
-    if (!hasSignTx && !hasSendTx) {
-      set({ stage: "error", error: "Wallet does not support signing transactions" });
       return;
     }
     if (!state.multiRoute) {
@@ -145,14 +120,12 @@ export function useSwap(): UseSwapResult {
     }
 
     const id = ++execId.current;
-
-    const guard = (next: Partial<SwapState>) => {
-      if (execId.current === id) setState((s) => ({ ...s, ...next }));
+    const guard = (patch: Partial<SwapState>) => {
+      if (execId.current === id) setState((s) => ({ ...s, ...patch }));
     };
 
-    // ── Step 1: build unsigned tx ──────────────────────────────────────────
+    // Step 1: build the unsigned transaction via the proxy
     guard({ stage: "signing", error: null });
-
     let txBase64: string;
     try {
       const built = await buildSwapTx({
@@ -167,133 +140,24 @@ export function useSwap(): UseSwapResult {
 
     if (execId.current !== id) return;
 
-    // ── Step 2: sign with Nightly ─────────────────────────────────────────
-    // Nightly's adapter declares signTransaction; we use it when available.
-    // If only sendTransaction is present (sign+send combined), we take that
-    // path and collapse signing+submitting into one step.
-    let signedBase64: string | null = null;
-    let inlineSignature: string | null = null;
-
-    const txBytes = Uint8Array.from(atob(txBase64), (c) => c.charCodeAt(0));
-
-    if (hasSignTx && signTransaction) {
-      // Preferred path: sign only, then submit via our proxy
-      try {
-        let signed: VersionedTransaction | Transaction;
-        try {
-          const vt = VersionedTransaction.deserialize(txBytes);
-          signed = await signTransaction(vt as Parameters<typeof signTransaction>[0]);
-        } catch {
-          // Fall back to legacy Transaction
-          const lt = Transaction.from(txBytes);
-          const { blockhash, lastValidBlockHeight } =
-            await connection.getLatestBlockhash("confirmed");
-          lt.recentBlockhash = blockhash;
-          lt.lastValidBlockHeight = lastValidBlockHeight;
-          signed = await signTransaction(lt as Parameters<typeof signTransaction>[0]);
-        }
-        const serialised = signed.serialize();
-        signedBase64 = btoa(String.fromCharCode(...serialised));
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : "Signing failed";
-        const isRejection =
-          msg.toLowerCase().includes("reject") ||
-          msg.toLowerCase().includes("cancel") ||
-          msg.toLowerCase().includes("denied") ||
-          msg.toLowerCase().includes("user rejected");
-        guard({
-          stage: "error",
-          error: isRejection ? "Transaction rejected in wallet" : `Signing failed: ${msg}`,
-        });
-        return;
-      }
-    } else if (hasSendTx && sendTransaction) {
-      // Fallback path: sign+send combined via wallet adapter directly to chain.
-      // We skip our proxy submit step and poll confirmation via the proxy instead.
-      guard({ stage: "submitting" });
-      try {
-        let tx: VersionedTransaction | Transaction;
-        try {
-          tx = VersionedTransaction.deserialize(txBytes);
-        } catch {
-          tx = Transaction.from(txBytes);
-          const { blockhash, lastValidBlockHeight } =
-            await connection.getLatestBlockhash("confirmed");
-          (tx as Transaction).recentBlockhash = blockhash;
-          (tx as Transaction).lastValidBlockHeight = lastValidBlockHeight;
-        }
-        inlineSignature = await sendTransaction(tx as Parameters<typeof sendTransaction>[0], connection);
-      } catch (err: unknown) {
-        const msg = (err instanceof Error ? err.message : String(err)).trim() || "Unknown error — please try again";
-        const isRejection =
-          msg.toLowerCase().includes("reject") ||
-          msg.toLowerCase().includes("cancel") ||
-          msg.toLowerCase().includes("denied") ||
-          msg.toLowerCase().includes("user rejected");
-        guard({
-          stage: "error",
-          error: isRejection ? "Transaction rejected in wallet" : `Sign & send failed: ${msg}`,
-        });
-        return;
-      }
-    }
-
-    if (execId.current !== id) return;
-
-    // ── Step 3: submit (only if we signed separately; sendTransaction path skips this) ──
-    let signature: string;
-
-    if (inlineSignature) {
-      // sendTransaction path — already submitted, go straight to polling
-      signature = inlineSignature;
-      guard({ stage: "pending", signature });
-    } else if (signedBase64) {
-      guard({ stage: "submitting" });
-      try {
-        const submitted = await submitSwapTx(signedBase64);
-        signature = submitted.signature;
-        if (submitted.confirmed) {
-          guard({ stage: "confirmed", signature });
-          return;
-        }
-      } catch (err: unknown) {
-        guard({ stage: "error", error: err instanceof Error ? err.message : "Submission failed" });
-        return;
-      }
+    // Steps 2–4: sign → submit → poll via shared utility
+    const cancelSignal = { cancelled: false };
+    try {
+      const { signature } = await signAndSubmit(
+        txBase64,
+        walletRef.current,
+        connection,
+        (stage) => {
+          // Map generic SendStage → SwapStage (they share the same names)
+          guard({ stage: stage as SwapStage });
+        },
+        cancelSignal,
+      );
+      guard({ stage: "confirmed", signature });
+    } catch (err: unknown) {
       if (execId.current !== id) return;
-      guard({ stage: "pending", signature });
-    } else {
-      guard({ stage: "error", error: "No signed transaction to submit" });
-      return;
+      guard({ stage: "error", error: err instanceof Error ? err.message : "Transaction failed" });
     }
-
-    const deadline = Date.now() + CONFIRM_TIMEOUT_MS;
-
-    while (Date.now() < deadline) {
-      await new Promise((r) => setTimeout(r, CONFIRM_POLL_MS));
-      if (execId.current !== id) return;
-
-      try {
-        const { confirmed, error } = await fetchSwapConfirm(signature);
-
-        if (confirmed) {
-          guard({ stage: "confirmed" });
-          return;
-        }
-        if (error) {
-          guard({ stage: "error", error: `Transaction failed on-chain: ${error}` });
-          return;
-        }
-      } catch {
-        // Transient poll failure — keep trying until timeout
-      }
-    }
-
-    // Timed out — tx may still land, link them to the explorer
-    guard({
-      stage: "error",
-      error: "Confirmation timed out. The transaction may still confirm — check the explorer.",
-    });
   }, [state.multiRoute, connection, set]);
 
   // ── reset ─────────────────────────────────────────────────────────────────
