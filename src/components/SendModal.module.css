@@ -46,8 +46,15 @@
 }
 
 @keyframes sendIn {
-  from { opacity: 0; transform: scale(0.85) translateY(8px); }
-  to   { opacity: 1; transform: scale(1)    translateY(0);   }
+  from {
+    opacity: 0;
+    transform: scale(0.85) translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .sheet::before {
@@ -71,28 +78,45 @@
   border-radius: 50%;
   background: rgba(240, 192, 96, 0.45);
   box-shadow:
-    -60px -20px  0 rgba(200, 120, 32, 0.3),
-     40px -50px  0 rgba(240, 192, 96, 0.25),
+    -60px -20px 0 rgba(200, 120, 32, 0.3),
+    40px -50px 0 rgba(240, 192, 96, 0.25),
     -100px -80px 0 rgba(200, 120, 32, 0.2),
-     80px -110px 0 rgba(240, 192, 96, 0.15),
+    80px -110px 0 rgba(240, 192, 96, 0.15),
     -20px -140px 0 rgba(200, 120, 32, 0.18),
-     60px -170px 0 rgba(240, 192, 96, 0.12);
+    60px -170px 0 rgba(240, 192, 96, 0.12);
   animation: crumbDrift 4s ease-in-out infinite;
   pointer-events: none;
   z-index: 0;
 }
 
 @keyframes crumbDrift {
-  0%, 100% { transform: translateX(-50%) translateY(0)     rotate(0deg);  opacity: 1;   }
-  50%       { transform: translateX(-46%) translateY(-18px) rotate(15deg); opacity: 0.6; }
+
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+
+  50% {
+    transform: translateX(-46%) translateY(-18px) rotate(15deg);
+    opacity: 0.6;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sheet        { animation: none; }
-  .sheet::after { animation: none; }
+  .sheet {
+    animation: none;
+  }
+
+  .sheet::after {
+    animation: none;
+  }
 }
 
-.sheet > * { position: relative; z-index: 1; }
+.sheet>* {
+  position: relative;
+  z-index: 1;
+}
 
 /* ── Header ────────────────────────────────────────────────────────────────── */
 
@@ -167,14 +191,19 @@
   box-sizing: border-box;
 }
 
-.input::placeholder { color: var(--chip); }
+.input::placeholder {
+  color: var(--chip);
+}
 
 .input:focus {
   border-color: rgba(240, 192, 96, 0.4);
   box-shadow: 0 0 0 2px rgba(240, 192, 96, 0.08);
 }
 
-.input:disabled { opacity: 0.5; cursor: not-allowed; }
+.input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 /* ── Token selector ────────────────────────────────────────────────────────── */
 
@@ -212,7 +241,10 @@
   -webkit-appearance: none;
 }
 
-.tokenSelect:disabled { opacity: 0.5; cursor: not-allowed; }
+.tokenSelect:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 /* Caret */
 .tokenSelectWrap::after {
@@ -245,7 +277,10 @@
   text-underline-offset: 2px;
 }
 
-.maxBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+.maxBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 
 /* ── Amount row ────────────────────────────────────────────────────────────── */
 
@@ -350,7 +385,11 @@
   animation: spin 0.7s linear infinite;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 /* ── Confirmed state ───────────────────────────────────────────────────────── */
 
