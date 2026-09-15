@@ -13,8 +13,9 @@ const CHROME = resolve(env["USERPROFILE"] ?? "", "AppData/Local/ms-playwright/ch
 const OUT = resolve(__dirname, "../screenshots");
 await mkdir(OUT, { recursive: true });
 
+const assetsDir = resolve(__dirname, "../src/assets");
+const assetUrl = (name) => `file:///${assetsDir.replace(/\\/g, "/")}/${name}`;
 const logoDir = resolve(__dirname, "../public/logos");
-// Build file:// URLs for each logo so the static HTML can load them
 const logoUrl = (name) => `file:///${logoDir.replace(/\\/g, "/")}/${name}`;
 
 const HTML = `<!DOCTYPE html>
@@ -105,8 +106,14 @@ body{margin:0;background:var(--choco);color:var(--cream);font-family:var(--font-
 .alloc-pct{font-size:0.625rem;color:var(--crumb);white-space:nowrap;width:2.25ch;text-align:right;}
 .chevron{color:var(--crumb);}
 
+/* Hero banner */
+.hero-banner{display:flex;align-items:center;gap:1rem;padding:0.875rem 1.125rem;background:rgba(50,28,11,0.45);border:1px solid rgba(240,192,96,0.1);border-radius:var(--radius-xl);backdrop-filter:blur(10px);overflow:hidden;}
+.hero-mascot{width:4.5rem;height:4.5rem;object-fit:contain;flex-shrink:0;filter:drop-shadow(0 4px 12px rgba(200,120,32,0.35));}
+
+/* Swap panel chef */
 /* Swap panel placeholder (real component in app) */
-.swap-placeholder{background:rgba(50,28,11,0.55);backdrop-filter:blur(12px);border:1px solid rgba(240,192,96,0.13);border-radius:var(--radius-xl);padding:1.5rem 1.375rem;box-shadow:0 0 0 1px rgba(240,192,96,0.09) inset,0 8px 32px rgba(0,0,0,0.55);}
+.swap-placeholder{position:relative;background:rgba(50,28,11,0.55);backdrop-filter:blur(12px);border:1px solid rgba(240,192,96,0.13);border-radius:var(--radius-xl);padding:1.5rem 1.375rem;box-shadow:0 0 0 1px rgba(240,192,96,0.09) inset,0 8px 32px rgba(0,0,0,0.55);}
+.swap-chef{position:absolute;top:-1.25rem;right:-0.5rem;width:4rem;height:4rem;object-fit:contain;pointer-events:none;z-index:1;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.4));opacity:0.92;}
 .swap-title{font-family:var(--font-display);font-weight:800;font-size:1.125rem;margin:0 0 0.875rem;letter-spacing:-0.03em;}
 .swap-label{font-size:0.625rem;font-weight:700;color:var(--crumb);text-transform:uppercase;letter-spacing:0.09em;margin:0 0 0.3rem;}
 .swap-input-row{display:flex;background:var(--choco);border:1px solid var(--crust);border-radius:var(--radius-md);margin-bottom:0.5rem;}
@@ -175,7 +182,16 @@ body{margin:0;background:var(--choco);color:var(--cream);font-family:var(--font-
       <div class="overview">
         <!-- Left column -->
         <div class="left">
-          <!-- Portfolio jar -->
+          <!-- Hero banner -->
+        <div class="hero-banner">
+          <img src="${assetUrl("cookie-jar-hug.png")}" alt="" class="hero-mascot">
+          <div>
+            <p style="font-family:var(--font-display);font-weight:800;font-size:1rem;color:var(--cream);letter-spacing:-0.02em;margin:0;">Good evening, Cookie Connoisseur!</p>
+            <p style="font-size:0.75rem;color:var(--crumb);margin:0.2rem 0 0;">Your jar is full of possibilities.</p>
+          </div>
+        </div>
+
+        <!-- Portfolio jar -->
           <div class="card">
             <div class="jar-top">
               <div>
@@ -227,6 +243,7 @@ body{margin:0;background:var(--choco);color:var(--cream);font-family:var(--font-
         <div class="right">
           <!-- Swap panel -->
           <div class="swap-placeholder">
+            <img src="${assetUrl("cooking-chef-cookie.png")}" alt="" class="swap-chef">
             <div class="swap-title">🔥 &nbsp;Bake Swap</div>
             <p class="swap-label">You pay</p>
             <div class="swap-input-row"><input class="swap-input" value="10" readonly><select class="swap-select"><option>COOK</option></select></div>

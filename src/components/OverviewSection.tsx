@@ -6,7 +6,17 @@ import { TxDetailModal } from "./TxDetailModal";
 import type { ActivityItem } from "../types/cookie";
 import { useState } from "react";
 import { getTokenLogo } from "../lib/tokenLogos";
+import cookieJarHug from "../assets/cookie-jar-hug.png";
+import cookingChefCookie from "../assets/cooking-chef-cookie.png";
 import styles from "./OverviewSection.module.css";
+
+// ── Time-of-day greeting (no new dependency — pure Date math) ────────────────
+function getGreeting(): string {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  return "Good evening";
+}
 
 // ── Hyperlane bridge URL (same as AppShell) ───────────────────────────────────
 const BRIDGE_URL = "https://app.hyperlane.xyz/";
@@ -111,6 +121,20 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
     <div className={styles.overview}>
       {/* ── Left column ─────────────────────────────────────── */}
       <div className={styles.leftCol}>
+
+        {/* Hero banner — mascot + greeting, no logic */}
+        <div className={styles.heroBanner}>
+          <img
+            src={cookieJarHug}
+            alt=""
+            aria-hidden="true"
+            className={styles.heroMascot}
+          />
+          <div className={styles.heroText}>
+            <p className={styles.heroGreeting}>{getGreeting()}, Cookie Connoisseur!</p>
+            <p className={styles.heroSub}>Your jar is full of possibilities.</p>
+          </div>
+        </div>
 
         {/* Portfolio jar card */}
         <section className={styles.jarCard}>
@@ -244,6 +268,13 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
 
         {/* Swap panel (internals untouched) */}
         <section className={styles.swapCard}>
+          {/* Decorative chef — positioned top-right, pointer-events:none */}
+          <img
+            src={cookingChefCookie}
+            alt=""
+            aria-hidden="true"
+            className={styles.swapChef}
+          />
           <SwapPanel swap={swap} />
         </section>
 
