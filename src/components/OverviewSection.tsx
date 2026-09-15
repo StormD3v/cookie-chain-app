@@ -19,7 +19,7 @@ function getGreeting(): string {
 }
 
 // ── Hyperlane bridge URL (same as AppShell) ───────────────────────────────────
-const BRIDGE_URL = "https://app.hyperlane.xyz/";
+const BRIDGE_URL = "https://hyperlane.cookiescan.io";
 const EXPLORER = "https://cookiescan.io";
 
 // ── Quick action icons ────────────────────────────────────────────────────────

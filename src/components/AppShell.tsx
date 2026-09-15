@@ -11,7 +11,7 @@ import styles from "./AppShell.module.css";
 
 // ── Hyperlane bridge URL ──────────────────────────────────────────────────────
 // Same external handoff as before — no in-app bridge page
-const BRIDGE_URL = "https://app.hyperlane.xyz/";
+const BRIDGE_URL = "https://hyperlane.cookiescan.io";
 
 // ── Section types ─────────────────────────────────────────────────────────────
 type Section = "overview" | "pantry" | "bake" | "crumbs";
@@ -73,19 +73,19 @@ export function AppShell({ walletAddress }: Props) {
   }
 
   const mainNavItems: { id: Section | "bridge"; label: string; Icon: () => JSX.Element; bridge?: boolean }[] = [
-    { id: "overview", label: "Overview",  Icon: HomeIcon   },
-    { id: "pantry",   label: "Pantry",    Icon: PantryIcon },
-    { id: "bake",     label: "Bake",      Icon: BakeIcon   },
-    { id: "bridge",   label: "Bridge",    Icon: BridgeIcon, bridge: true },
-    { id: "crumbs",   label: "Crumbs",    Icon: CrumbsIcon },
+    { id: "overview", label: "Overview", Icon: HomeIcon },
+    { id: "pantry", label: "Pantry", Icon: PantryIcon },
+    { id: "bake", label: "Bake", Icon: BakeIcon },
+    { id: "bridge", label: "Bridge", Icon: BridgeIcon, bridge: true },
+    { id: "crumbs", label: "Crumbs", Icon: CrumbsIcon },
   ];
 
   function renderSection() {
     switch (section) {
-      case "pantry":  return <PantrySection walletAddress={walletAddress} />;
-      case "bake":    return <BakeSection swap={swap} />;
-      case "crumbs":  return <CrumbsSection walletAddress={walletAddress} swapStage={swap.stage} />;
-      default:        return <OverviewSection walletAddress={walletAddress} swap={swap} onNavigate={setSection} />;
+      case "pantry": return <PantrySection walletAddress={walletAddress} />;
+      case "bake": return <BakeSection swap={swap} />;
+      case "crumbs": return <CrumbsSection walletAddress={walletAddress} swapStage={swap.stage} />;
+      default: return <OverviewSection walletAddress={walletAddress} swap={swap} onNavigate={setSection} />;
     }
   }
 
