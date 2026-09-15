@@ -21,30 +21,43 @@ interface Props {
 
 export function SendModal({ open, balances, onClose }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  // Guard: set to true when we initiate a close programmatically so the
+  // open-sync useEffect doesn't re-open the dialog before the parent's
+  // showSend=false state has propagated through React's render cycle.
+  const closingRef = useRef(false);
   const { stage, signature, error, needsAtaCreation, ataRentCook, send, reset } = useSend();
 
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState("");
   const [mint, setMint] = useState<string>(SEND_TOKENS[0].mint);
 
-  // Sync dialog open/close
+  // One-way open sync: only opens the dialog, never closes it via this effect.
+  // Closing is always handled directly in handleClose. This prevents the race
+  // where React re-renders with the still-true `open` prop (from the previous
+  // render cycle) and re-opens the dialog right after handleClose closed it.
   useEffect(() => {
     const el = dialogRef.current;
     if (!el) return;
-    if (open && !el.open) el.showModal();
-    if (!open && el.open) el.close();
+    if (open && !el.open && !closingRef.current) {
+      el.showModal();
+    }
+    // Reset the closing guard once `open` settles to false
+    if (!open) {
+      closingRef.current = false;
+    }
   }, [open]);
 
-  // Reset form + hook state when closed
   const handleClose = useCallback(() => {
-    // Close the native dialog immediately — don't wait for the React
-    // state round-trip (open prop → useEffect → el.close()) which can
-    // lag behind a user click and leave the dialog visually open.
+    // 1. Set guard before closing so the useEffect above won't re-open
+    closingRef.current = true;
+    // 2. Close the native dialog element immediately (synchronous)
     dialogRef.current?.close();
+    // 3. Reset internal form + hook state
     reset();
     setRecipient("");
     setAmount("");
     setMint(SEND_TOKENS[0].mint);
+    // 4. Notify parent to set showSend=false (triggers re-render with open=false)
     onClose();
   }, [reset, onClose]);
 
