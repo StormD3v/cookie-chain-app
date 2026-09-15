@@ -165,8 +165,7 @@ export function SwapPanel({ swap }: Props) {
               {formatOut(
                 String(
                   Math.round(
-                    (Number(swap.quote.expectedOut) / Number(swap.quote.amountIn)) *
-                    10 ** outputToken.decimals
+                    Number(swap.quote.expectedOut) / Number(swap.quote.amountIn)
                   )
                 ),
                 outputToken.decimals
