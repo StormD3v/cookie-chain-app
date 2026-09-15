@@ -1,3 +1,6 @@
+// Polyfill Buffer for @solana/spl-token — must be first import.
+import "./polyfills";
+
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";

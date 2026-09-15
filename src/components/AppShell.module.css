@@ -19,13 +19,15 @@
   flex-direction: column;
   background: var(--ganache);
   border-right: 1px solid var(--crust);
-  position: sticky;
+  /* fixed keeps the sidebar anchored to the viewport regardless of
+     what overflow-x:hidden on .shell does to sticky positioning */
+  position: fixed;
+  left: 0;
   top: 0;
   height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
   z-index: 20;
-  /* Glassmorphism matches header */
   background: rgba(50, 28, 11, 0.6);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -212,6 +214,8 @@
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
+  /* Offset for the fixed 240px sidebar on desktop */
+  margin-left: 240px;
 }
 
 /* ── Top header bar ───────────────────────────────────────────────────────── */
@@ -356,6 +360,11 @@
 @media (max-width: 780px) {
   .sidebar {
     display: none;
+  }
+
+  /* No sidebar offset on mobile */
+  .body {
+    margin-left: 0;
   }
 
   .mobileBrand,

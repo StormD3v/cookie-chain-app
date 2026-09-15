@@ -37,6 +37,10 @@ export function SendModal({ open, balances, onClose }: Props) {
 
   // Reset form + hook state when closed
   const handleClose = useCallback(() => {
+    // Close the native dialog immediately — don't wait for the React
+    // state round-trip (open prop → useEffect → el.close()) which can
+    // lag behind a user click and leave the dialog visually open.
+    dialogRef.current?.close();
     reset();
     setRecipient("");
     setAmount("");
