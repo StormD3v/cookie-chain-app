@@ -6,7 +6,6 @@ import styles from "./SendModal.module.css";
 
 const EXPLORER = "https://cookiescan.io";
 
-// ── Known sendable tokens (same mints as KNOWN_TOKENS in SwapPanel) ──────────
 const SEND_TOKENS = [
   { mint: "So11111111111111111111111111111111111111112", symbol: "COOK", decimals: 9 },
   { mint: "EkPafx58mgwkEnGwo62jXhXDAdJ37Z8G8MFBRPsr9uhz", symbol: "bCOOK", decimals: 9 },
@@ -14,58 +13,41 @@ const SEND_TOKENS = [
 ] as const;
 
 interface Props {
-  open: boolean;
   balances: TokenBalance[];
   onClose: () => void;
 }
 
-export function SendModal({ open, balances, onClose }: Props) {
+// ── Inner modal — only mounted while the modal should be visible ──────────────
+// Mounting/unmounting is controlled by the parent (OverviewSection renders
+// <SendModal> only when showSend is true). This eliminates both bugs:
+//   1. Auto-open on wallet connect: the component doesn't exist until Send is clicked
+//   2. X button not closing: onClose() unmounts this component entirely — no dialog
+//      state to fight with, no useEffect race
+
+function SendModalInner({ balances, onClose }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null);
-  // Guard: set to true when we initiate a close programmatically so the
-  // open-sync useEffect doesn't re-open the dialog before the parent's
-  // showSend=false state has propagated through React's render cycle.
-  const closingRef = useRef(false);
   const { stage, signature, error, needsAtaCreation, ataRentCook, send, reset } = useSend();
 
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState("");
   const [mint, setMint] = useState<string>(SEND_TOKENS[0].mint);
 
-  // One-way open sync: only opens the dialog, never closes it via this effect.
-  // Closing is always handled directly in handleClose. This prevents the race
-  // where React re-renders with the still-true `open` prop (from the previous
-  // render cycle) and re-opens the dialog right after handleClose closed it.
+  // Open the dialog on mount — it's always supposed to be visible when this
+  // component exists, so showModal() unconditionally on first render.
   useEffect(() => {
-    const el = dialogRef.current;
-    if (!el) return;
-    if (open && !el.open && !closingRef.current) {
-      el.showModal();
-    }
-    // Reset the closing guard once `open` settles to false
-    if (!open) {
-      closingRef.current = false;
-    }
-  }, [open]);
+    dialogRef.current?.showModal();
+  }, []); // empty deps — runs once on mount only
 
   const handleClose = useCallback(() => {
-    // 1. Set guard before closing so the useEffect above won't re-open
-    closingRef.current = true;
-    // 2. Close the native dialog element immediately (synchronous)
     dialogRef.current?.close();
-    // 3. Reset internal form + hook state
     reset();
-    setRecipient("");
-    setAmount("");
-    setMint(SEND_TOKENS[0].mint);
-    // 4. Notify parent to set showSend=false (triggers re-render with open=false)
-    onClose();
+    onClose(); // unmounts this component
   }, [reset, onClose]);
 
   function handleBackdrop(e: React.MouseEvent<HTMLDialogElement>) {
     if (e.target === dialogRef.current) handleClose();
   }
 
-  // Available balance for the selected token
   const selectedBalance = balances.find(b => b.mint === mint);
   const available = selectedBalance?.uiAmount ?? 0;
   const selectedToken = SEND_TOKENS.find(t => t.mint === mint)!;
@@ -76,7 +58,10 @@ export function SendModal({ open, balances, onClose }: Props) {
     const max = mint === COOK_MINT
       ? Math.max(0, available - 0.001)
       : available;
-    setAmount(max.toLocaleString("en-US", { maximumFractionDigits: selectedToken.decimals, useGrouping: false }));
+    setAmount(max.toLocaleString("en-US", {
+      maximumFractionDigits: selectedToken.decimals,
+      useGrouping: false,
+    }));
   }
 
   async function handleSend(e: React.FormEvent) {
@@ -96,13 +81,11 @@ export function SendModal({ open, balances, onClose }: Props) {
       aria-modal="true"
     >
       <div className={styles.sheet}>
-        {/* ── Header ─────────────────────────────────────── */}
         <div className={styles.header}>
           <h2 id="send-title" className={styles.title}>Send</h2>
           <button className={styles.closeBtn} onClick={handleClose} aria-label="Close" type="button">✕</button>
         </div>
 
-        {/* ── Confirmed state ─────────────────────────────── */}
         {isDone && signature ? (
           <div className={styles.confirmedWrap}>
             <p className={styles.confirmedIcon} aria-hidden="true">✓</p>
@@ -123,13 +106,10 @@ export function SendModal({ open, balances, onClose }: Props) {
           </div>
         ) : (
           <form onSubmit={handleSend} className={styles.form}>
-            {/* ── Token selector ─────────────────────────────── */}
             <div className={styles.field}>
               <label className={styles.label} htmlFor="send-token">Token</label>
               <div className={styles.tokenSelectWrap}>
-                {logoSrc && (
-                  <img src={logoSrc} alt="" aria-hidden="true" className={styles.tokenSelectLogo} />
-                )}
+                {logoSrc && <img src={logoSrc} alt="" aria-hidden="true" className={styles.tokenSelectLogo} />}
                 <select
                   id="send-token"
                   className={styles.tokenSelect}
@@ -144,54 +124,35 @@ export function SendModal({ open, balances, onClose }: Props) {
               </div>
               <p className={styles.balanceHint}>
                 Available:{" "}
-                <button
-                  type="button"
-                  className={styles.maxBtn}
-                  onClick={handleMax}
-                  disabled={isBusy}
-                  aria-label={`Set maximum ${selectedToken.symbol}`}
-                >
+                <button type="button" className={styles.maxBtn} onClick={handleMax} disabled={isBusy}
+                  aria-label={`Set maximum ${selectedToken.symbol}`}>
                   {available.toLocaleString(undefined, { maximumFractionDigits: 6 })} {selectedToken.symbol}
                 </button>
               </p>
             </div>
 
-            {/* ── Recipient ──────────────────────────────────── */}
             <div className={styles.field}>
               <label className={styles.label} htmlFor="send-recipient">Recipient address</label>
               <input
-                id="send-recipient"
-                className={styles.input}
-                type="text"
-                placeholder="Base58 address…"
-                value={recipient}
+                id="send-recipient" className={styles.input} type="text"
+                placeholder="Base58 address…" value={recipient}
                 onChange={e => setRecipient(e.target.value)}
-                disabled={isBusy}
-                autoComplete="off"
-                spellCheck={false}
+                disabled={isBusy} autoComplete="off" spellCheck={false}
               />
             </div>
 
-            {/* ── Amount ─────────────────────────────────────── */}
             <div className={styles.field}>
               <label className={styles.label} htmlFor="send-amount">Amount</label>
               <div className={styles.amountRow}>
                 <input
-                  id="send-amount"
-                  className={styles.input}
-                  type="number"
-                  step="any"
-                  min="0"
-                  placeholder="0.00"
-                  value={amount}
-                  onChange={e => setAmount(e.target.value)}
-                  disabled={isBusy}
+                  id="send-amount" className={styles.input} type="number"
+                  step="any" min="0" placeholder="0.00" value={amount}
+                  onChange={e => setAmount(e.target.value)} disabled={isBusy}
                 />
                 <span className={styles.amountSymbol}>{selectedToken.symbol}</span>
               </div>
             </div>
 
-            {/* ── ATA creation notice ─────────────────────────── */}
             {needsAtaCreation && (
               <div className={styles.ataNotice} role="alert">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
@@ -205,12 +166,10 @@ export function SendModal({ open, balances, onClose }: Props) {
               </div>
             )}
 
-            {/* ── Error ──────────────────────────────────────── */}
             {error && stage === "error" && (
               <p className={styles.errorMsg} role="alert">{error}</p>
             )}
 
-            {/* ── Stage indicator ─────────────────────────────── */}
             {isBusy && (
               <p className={styles.stageLine} aria-live="polite">
                 {stage === "signing" && "Waiting for wallet signature…"}
@@ -219,19 +178,17 @@ export function SendModal({ open, balances, onClose }: Props) {
               </p>
             )}
 
-            {/* ── Submit ─────────────────────────────────────── */}
             <button
               type="submit"
               className={styles.sendBtn}
               disabled={isBusy || !recipient.trim() || !amount || parseFloat(amount) <= 0}
             >
-              {isBusy ? (
-                <span className={styles.spinner} aria-hidden="true" />
-              ) : (
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              {isBusy
+                ? <span className={styles.spinner} aria-hidden="true" />
+                : <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                   <path d="M3 13L13 3M13 3H7M13 3v6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-              )}
+              }
               {isBusy ? "Sending…" : "Send"}
             </button>
           </form>
@@ -239,4 +196,10 @@ export function SendModal({ open, balances, onClose }: Props) {
       </div>
     </dialog>
   );
+}
+
+// ── Public export — renders nothing unless showSend is true ───────────────────
+export function SendModal({ balances, onClose, open }: Props & { open: boolean }) {
+  if (!open) return null;
+  return <SendModalInner balances={balances} onClose={onClose} />;
 }
