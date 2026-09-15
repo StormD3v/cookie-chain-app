@@ -135,7 +135,7 @@ function deriveSparklinePoints(
   txs: ActivityItem[],
   svgW = 120,
   svgH = 40,
-): string {
+): { points: Array<[number, number]>; flat: boolean } {
   // Build balance history newest→oldest, then reverse
   const balances: number[] = [currentCook];
   for (const tx of txs) {
@@ -147,9 +147,8 @@ function deriveSparklinePoints(
 
   // Need at least 3 real data points for a meaningful shape
   if (balances.length < 3) {
-    // Flat line at mid-height
     const mid = svgH / 2;
-    return `0,${mid} ${svgW},${mid}`;
+    return { points: [[0, mid], [svgW, mid]], flat: true };
   }
 
   // Reverse so oldest is first (left side of chart)
@@ -162,15 +161,46 @@ function deriveSparklinePoints(
   // Normalise each point to SVG coordinates
   // Y axis: higher balance = higher on card (lower SVG y)
   const pad = 4; // px padding top/bottom
-  return pts
-    .map((v, i) => {
-      const x = (i / (pts.length - 1)) * svgW;
-      const y = range === 0
-        ? svgH / 2                                       // all same → flat middle
-        : pad + ((maxVal - v) / range) * (svgH - pad * 2);
-      return `${x.toFixed(1)},${y.toFixed(1)}`;
-    })
-    .join(" ");
+  const coords: Array<[number, number]> = pts.map((v, i) => {
+    const x = (i / (pts.length - 1)) * svgW;
+    const y = range === 0
+      ? svgH / 2
+      : pad + ((maxVal - v) / range) * (svgH - pad * 2);
+    return [x, y];
+  });
+
+  return { points: coords, flat: false };
+}
+
+/**
+ * Converts [x,y] point array into a smooth SVG cubic-Bezier path string
+ * using Catmull-Rom → Bezier conversion (tension=0.4).
+ * Stays close to data points without overshoot on sparse sets.
+ */
+function smoothPath(pts: Array<[number, number]>, tension = 0.4): string {
+  if (pts.length < 2) return "";
+  if (pts.length === 2) {
+    return `M ${pts[0][0]},${pts[0][1]} L ${pts[1][0]},${pts[1][1]}`;
+  }
+
+  let d = `M ${pts[0][0].toFixed(2)},${pts[0][1].toFixed(2)}`;
+
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[Math.max(i - 1, 0)];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[Math.min(i + 2, pts.length - 1)];
+
+    // Control points from Catmull-Rom tangents
+    const cp1x = p1[0] + (p2[0] - p0[0]) * tension;
+    const cp1y = p1[1] + (p2[1] - p0[1]) * tension;
+    const cp2x = p2[0] - (p3[0] - p1[0]) * tension;
+    const cp2y = p2[1] - (p3[1] - p1[1]) * tension;
+
+    d += ` C ${cp1x.toFixed(2)},${cp1y.toFixed(2)} ${cp2x.toFixed(2)},${cp2y.toFixed(2)} ${p2[0].toFixed(2)},${p2[1].toFixed(2)}`;
+  }
+
+  return d;
 }
 
 
@@ -193,7 +223,8 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
   const cookAmt = nativeCook?.uiAmount ?? 0;
 
   // Derive sparkline from transaction history
-  const sparklinePoints = deriveSparklinePoints(cookAmt, transactions);
+  const sparkline = deriveSparklinePoints(cookAmt, transactions);
+  const sparklinePath = smoothPath(sparkline.points);
   // Label reflects what the chart actually shows
   const hasRealData = transactions.filter(t => t.status === "confirmed").length >= 3;
 
@@ -236,8 +267,8 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
             <div className={styles.sparklinePlaceholder} aria-label={hasRealData ? "Balance trend" : "No recent activity"}>
               <p className={styles.sparklineLabel}>{hasRealData ? "Balance trend" : "Recent activity"}</p>
               <svg viewBox="0 0 120 40" className={styles.sparklineSvg} aria-hidden="true">
-                <polyline
-                  points={sparklinePoints}
+                <path
+                  d={sparklinePath}
                   fill="none"
                   stroke="var(--butter)"
                   strokeWidth="1.5"
