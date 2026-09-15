@@ -13,7 +13,8 @@ import cookieJarHug from "../assets/cookie-jar-hug.png";
 import cookingChefCookie from "../assets/cooking-chef-cookie.png";
 import styles from "./OverviewSection.module.css";
 
-// ── Time-of-day greeting (no new dependency — pure Date math) ────────────────
+// ── Time-of-day greeting — uses visitor's LOCAL browser time via new Date() ──
+// Confirmed: new Date().getHours() returns the browser's local hour, not UTC.
 function getGreeting(): string {
   const h = new Date().getHours();
   if (h < 12) return "Good morning";
@@ -220,17 +221,39 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
   const [selectedTx, setSelectedTx] = useState<ActivityItem | null>(null);
   const [showReceive, setShowReceive] = useState(false);
   const [showSend, setShowSend] = useState(false);
+  const [balanceHidden, setBalanceHidden] = useState(false);
 
   // Portfolio totals
   const totalUsd = balances.reduce((s, b) => s + (b.usdValue ?? 0), 0);
   const nativeCook = balances.find(b => b.symbol === "COOK");
   const cookAmt = nativeCook?.uiAmount ?? 0;
 
+  // ── Jar Heat stats — derived from real data only ──────────────────────────
+  const confirmedTxs = transactions.filter(t => t.status === "confirmed");
+  const txCount = confirmedTxs.length;
+  const swapCount = confirmedTxs.filter(t =>
+    t.description.toLowerCase().includes("swap") ||
+    t.description.toLowerCase().includes("exchange")
+  ).length;
+  // Token count from balances (non-zero holdings only)
+  const tokenCount = balances.filter(b => (b.uiAmount ?? 0) > 0).length;
+  // Heat level: ≥10 confirmed txs = hot, ≥4 = warm, else cool
+  const heatLevel: "hot" | "warm" | "cool" =
+    txCount >= 10 ? "hot" : txCount >= 4 ? "warm" : "cool";
+  const heatPct = Math.min(100, Math.round((txCount / 10) * 100));
+  const heatLabel = heatLevel === "hot" ? "Very active today 🔥"
+    : heatLevel === "warm" ? "Building momentum 📈"
+      : "Just warming up 🍪";
+
+  // ── Subtitle: 2 variants based on activity level ─────────────────────────
+  const heroSubtitle = heatLevel !== "cool"
+    ? "Your jar is looking healthy. Keep cooking!"
+    : "Your jar is full of possibilities.";
+
   // Derive sparkline from transaction history
   const sparkline = deriveSparklinePoints(cookAmt, transactions);
   const sparklinePath = smoothPath(sparkline.points);
-  // Label reflects what the chart actually shows
-  const hasRealData = transactions.filter(t => t.status === "confirmed").length >= 3;
+  const hasRealData = confirmedTxs.length >= 3;
 
   // Allocation bars: percentage share of total USD per token
   function allocationPct(usd: number): number {
@@ -243,17 +266,12 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
       {/* ── Left column ─────────────────────────────────────── */}
       <div className={styles.leftCol}>
 
-        {/* Hero banner — mascot + greeting, no logic */}
+        {/* Hero banner — mascot + greeting */}
         <div className={styles.heroBanner}>
-          <img
-            src={cookieJarHug}
-            alt=""
-            aria-hidden="true"
-            className={styles.heroMascot}
-          />
+          <img src={cookieJarHug} alt="" aria-hidden="true" className={styles.heroMascot} />
           <div className={styles.heroText}>
             <p className={styles.heroGreeting}>{getGreeting()}, Cookie Connoisseur!</p>
-            <p className={styles.heroSub}>Your jar is full of possibilities.</p>
+            <p className={styles.heroSub}>{heroSubtitle}</p>
           </div>
         </div>
 
@@ -261,10 +279,36 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
         <section className={styles.jarCard}>
           <div className={styles.jarCardTop}>
             <div>
-              <p className={styles.jarLabel}>YOUR JAR</p>
-              <p className={styles.jarUsd}>${totalUsd.toFixed(2)}</p>
+              <div className={styles.jarLabelRow}>
+                <p className={styles.jarLabel}>YOUR JAR</p>
+                <button
+                  className={styles.eyeBtn}
+                  onClick={() => setBalanceHidden(h => !h)}
+                  aria-label={balanceHidden ? "Show balance" : "Hide balance"}
+                  type="button"
+                >
+                  {balanceHidden ? (
+                    /* eye-off */
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                      <path d="M1 1l12 12M5.5 5.6A2 2 0 0 0 8.4 8.5M2.5 3.5C1.5 4.5 1 6 1 7s2 4 6 4a8 8 0 0 0 3-.6M5 2.3A8 8 0 0 1 7 2c4 0 6 2.5 6 5a5.5 5.5 0 0 1-.8 2.8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+                    </svg>
+                  ) : (
+                    /* eye */
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                      <path d="M1 7s2-4.5 6-4.5S13 7 13 7s-2 4.5-6 4.5S1 7 1 7Z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+                      <circle cx="7" cy="7" r="1.75" stroke="currentColor" strokeWidth="1.3" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+              <p className={styles.jarUsd}>
+                {balanceHidden ? "••••" : `$${totalUsd.toFixed(2)}`}
+              </p>
               <p className={styles.jarCook}>
-                {cookAmt.toLocaleString(undefined, { maximumFractionDigits: 4 })} COOK
+                {balanceHidden
+                  ? "•••• COOK"
+                  : `${cookAmt.toLocaleString(undefined, { maximumFractionDigits: 4 })} COOK`
+                }
               </p>
             </div>
             {/* Balance trend sparkline — real data from tx history */}
@@ -385,6 +429,42 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
             </ul>
           )}
         </section>
+
+        {/* ── Jar Heat ────────────────────────────────────── */}
+        <section className={styles.heatCard}>
+          <div className={styles.heatHeader}>
+            <h2 className={styles.heatTitle}>🔥 Jar Heat</h2>
+            <p className={styles.heatSubtitle}>Your activity level on Cookie Chain</p>
+          </div>
+          <div className={styles.heatBarWrap}>
+            <div className={styles.heatBarTrack}>
+              <div
+                className={`${styles.heatBarFill} ${heatLevel === "hot" ? styles.heatFillHot :
+                  heatLevel === "warm" ? styles.heatFillWarm :
+                    styles.heatFillCool
+                  }`}
+                style={{ width: `${heatPct}%` }}
+              />
+            </div>
+            <span className={styles.heatPct}>{heatPct}%</span>
+          </div>
+          <p className={styles.heatLabel}>{heatLabel}</p>
+          <div className={styles.heatStats}>
+            <div className={styles.heatStat}>
+              <span className={styles.heatStatVal}>{txCount}</span>
+              <span className={styles.heatStatKey}>Transactions</span>
+            </div>
+            <div className={styles.heatStat}>
+              <span className={styles.heatStatVal}>{swapCount}</span>
+              <span className={styles.heatStatKey}>Swaps</span>
+            </div>
+            <div className={styles.heatStat}>
+              <span className={styles.heatStatVal}>{tokenCount}</span>
+              <span className={styles.heatStatKey}>Tokens</span>
+            </div>
+          </div>
+        </section>
+
       </div>
 
       {/* ── Right column ────────────────────────────────────── */}
