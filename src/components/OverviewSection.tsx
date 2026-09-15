@@ -7,6 +7,7 @@ import type { ActivityItem } from "../types/cookie";
 import { useState } from "react";
 import { getTokenLogo } from "../lib/tokenLogos";
 import { TxAmount } from "./TxAmount";
+import { ReceiveModal } from "./ReceiveModal";
 import cookieJarHug from "../assets/cookie-jar-hug.png";
 import cookingChefCookie from "../assets/cooking-chef-cookie.png";
 import styles from "./OverviewSection.module.css";
@@ -216,6 +217,7 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
   const { balances } = useTokenBalances(walletAddress);
   const { transactions, loading: txLoading } = useActivity(walletAddress);
   const [selectedTx, setSelectedTx] = useState<ActivityItem | null>(null);
+  const [showReceive, setShowReceive] = useState(false);
 
   // Portfolio totals
   const totalUsd = balances.reduce((s, b) => s + (b.usdValue ?? 0), 0);
@@ -292,8 +294,8 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
             <span className={styles.qaLabel}>Send</span>
           </button>
 
-          {/* Receive — placeholder */}
-          <button className={styles.qaBtn} aria-label="Receive" onClick={() => onNavigate("pantry")}>
+          {/* Receive — opens address modal */}
+          <button className={styles.qaBtn} aria-label="Receive" onClick={() => setShowReceive(true)}>
             <span className={styles.qaIcon}><ReceiveIcon /></span>
             <span className={styles.qaLabel}>Receive</span>
           </button>
@@ -469,6 +471,12 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
 
       {/* TX detail modal */}
       <TxDetailModal tx={selectedTx} onClose={() => setSelectedTx(null)} />
+
+      {/* Receive address modal */}
+      <ReceiveModal
+        walletAddress={showReceive ? walletAddress : null}
+        onClose={() => setShowReceive(false)}
+      />
     </div>
   );
 }
