@@ -92,7 +92,87 @@ function relativeTime(unixSeconds: number): string {
   return `${Math.floor(diff / 86400)}d ago`;
 }
 
-// ── Props ─────────────────────────────────────────────────────────────────────
+// ── Balance sparkline derivation ─────────────────────────────────────────────
+//
+// Walk backwards through transactions, extracting COOK deltas from the amount
+// string (e.g. "100 COOK → 0.013 CHAT" → -100, "500 bCOOK → 50 COOK" → +50).
+// Most-recent point = current cookAmt; each prior step reconstructs the prior
+// balance. Only COOK (native) deltas are tracked — SPL-only swaps produce 0.
+//
+// Returns an array of balance points ordered oldest→newest, normalised to
+// fit a 120×40 SVG viewBox. Falls back to a flat line if fewer than 3 points.
+
+function parseCookDelta(amount: string | null): number {
+  if (!amount) return 0;
+
+  // Pattern: "X COOK → Y TOKEN"  → we paid X COOK (delta = -X)
+  //          "X TOKEN → Y COOK"  → we received Y COOK (delta = +Y)
+  //          "X COOK"            → plain receive/transfer (delta = +X)
+  const arrowIdx = amount.indexOf(" → ");
+  if (arrowIdx !== -1) {
+    const left = amount.slice(0, arrowIdx).trim();
+    const right = amount.slice(arrowIdx + 3).trim();
+    const leftVal = parseFloat(left);
+    const rightVal = parseFloat(right);
+    const leftIsCook = left.toUpperCase().endsWith("COOK") && !left.toUpperCase().endsWith("BCOOK");
+    const rightIsCook = right.toUpperCase().endsWith("COOK") && !right.toUpperCase().endsWith("BCOOK");
+    if (leftIsCook && !Number.isNaN(leftVal)) return -leftVal;
+    if (rightIsCook && !Number.isNaN(rightVal)) return +rightVal;
+    return 0; // SPL↔SPL swap, no native COOK change
+  }
+
+  // Single-side: "X COOK" (bridge receive, plain transfer)
+  const isCook = amount.toUpperCase().endsWith("COOK") && !amount.toUpperCase().endsWith("BCOOK");
+  if (isCook) {
+    const val = parseFloat(amount);
+    return Number.isNaN(val) ? 0 : val;
+  }
+  return 0;
+}
+
+function deriveSparklinePoints(
+  currentCook: number,
+  txs: ActivityItem[],
+  svgW = 120,
+  svgH = 40,
+): string {
+  // Build balance history newest→oldest, then reverse
+  const balances: number[] = [currentCook];
+  for (const tx of txs) {
+    if (tx.status === "failed") continue; // skip failed txs
+    const delta = parseCookDelta(tx.amount);
+    // Prior balance = current - what we gained (or + what we spent)
+    balances.push(balances[balances.length - 1] - delta);
+  }
+
+  // Need at least 3 real data points for a meaningful shape
+  if (balances.length < 3) {
+    // Flat line at mid-height
+    const mid = svgH / 2;
+    return `0,${mid} ${svgW},${mid}`;
+  }
+
+  // Reverse so oldest is first (left side of chart)
+  const pts = [...balances].reverse();
+
+  const minVal = Math.min(...pts);
+  const maxVal = Math.max(...pts);
+  const range = maxVal - minVal;
+
+  // Normalise each point to SVG coordinates
+  // Y axis: higher balance = higher on card (lower SVG y)
+  const pad = 4; // px padding top/bottom
+  return pts
+    .map((v, i) => {
+      const x = (i / (pts.length - 1)) * svgW;
+      const y = range === 0
+        ? svgH / 2                                       // all same → flat middle
+        : pad + ((maxVal - v) / range) * (svgH - pad * 2);
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    })
+    .join(" ");
+}
+
 
 interface Props {
   walletAddress: string;
@@ -111,6 +191,11 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
   const totalUsd = balances.reduce((s, b) => s + (b.usdValue ?? 0), 0);
   const nativeCook = balances.find(b => b.symbol === "COOK");
   const cookAmt = nativeCook?.uiAmount ?? 0;
+
+  // Derive sparkline from transaction history
+  const sparklinePoints = deriveSparklinePoints(cookAmt, transactions);
+  // Label reflects what the chart actually shows
+  const hasRealData = transactions.filter(t => t.status === "confirmed").length >= 3;
 
   // Allocation bars: percentage share of total USD per token
   function allocationPct(usd: number): number {
@@ -147,22 +232,25 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
                 {cookAmt.toLocaleString(undefined, { maximumFractionDigits: 4 })} COOK
               </p>
             </div>
-            {/* CSS sparkline placeholder — no chart library */}
-            <div className={styles.sparklinePlaceholder} aria-hidden="true">
+            {/* Balance trend sparkline — real data from tx history */}
+            <div className={styles.sparklinePlaceholder} aria-label={hasRealData ? "Balance trend" : "No recent activity"}>
+              <p className={styles.sparklineLabel}>{hasRealData ? "Balance trend" : "Recent activity"}</p>
               <svg viewBox="0 0 120 40" className={styles.sparklineSvg} aria-hidden="true">
                 <polyline
-                  points="0,35 15,28 30,30 45,20 60,22 75,15 90,18 105,10 120,12"
+                  points={sparklinePoints}
                   fill="none"
                   stroke="var(--butter)"
                   strokeWidth="1.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  opacity="0.7"
+                  opacity={hasRealData ? 0.85 : 0.35}
                 />
               </svg>
             </div>
           </div>
-          <p className={styles.jarChange}>+0.00% Today</p>
+          <p className={styles.jarChange}>
+            {hasRealData ? "Based on recent swaps" : "No recent transactions"}
+          </p>
         </section>
 
         {/* Quick actions */}
