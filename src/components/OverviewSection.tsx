@@ -255,6 +255,24 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
   const sparklinePath = smoothPath(sparkline.points);
   const hasRealData = confirmedTxs.length >= 3;
 
+  // Percentage change: oldest point → newest point in the sparkline
+  // Points are [x,y] normalised to SVG coords; we need the raw balance values.
+  // Re-derive the balance array to get the actual oldest and newest values.
+  const pctChange: number | null = (() => {
+    if (!hasRealData || sparkline.flat) return null;
+    // deriveSparklinePoints returns coords normalised from the balance array.
+    // Reconstruct oldest balance: walk backwards from cookAmt through confirmed txs.
+    const confirmed = confirmedTxs.slice(); // newest first
+    const balances: number[] = [cookAmt];
+    for (const tx of confirmed) {
+      const delta = parseCookDelta(tx.amount);
+      balances.push(balances[balances.length - 1] - delta);
+    }
+    const oldest = balances[balances.length - 1];
+    if (oldest === 0 || !Number.isFinite(oldest)) return null;
+    return ((cookAmt - oldest) / Math.abs(oldest)) * 100;
+  })();
+
   // Allocation bars: percentage share of total USD per token
   function allocationPct(usd: number): number {
     if (totalUsd <= 0) return 0;
@@ -303,6 +321,14 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
               </div>
               <p className={styles.jarUsd}>
                 {balanceHidden ? "••••" : `$${totalUsd.toFixed(2)}`}
+                {!balanceHidden && pctChange !== null && (
+                  <span className={`${styles.jarChangeBadge} ${pctChange > 0.05 ? styles.jarChangeBadgePos :
+                    pctChange < -0.05 ? styles.jarChangeBadgeNeg :
+                      styles.jarChangeBadgeFlat
+                    }`}>
+                    {pctChange > 0 ? "+" : ""}{pctChange.toFixed(1)}%
+                  </span>
+                )}
               </p>
               <p className={styles.jarCook}>
                 {balanceHidden
@@ -311,10 +337,15 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
                 }
               </p>
             </div>
-            {/* Balance trend sparkline — real data from tx history */}
+            {/* Balance trend sparkline — real data, fills card width */}
             <div className={styles.sparklinePlaceholder} aria-label={hasRealData ? "Balance trend" : "No recent activity"}>
               <p className={styles.sparklineLabel}>{hasRealData ? "Balance trend" : "Recent activity"}</p>
-              <svg viewBox="0 0 120 40" className={styles.sparklineSvg} aria-hidden="true">
+              <svg
+                viewBox="0 0 120 40"
+                className={styles.sparklineSvg}
+                preserveAspectRatio="none"
+                aria-hidden="true"
+              >
                 <path
                   d={sparklinePath}
                   fill="none"
@@ -323,6 +354,7 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   opacity={hasRealData ? 0.85 : 0.35}
+                  vectorEffect="non-scaling-stroke"
                 />
               </svg>
             </div>

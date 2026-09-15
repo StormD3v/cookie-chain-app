@@ -186,9 +186,11 @@
 
 .jarCardTop {
   display: flex;
-  align-items: flex-start;
+  align-items: stretch;
   justify-content: space-between;
   gap: 1rem;
+  /* min-height so card doesn't collapse when chart has no data */
+  min-height: 5rem;
 }
 
 .jarLabel {
@@ -217,6 +219,38 @@
   margin: 0.25rem 0 0;
 }
 
+/* Percentage-change badge beside the USD balance */
+.jarChangeBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15em;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0.15em 0.55em;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.jarChangeBadgePos {
+  background: rgba(96, 192, 128, 0.15);
+  color: var(--success);
+  border: 1px solid rgba(96, 192, 128, 0.3);
+}
+
+.jarChangeBadgeNeg {
+  background: rgba(224, 80, 80, 0.12);
+  color: var(--error);
+  border: 1px solid rgba(224, 80, 80, 0.25);
+}
+
+.jarChangeBadgeFlat {
+  background: rgba(138, 104, 72, 0.15);
+  color: var(--crumb);
+  border: 1px solid rgba(138, 104, 72, 0.2);
+}
+
 .jarChange {
   font-size: 0.6875rem;
   color: var(--crumb);
@@ -225,16 +259,18 @@
   opacity: 0.7;
 }
 
-/* CSS sparkline */
+/* CSS sparkline — fills remaining width of jar card */
 .sparklinePlaceholder {
-  flex-shrink: 0;
-  width: 120px;
-  height: 52px;
-  /* slightly taller to fit label */
+  /* Take all remaining horizontal space after the balance text */
+  flex: 1;
+  min-width: 0;
+  /* Tall enough to show real curve shape */
+  min-height: 70px;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: stretch;
   gap: 2px;
+  padding-top: 0.25rem;
 }
 
 .sparklineLabel {
@@ -246,11 +282,13 @@
   margin: 0;
   opacity: 0.7;
   white-space: nowrap;
+  text-align: right;
 }
 
 .sparklineSvg {
-  width: 120px;
-  height: 40px;
+  flex: 1;
+  width: 100%;
+  min-height: 60px;
   overflow: visible;
 }
 
