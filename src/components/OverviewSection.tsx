@@ -268,13 +268,19 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
 
         {/* Swap panel (internals untouched) */}
         <section className={styles.swapCard}>
-          {/* Decorative chef — positioned top-right, pointer-events:none */}
-          <img
-            src={cookingChefCookie}
-            alt=""
-            aria-hidden="true"
-            className={styles.swapChef}
-          />
+          {/* Decorative promo row: chef illustration + label, inline flex */}
+          <div className={styles.swapPromoRow}>
+            <div className={styles.swapPromoText}>
+              <p className={styles.swapPromoTitle}>🔥 Bake a Swap</p>
+              <p className={styles.swapPromoSub}>Trade tokens on Cookie Chain</p>
+            </div>
+            <img
+              src={cookingChefCookie}
+              alt=""
+              aria-hidden="true"
+              className={styles.swapChef}
+            />
+          </div>
           <SwapPanel swap={swap} />
         </section>
 

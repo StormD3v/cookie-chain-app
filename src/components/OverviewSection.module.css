@@ -48,98 +48,134 @@
   box-shadow: none;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
-  /* Relative positioning so the chef decoration can be placed absolutely */
-  position: relative;
-  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 /* ── Hero banner ──────────────────────────────────────────────────────────── */
 
 .heroBanner {
   display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.875rem 1.125rem;
+  align-items: flex-end;
+  gap: 1.25rem;
+  padding: 0 1.25rem 1.125rem 0;
   background: rgba(50, 28, 11, 0.45);
   border: 1px solid rgba(240, 192, 96, 0.1);
   border-radius: var(--radius-xl);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  /* Keep the banner compact — it's decoration, not the main event */
-  min-height: 0;
   overflow: hidden;
+  min-height: 7rem;
 }
 
 .heroMascot {
-  width: 4.5rem;
-  height: 4.5rem;
+  /* Large illustration — anchors the top of the page visually */
+  width: auto;
+  height: 9rem;
   object-fit: contain;
   flex-shrink: 0;
-  /* Slight upward offset so the mascot peeks above the card baseline */
-  margin-top: -0.25rem;
-  filter: drop-shadow(0 4px 12px rgba(200, 120, 32, 0.35));
+  /* Pull down so mascot sits on the banner floor */
+  align-self: flex-end;
+  margin-bottom: -1px;
+  filter: drop-shadow(0 4px 16px rgba(200, 120, 32, 0.45));
 }
 
 .heroText {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.25rem;
+  padding: 1rem 0 0.875rem;
+  flex: 1;
 }
 
 .heroGreeting {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.125rem;
+  color: var(--cream);
+  letter-spacing: -0.02em;
+  margin: 0;
+  /* Allow wrapping — never truncate the greeting */
+  white-space: normal;
+  overflow: visible;
+  line-height: 1.25;
+}
+
+.heroSub {
+  font-size: 0.8125rem;
+  color: var(--crumb);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Mobile: slightly smaller mascot, allow greeting to wrap freely */
+@media (max-width: 480px) {
+  .heroBanner {
+    gap: 0.875rem;
+    padding: 0 0.875rem 0.875rem 0;
+    min-height: 6rem;
+  }
+
+  .heroMascot {
+    height: 7.5rem;
+  }
+
+  .heroGreeting {
+    font-size: 1rem;
+    /* Explicitly allow wrapping — no ellipsis on mobile */
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+  }
+}
+
+/* ── Swap card chef decoration ────────────────────────────────────────────── */
+
+/* Chef is rendered as an inline element in a promo row above the swap form,
+   not as a position:absolute overlay (which escaped the containing block) */
+.swapPromoRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.swapPromoText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.swapPromoTitle {
   font-family: var(--font-display);
   font-weight: 800;
   font-size: 1rem;
   color: var(--cream);
   letter-spacing: -0.02em;
   margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.heroSub {
-  font-size: 0.75rem;
+.swapPromoSub {
+  font-size: 0.6875rem;
   color: var(--crumb);
   margin: 0;
 }
 
-/* Mobile: tighter mascot, smaller text */
-@media (max-width: 480px) {
-  .heroBanner {
-    gap: 0.75rem;
-    padding: 0.75rem 0.875rem;
-  }
-
-  .heroMascot {
-    width: 3.5rem;
-    height: 3.5rem;
-  }
-
-  .heroGreeting {
-    font-size: 0.875rem;
-  }
-}
-
-/* ── Swap card chef decoration ────────────────────────────────────────────── */
-
 .swapChef {
-  /* Peeking from the top-right corner of the swap panel */
-  position: absolute;
-  top: -1.25rem;
-  right: -0.5rem;
-  width: 4rem;
-  height: 4rem;
+  /* Inline, right side of the promo row — no absolute positioning */
+  width: 5.5rem;
+  height: 5.5rem;
   object-fit: contain;
+  flex-shrink: 0;
   pointer-events: none;
-  /* Ensure chef never overlaps the swap inputs on small screens */
-  z-index: 1;
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4));
-  opacity: 0.92;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.45));
 }
 
-/* Hide chef on narrow screens so it doesn't crowd the panel header */
+/* Hide chef on narrow screens so it doesn't crowd the swap inputs */
 @media (max-width: 480px) {
   .swapChef {
     display: none;
