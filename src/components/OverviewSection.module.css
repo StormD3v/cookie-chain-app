@@ -306,37 +306,44 @@
   justify-content: center;
   gap: 0.4rem;
   padding: 0.875rem 0.5rem;
-  background: rgba(50, 28, 11, 0.55);
+  background: rgba(50, 28, 11, 0.6);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(240, 192, 96, 0.13);
+  /* Visible but subtle border — clear enough to read as outlined, not a ghost */
+  border: 1px solid rgba(240, 192, 96, 0.22);
   border-radius: var(--radius-lg);
-  color: var(--cream);
+  color: var(--crumb);
   font-family: var(--font-body);
   font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, transform 0.12s;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.12s;
   min-width: 0;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
 }
 
 .qaBtn:hover:not(:disabled) {
-  background: rgba(240, 192, 96, 0.1);
-  border-color: rgba(240, 192, 96, 0.25);
+  background: rgba(240, 192, 96, 0.08);
+  border-color: rgba(240, 192, 96, 0.32);
+  color: var(--cream);
   transform: translateY(-1px);
 }
 
-/* Primary = Bake Swap */
+/* Primary = Bake Swap — solid amber, always looks like the main CTA */
 .qaBtnPrimary {
-  background: rgba(240, 192, 96, 0.15);
-  border-color: rgba(240, 192, 96, 0.35);
-  color: var(--butter);
+  background: var(--butter);
+  border-color: var(--butter);
+  color: var(--choco);
+  font-weight: 700;
+  box-shadow: 0 2px 16px rgba(240, 192, 96, 0.35), 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .qaBtnPrimary:hover {
-  background: rgba(240, 192, 96, 0.22) !important;
-  border-color: rgba(240, 192, 96, 0.5) !important;
+  background: #f5cc6a !important;
+  border-color: #f5cc6a !important;
+  color: var(--choco) !important;
+  box-shadow: 0 4px 20px rgba(240, 192, 96, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+  transform: translateY(-1px);
 }
 
 .qaBtnDisabled {
