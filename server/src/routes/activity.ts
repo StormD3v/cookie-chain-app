@@ -207,8 +207,8 @@ function extractDescription(tx: ParsedTx, sigInfo?: ConfirmedSignatureInfo): str
         info?: { amount?: string; tokenAmount?: { uiAmountString?: string } };
       };
       if (p.type === "transfer" || p.type === "transferChecked") {
-        const amt = p.info?.tokenAmount?.uiAmountString ?? p.info?.amount;
-        if (amt) return `Token transfer: ${amt}`;
+        // Amount is already surfaced in the separate `amount` field —
+        // don't embed it in the description to avoid showing it twice in the UI
         return "Token transfer";
       }
     }
@@ -218,10 +218,8 @@ function extractDescription(tx: ParsedTx, sigInfo?: ConfirmedSignatureInfo): str
     if ("parsed" in ix && ix.parsed && typeof ix.parsed === "object") {
       const p = ix.parsed as { type?: string; info?: { lamports?: number } };
       if (p.type === "transfer" && p.info?.lamports != null) {
-        const cook = (p.info.lamports / 1e9).toLocaleString(undefined, {
-          maximumFractionDigits: 4,
-        });
-        return `Transfer ${cook} COOK`;
+        // Amount is already in the `amount` field — description stays clean
+        return "Token transfer";
       }
     }
   }
