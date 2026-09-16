@@ -194,18 +194,30 @@
 
 .sidebarFooter {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.875rem 1rem;
-  border-top: 1px solid rgba(240, 192, 96, 0.06);
+  flex-direction: column;
+  gap: 0;
+  padding: 0.75rem 0.75rem 0.875rem;
   flex-shrink: 0;
   /* Gradient fade so the cookie-cluster image behind doesn't bleed into the
-     status text. Starts transparent ~40px above the footer, fully opaque at
-     the bottom edge — keeps the aesthetic while making text readable. */
+     status card. Starts transparent above, opaque at the bottom edge. */
   background: linear-gradient(to bottom,
       transparent 0%,
       rgba(32, 16, 4, 0.92) 35%,
       rgba(32, 16, 4, 0.97) 100%);
+}
+
+/* Status card — same shell treatment as jarCard/pantryCard/crumbsCard */
+.sidebarStatusCard {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  background: rgba(50, 28, 11, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(240, 192, 96, 0.13);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
 }
 
 .chainDot {

@@ -169,10 +169,12 @@ export function AppShell({ walletAddress }: Props) {
 
         {/* Chain status footer */}
         <div className={styles.sidebarFooter}>
-          <span className={styles.chainDot} aria-hidden="true" />
-          <div className={styles.chainInfo}>
-            <span className={styles.chainName}>Cookie Chain</span>
-            <span className={styles.chainStatus}>Healthy</span>
+          <div className={styles.sidebarStatusCard}>
+            <span className={styles.chainDot} aria-hidden="true" />
+            <div className={styles.chainInfo}>
+              <span className={styles.chainName}>Cookie Chain</span>
+              <span className={styles.chainStatus}>Healthy</span>
+            </div>
           </div>
         </div>
       </aside>

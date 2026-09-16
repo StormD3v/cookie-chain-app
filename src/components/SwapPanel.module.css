@@ -216,6 +216,10 @@
   flex-direction: column;
   gap: 0.3rem;
   animation: fadeSlideIn 0.2s ease;
+  /* Visual separation from the input fields above */
+  border-top: 1px solid rgba(240, 192, 96, 0.1);
+  padding-top: 0.75rem;
+  margin-top: 0.25rem;
 }
 
 @keyframes fadeSlideIn {
