@@ -67,36 +67,37 @@
 
 .heroMascot {
   position: absolute;
-  top: -1.5rem;
-  left: 1.5rem;
-  width: 7.5rem;
-  height: auto;
+  top: -3.5rem;
+  left: 1rem;
+  /* Height-driven: image is 1.5:1 landscape, so height:9rem → width≈13.5rem auto */
+  height: 9rem;
+  width: auto;
   pointer-events: none;
   z-index: 2;
-  filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.45));
+  filter: drop-shadow(0 6px 20px rgba(0, 0, 0, 0.55));
 }
 
 /* Elliptical contact shadow under the mascot's feet */
 .heroMascotShadow {
   position: absolute;
-  top: calc(-1.5rem + 7.5rem * (1024 / 1536));
-  /* approx mascot bottom */
-  left: 1.5rem;
-  width: 4rem;
-  height: 0.75rem;
+  /* Feet land ~5.5rem of mascot height below top:-3.5rem → ~2rem from card top */
+  top: 1.5rem;
+  left: 1rem;
+  width: 7rem;
+  height: 0.6rem;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.25);
-  filter: blur(6px);
+  background: rgba(0, 0, 0, 0.3);
+  filter: blur(5px);
   pointer-events: none;
   z-index: 1;
-  transform: translateX(50%);
 }
 
-/* Greeting row — fixed padding-left clears mascot (width 7.5rem + left 1.5rem + gap) */
+/* Greeting row — indent clears mascot (left:1rem + auto-width≈13.5rem + 0.5rem gap) */
 .heroGreetingRow {
-  padding: 0.75rem 0 1rem 9rem;
+  padding: 0.5rem 0 1rem 15rem;
   border-bottom: 1px solid rgba(240, 192, 96, 0.07);
   margin-bottom: 1rem;
+  min-height: 5.5rem;
 }
 
 .heroGreeting {
@@ -117,22 +118,22 @@
   line-height: 1.45;
 }
 
-/* Mobile: mascot 5rem, no bleed above card, indent scaled down */
+/* Mobile: mascot smaller, no bleed above card, indent scales down */
 @media (max-width: 480px) {
   .heroMascot {
-    top: 0.75rem;
-    /* sits within the card, no bleed */
-    left: 1rem;
-    width: 5rem;
+    top: 0.5rem;
+    left: 0.75rem;
+    height: 6rem;
+    width: auto;
   }
 
   .heroMascotShadow {
     display: none;
-    /* shadow not needed when mascot is fully within card */
   }
 
   .heroGreetingRow {
-    padding: 0.875rem 0 0.875rem 6.5rem;
+    padding: 0.75rem 0 0.875rem 10.25rem;
+    min-height: 4rem;
   }
 
   .heroGreeting {
@@ -202,8 +203,6 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  /* Fixed indent matching heroGreetingRow — clears the mascot footprint */
-  padding-left: 9rem;
 }
 
 .jarLabel {
