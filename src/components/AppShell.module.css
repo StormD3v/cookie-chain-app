@@ -209,7 +209,7 @@
 /* Status card — same shell treatment as jarCard/pantryCard/crumbsCard */
 .sidebarStatusCard {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 0.5rem;
   padding: 0.625rem 0.75rem;
   background: rgba(50, 28, 11, 0.55);
@@ -218,6 +218,77 @@
   border: 1px solid rgba(240, 192, 96, 0.13);
   border-radius: var(--radius-lg);
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+.statusTopRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.statusStats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.25rem;
+  padding-top: 0.25rem;
+  border-top: 1px solid rgba(240, 192, 96, 0.07);
+}
+
+.statusStat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.statusStatVal {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--cream);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.statusStatKey {
+  font-size: 0.5rem;
+  color: var(--crumb);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.statusLink {
+  font-size: 0.5625rem;
+  color: var(--butter);
+  text-decoration: none;
+  opacity: 0.8;
+  transition: opacity 0.15s;
+}
+
+.statusLink:hover {
+  opacity: 1;
+}
+
+/* Bell button in topbar */
+.bellBtn {
+  background: transparent;
+  border: 1px solid rgba(240, 192, 96, 0.15);
+  border-radius: var(--radius-sm);
+  color: var(--crumb);
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+
+.bellBtn:hover {
+  color: var(--butter);
+  border-color: rgba(240, 192, 96, 0.35);
 }
 
 .chainDot {
@@ -527,7 +598,7 @@
   }
 
   .content {
-    padding: 1rem 0.875rem 5rem;
+    padding: 1rem 0.875rem 6rem;
   }
 
   .topbar {
@@ -535,11 +606,15 @@
   }
 }
 
-/* At very narrow widths hide the chain pill — it's redundant and
-   causes the brand text to collide with the wallet button */
+/* At very narrow widths keep the chain pill but make it smaller */
 @media (max-width: 479px) {
   .chainPill {
-    display: none;
+    padding: 0.2rem 0.375rem 0.2rem 0.5rem;
+    font-size: 0.6875rem;
+  }
+
+  .chainPillText {
+    font-size: 0.6875rem;
   }
 }
 

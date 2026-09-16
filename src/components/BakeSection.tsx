@@ -10,7 +10,7 @@ export function BakeSection({ swap }: Props) {
   return (
     <div className={styles.section}>
       <div className={styles.sectionHeader}>
-        <h1 className={styles.sectionTitle}>Bake a Swap</h1>
+        <h1 className={styles.sectionTitle}>Bake Swap</h1>
         <p className={styles.sectionSubtitle}>Trade tokens on Cookie Chain</p>
       </div>
       {/* SwapPanel internals untouched — only repositioned */}

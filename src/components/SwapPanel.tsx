@@ -95,7 +95,16 @@ export function SwapPanel({ swap }: Props) {
 
   return (
     <div className={styles.panel}>
-      <h2 className={styles.heading}>Swap tokens</h2>
+      {/* Panel heading with gear icon — no "Swap tokens" sub-heading */}
+      <div className={styles.panelHeader}>
+        <h2 className={styles.heading}>Bake Swap</h2>
+        <button className={styles.gearBtn} aria-label="Swap settings">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <circle cx="8" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.4" />
+            <path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M3.4 12.6l1.4-1.4M11.2 4.8l1.4-1.4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+          </svg>
+        </button>
+      </div>
 
       {/* ── Input token ──────────────────────────────────────── */}
       <div className={styles.field}>
@@ -215,9 +224,7 @@ export function SwapPanel({ swap }: Props) {
           disabled={!canConfirm}
           aria-disabled={!canConfirm}
         >
-          <span aria-hidden="true">🔥</span>
-          <span className={styles.confirmBtnDivider} aria-hidden="true" />
-          Bake swap
+          Bake Swap
         </button>
         {(swap.stage !== "idle" && swap.stage !== "quoting") && (
           <button className={styles.resetBtn} onClick={swap.reset}>

@@ -33,6 +33,35 @@
   pointer-events: none;
 }
 
+/* ── Panel header row (title + gear) ─────────────────────────────────────── */
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gearBtn {
+  background: transparent;
+  border: 1px solid rgba(240, 192, 96, 0.15);
+  border-radius: var(--radius-sm);
+  color: var(--crumb);
+  width: 1.875rem;
+  height: 1.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.gearBtn:hover {
+  color: var(--butter);
+  border-color: rgba(240, 192, 96, 0.35);
+}
+
 /* ── Heading ─────────────────────────────────────────────────────────────── */
 
 .heading {

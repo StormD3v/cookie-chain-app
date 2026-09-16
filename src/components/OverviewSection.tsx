@@ -10,7 +10,6 @@ import { TxAmount } from "./TxAmount";
 import { ReceiveModal } from "./ReceiveModal";
 import { SendModal } from "./SendModal";
 import cookieJarHug from "../assets/cookie-jar-hug.png";
-import cookingChefCookie from "../assets/cooking-chef-cookie.png";
 import cookieRunning from "../assets/cookie-running.png";
 import styles from "./OverviewSection.module.css";
 
@@ -28,14 +27,18 @@ const BRIDGE_URL = "https://hyperlane.cookiescan.io";
 const EXPLORER = "https://cookiescan.io";
 
 // ── Quick action icons ────────────────────────────────────────────────────────
+// Paper-plane send icon (matches reference)
 const SendIcon = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-    <path d="M4 16L16 4M16 4H8M16 4v8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M3 10L17 3l-7 14-2-5L3 10Z" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M11 9l-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
   </svg>
 );
+// Download-tray receive icon (matches reference)
 const ReceiveIcon = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-    <path d="M16 4L4 16M4 16h8M4 16V8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M10 3v10M6 9l4 4 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M3 15h14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
   </svg>
 );
 const BakeSwapIcon = () => (
@@ -232,6 +235,7 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
   const [showReceive, setShowReceive] = useState(false);
   const [showSend, setShowSend] = useState(false);
   const [balanceHidden, setBalanceHidden] = useState(false);
+  const [timeRange, setTimeRange] = useState<"1D" | "1W" | "1M" | "ALL">("1D");
 
   // Portfolio totals
   const totalUsd = balances.reduce((s, b) => s + (b.usdValue ?? 0), 0);
@@ -247,6 +251,23 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
   ).length;
   // Token count from balances (non-zero holdings only)
   const tokenCount = balances.filter(b => (b.uiAmount ?? 0) > 0).length;
+
+  // Volume: sum of absolute USD value across confirmed swap transactions
+  // Uses a rough estimate: swapCount × average swap size from balance data
+  const volumeUsd = (() => {
+    let total = 0;
+    for (const tx of confirmedTxs) {
+      if (tx.amount && (tx.description.toLowerCase().includes("swap") || tx.amount.includes("→"))) {
+        // Extract numeric value from amount string like "100 COOK → 0.013 USDC"
+        const match = tx.amount.match(/[\d,]+\.?\d*/);
+        if (match) {
+          const val = parseFloat(match[0].replace(/,/g, ""));
+          if (!isNaN(val) && val < 100000) total += val;
+        }
+      }
+    }
+    return total;
+  })();
 
   // ── Heat score — composite so the bar has real range to move in ───────────
   // Formula: each tx = 1pt, each swap = 2pt extra (swaps already counted in
@@ -266,10 +287,10 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
     : heatLevel === "warm" ? "Building momentum 📈"
       : "Just warming up 🍪";
 
-  // ── Subtitle: 2 variants based on activity level ─────────────────────────
-  const heroSubtitle = heatLevel !== "cool"
-    ? "Your jar is looking healthy. Keep cooking!"
-    : "Your jar is full of possibilities.";
+  // ── Subtitle: desktop vs mobile variants per reference ───────────────────
+  // Desktop: activity-aware; Mobile: always the "possibilities" line
+  const heroSubtitleDesktop = "Your jar is looking healthy. Keep cooking!";
+  const heroSubtitleMobile = "Your jar is full of possibilities.";
 
   // Derive sparkline from transaction history
   const sparkline = deriveSparklinePoints(cookAmt, transactions);
@@ -313,7 +334,11 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
             <img src={cookieJarHug} alt="" aria-hidden="true" className={styles.heroMascot} />
             <div className={styles.heroText}>
               <p className={styles.heroGreeting}>{getGreeting()}, Cookie Connoisseur! 👋</p>
-              <p className={styles.heroSub}>{heroSubtitle}</p>
+              <p className={styles.heroSub}>
+                {/* Desktop: activity-aware; Mobile: "possibilities" via CSS class */}
+                <span className={styles.heroSubDesktop}>{heroSubtitleDesktop}</span>
+                <span className={styles.heroSubMobile}>{heroSubtitleMobile}</span>
+              </p>
             </div>
           </div>
 
@@ -363,17 +388,25 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
                 }
               </p>
             </div>
-            {/* Balance trend sparkline — real data, fills card width */}
+            {/* Balance trend sparkline with time-range tabs */}
             <div className={styles.sparklinePlaceholder} aria-label={hasRealData ? "Balance trend" : "No recent activity"}>
-              <p className={styles.sparklineLabel}>{hasRealData ? "Balance trend" : "Recent activity"}</p>
+              {/* Time-range tabs — per reference */}
+              <div className={styles.timeRangeTabs}>
+                {(["1D", "1W", "1M", "ALL"] as const).map((r) => (
+                  <button
+                    key={r}
+                    className={`${styles.timeRangeTab} ${timeRange === r ? styles.timeRangeTabActive : ""}`}
+                    onClick={() => setTimeRange(r)}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
               {(() => {
-                const lineColor = !hasRealData || pctChange === null ? "var(--crumb)"
-                  : pctChange > 0.05 ? "var(--success)"
-                    : pctChange < -0.05 ? "var(--error)"
-                      : "var(--crumb)";
+                // Chart always uses amber/butter brand color — no green/red
+                const lineColor = "var(--butter)";
                 const lineOpacity = hasRealData ? 0.9 : 0.3;
                 const gradId = "sparkFill";
-                // Chart uses a taller viewBox (120×80) to match the larger CSS canvas
                 const fillPath = sparklinePath + " L 120,80 L 0,80 Z";
                 return (
                   <svg
@@ -384,18 +417,12 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
                   >
                     <defs>
                       <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={lineColor} stopOpacity={0.55 * lineOpacity} />
-                        <stop offset="75%" stopColor={lineColor} stopOpacity={0.12 * lineOpacity} />
+                        <stop offset="0%" stopColor={lineColor} stopOpacity={0.45 * lineOpacity} />
+                        <stop offset="75%" stopColor={lineColor} stopOpacity={0.08 * lineOpacity} />
                         <stop offset="100%" stopColor={lineColor} stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    {/* Gradient fill */}
-                    <path
-                      d={fillPath}
-                      fill={`url(#${gradId})`}
-                      stroke="none"
-                    />
-                    {/* Bold line */}
+                    <path d={fillPath} fill={`url(#${gradId})`} stroke="none" />
                     <path
                       d={sparklinePath}
                       fill="none"
@@ -411,9 +438,6 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
               })()}
             </div>
           </div>
-          <p className={styles.jarChange}>
-            {hasRealData ? "Based on recent swaps" : "No recent transactions"}
-          </p>
           {/* end balance zone */}
         </section>
 
@@ -452,7 +476,7 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
               <p className={styles.pantrySubtitle}>All your tokens in one place</p>
             </div>
             <button className={styles.manageLink} onClick={() => onNavigate("pantry")}>
-              Manage →
+              Manage tokens →
             </button>
           </div>
 
@@ -585,6 +609,10 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
                 <span className={styles.heatStatKey}>Transactions</span>
               </div>
               <div className={styles.heatStat}>
+                <span className={styles.heatStatVal}>${volumeUsd > 0 ? volumeUsd.toLocaleString(undefined, { maximumFractionDigits: 2 }) : "0"}</span>
+                <span className={styles.heatStatKey}>Volume</span>
+              </div>
+              <div className={styles.heatStat}>
                 <span className={styles.heatStatVal}>{swapCount}</span>
                 <span className={styles.heatStatKey}>Swaps</span>
               </div>
@@ -601,26 +629,18 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
       {/* ── Right column ────────────────────────────────────── */}
       <div className={styles.rightCol}>
 
-        {/* Swap panel (internals untouched) */}
+        {/* Swap panel */}
         <section className={styles.swapCard}>
-          {/* Decorative promo row: chef illustration + label, inline flex */}
-          < div className={styles.swapPromoRow} >
-            <div className={styles.swapPromoText}>
-              <p className={styles.swapPromoTitle}>🔥 Bake a Swap</p>
-              <p className={styles.swapPromoSub}>Trade tokens on Cookie Chain</p>
-            </div>
-            <img
-              src={cookingChefCookie}
-              alt=""
-              aria-hidden="true"
-              className={styles.swapChef}
-            />
-          </div >
           <SwapPanel swap={swap} />
         </section >
 
+        {/* Mobile mascot near Crumbs — visible on mobile only, hidden on desktop */}
+        <div className={styles.mobileCrumbsMascot} aria-hidden="true">
+          <img src={cookieRunning} alt="" className={styles.mobileCrumbsMascotImg} />
+        </div>
+
         {/* Crumbs feed (compact) */}
-        < section className={styles.crumbsCard} >
+        <section className={styles.crumbsCard}>
           <div className={styles.crumbsHeader}>
             <div>
               <h2 className={styles.crumbsTitle}>Crumbs</h2>

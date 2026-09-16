@@ -58,6 +58,41 @@ const CrumbsIcon = () => (
   </svg>
 );
 
+const AnalyticsIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <path d="M2 12l3.5-4 2.5 2 3-5 3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M1 13.5h14" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+  </svg>
+);
+
+const EcosystemIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <circle cx="8" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.4" />
+    <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.4" />
+    <path d="M8 2v12M2 8h12" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.5" />
+  </svg>
+);
+
+const JarScoreIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <path d="M8 2l1.5 3.5 3.5.5-2.5 2.5.6 3.5L8 10.5l-3.1 1.5.6-3.5L3 6l3.5-.5z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const SettingsIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <circle cx="8" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.4" />
+    <path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M3.4 12.6l1.4-1.4M11.2 4.8l1.4-1.4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+  </svg>
+);
+
+const BellIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+    <path d="M9 2a5.5 5.5 0 0 0-5.5 5.5c0 2.5-.8 3.5-1.5 4.5h14c-.7-1-1.5-2-1.5-4.5A5.5 5.5 0 0 0 9 2Z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M7.5 15a1.5 1.5 0 0 0 3 0" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+  </svg>
+);
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 interface Props {
@@ -137,26 +172,35 @@ export function AppShell({ walletAddress }: Props) {
             </button>
           ))}
 
-          {/* Extra items (desktop only) */}
+          {/* DISCOVER group */}
           <div className={styles.navSpacer} />
-          <p className={styles.navLabel}>Extras</p>
-          <a
-            href="https://cookiescan.io"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.navItem}
-          >
-            <span className={styles.navIcon}>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.4" />
-                <path d="M5.5 8h5M8 5.5v5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-              </svg>
-            </span>
-            <span className={styles.navLabel2}>Explore</span>
+          <p className={styles.navLabel}>Discover</p>
+          <a href="https://analytics.cookiescan.io" target="_blank" rel="noopener noreferrer" className={styles.navItem}>
+            <span className={styles.navIcon}><AnalyticsIcon /></span>
+            <span className={styles.navLabel2}>Analytics</span>
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true" className={styles.navExternal}>
               <path d="M2 8L8 2M8 2H4.5M8 2v3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </a>
+          <a href="https://cookiescan.io" target="_blank" rel="noopener noreferrer" className={styles.navItem}>
+            <span className={styles.navIcon}><EcosystemIcon /></span>
+            <span className={styles.navLabel2}>Ecosystem</span>
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true" className={styles.navExternal}>
+              <path d="M2 8L8 2M8 2H4.5M8 2v3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </a>
+
+          {/* EXTRAS group */}
+          <div className={styles.navSpacer} />
+          <p className={styles.navLabel}>Extras</p>
+          <a href="https://cookiescan.io" target="_blank" rel="noopener noreferrer" className={styles.navItem}>
+            <span className={styles.navIcon}><JarScoreIcon /></span>
+            <span className={styles.navLabel2}>Jar Score</span>
+          </a>
+          <button className={styles.navItem} aria-label="Settings">
+            <span className={styles.navIcon}><SettingsIcon /></span>
+            <span className={styles.navLabel2}>Settings</span>
+          </button>
         </nav>
 
         {/* Cookie cluster decoration — real asset, anchored to bottom-left corner */}
@@ -170,11 +214,35 @@ export function AppShell({ walletAddress }: Props) {
         {/* Chain status footer */}
         <div className={styles.sidebarFooter}>
           <div className={styles.sidebarStatusCard}>
-            <span className={styles.chainDot} aria-hidden="true" />
-            <div className={styles.chainInfo}>
-              <span className={styles.chainName}>Cookie Chain</span>
-              <span className={styles.chainStatus}>Healthy</span>
+            <div className={styles.statusTopRow}>
+              <span className={styles.chainDot} aria-hidden="true" />
+              <div className={styles.chainInfo}>
+                <span className={styles.chainName}>Cookie Chain</span>
+                <span className={styles.chainStatus}>Healthy</span>
+              </div>
             </div>
+            <div className={styles.statusStats}>
+              <div className={styles.statusStat}>
+                <span className={styles.statusStatVal}>82ms</span>
+                <span className={styles.statusStatKey}>RPC</span>
+              </div>
+              <div className={styles.statusStat}>
+                <span className={styles.statusStatVal}>~1s</span>
+                <span className={styles.statusStatKey}>Finality</span>
+              </div>
+              <div className={styles.statusStat}>
+                <span className={styles.statusStatVal}>0.00005</span>
+                <span className={styles.statusStatKey}>Fee (COOK)</span>
+              </div>
+            </div>
+            <a
+              href="https://cookiescan.io"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.statusLink}
+            >
+              View on CookieScan ↗
+            </a>
           </div>
         </div>
       </aside>
@@ -189,6 +257,10 @@ export function AppShell({ walletAddress }: Props) {
             <span className={styles.mobileBrandName}>Cookie Chain</span>
           </div>
           <div className={styles.topbarRight}>
+            {/* Notification bell */}
+            <button className={styles.bellBtn} aria-label="Notifications">
+              <BellIcon />
+            </button>
             {/* Network selector — visual placeholder, no switching logic */}
             <div className={styles.networkSelector} ref={networkRef}>
               <button
@@ -249,7 +321,8 @@ export function AppShell({ walletAddress }: Props) {
             aria-current={!bridge && section === id ? "page" : undefined}
           >
             <span className={styles.tabIcon}><Icon /></span>
-            <span className={styles.tabLabel}>{label}</span>
+            {/* Mobile bottom nav: Overview → Home per mobile reference */}
+            <span className={styles.tabLabel}>{label === "Overview" ? "Home" : label}</span>
           </button>
         ))}
       </nav>

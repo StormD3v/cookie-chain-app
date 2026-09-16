@@ -284,6 +284,61 @@
   padding-top: 0.125rem;
 }
 
+/* Time-range tabs — 1D/1W/1M/ALL segmented control */
+.timeRangeTabs {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  padding: 2px;
+  align-self: flex-end;
+}
+
+.timeRangeTab {
+  background: transparent;
+  border: none;
+  color: var(--crumb);
+  font-family: var(--font-body);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 0.2rem 0.45rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  white-space: nowrap;
+}
+
+.timeRangeTab:hover {
+  color: var(--cream);
+}
+
+.timeRangeTabActive {
+  background: rgba(240, 192, 96, 0.18);
+  color: var(--butter);
+}
+
+/* Desktop subtitle visible, mobile hidden; mobile subtitle reverse */
+.heroSubDesktop {
+  display: block;
+}
+
+.heroSubMobile {
+  display: none;
+}
+
+@media (max-width: 780px) {
+  .heroSubDesktop {
+    display: none;
+  }
+
+  .heroSubMobile {
+    display: block;
+  }
+}
+
 .sparklineLabel {
   font-size: 0.5rem;
   font-weight: 600;
@@ -561,6 +616,45 @@
   padding: 0.5rem 0;
 }
 
+/* ── Mobile Crumbs mascot ─────────────────────────────────────────────────── */
+
+/* Hidden on desktop, visible on mobile only — running cookie above Crumbs */
+.mobileCrumbsMascot {
+  display: none;
+  pointer-events: none;
+  overflow: hidden;
+  /* Connect visually to the Crumbs card below */
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  background: rgba(50, 28, 11, 0.45);
+  border: 1px solid rgba(240, 192, 96, 0.1);
+  border-bottom: none;
+  height: 7rem;
+  position: relative;
+  margin-bottom: -1px;
+  /* flush merge with card below */
+}
+
+.mobileCrumbsMascotImg {
+  position: absolute;
+  right: 1.25rem;
+  bottom: -0.25rem;
+  height: 8rem;
+  width: auto;
+  filter: drop-shadow(0 4px 16px rgba(200, 100, 20, 0.35));
+}
+
+@media (max-width: 780px) {
+  .mobileCrumbsMascot {
+    display: block;
+  }
+
+  /* Crumbs card merges with the mascot zone above it on mobile */
+  .crumbsCard {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+}
+
 /* ── Crumbs feed (compact) ────────────────────────────────────────────────── */
 
 .crumbsHeader {
@@ -734,20 +828,13 @@
     font-size: 0.6875rem;
   }
 
-  .allocationWrap {
-    display: none;
-  }
-
+  /* Keep allocation bars on mobile — reference shows them */
   .tokenRow {
-    grid-template-columns: 1.75rem 1fr auto auto;
+    grid-template-columns: 1.75rem 1fr auto auto auto;
   }
 
   .crumbRow {
-    grid-template-columns: 1.5rem 1fr auto auto;
-  }
-
-  .crumbBadge {
-    display: none;
+    grid-template-columns: 1.5rem 1fr auto auto auto;
   }
 }
 
@@ -962,7 +1049,7 @@
 
 .heatStats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 0;
   border: 1px solid rgba(240, 192, 96, 0.09);
   border-radius: var(--radius-md);
