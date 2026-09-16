@@ -53,53 +53,87 @@
   gap: 0;
 }
 
-/* ── Hero banner ──────────────────────────────────────────────────────────── */
+/* ── jarHero — mascot resting on card top-left ───────────────────────────── */
 
-.heroBanner {
+/* jarHero is just a positioning context — no layout of its own */
+.jarHero {
+  position: relative;
+  /* Space above the card top edge for the mascot to bleed into */
+  padding-top: 4.5rem;
+}
+
+/* Mascot wrapper: anchored to top-left of jarHero, overflows above the card.
+   Background matched to cookie-jar-hug.png corner pixel (#160903) — no seam. */
+.jarMascotWrap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 9rem;
+  /* Full height: bleed zone above card + overlap into card top */
+  height: 11rem;
+  /* Transparent above the card, solid #160903 where it overlaps the card.
+     4.5rem = jarHero padding-top = the above-card bleed zone height. */
+  background: linear-gradient(to bottom,
+      transparent 0%,
+      transparent 4.5rem,
+      #160903 4.5rem,
+      #160903 100%);
+  /* TR radius matches card radius — creates the organic dip at TL of card */
+  border-radius: 0 var(--radius-xl) var(--radius-xl) 0;
   display: flex;
   align-items: flex-end;
-  gap: 1.25rem;
-  padding: 0 1.25rem 1.125rem 0;
-  background: rgba(50, 28, 11, 0.45);
-  border: 1px solid rgba(240, 192, 96, 0.1);
-  border-radius: var(--radius-xl);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   overflow: hidden;
-  min-height: 7rem;
+  pointer-events: none;
+  /* Above card (z:1), so mascot paints over the card's TL corner */
+  z-index: 2;
 }
 
 .heroMascot {
-  /* Large illustration — anchors the top of the page visually */
-  width: auto;
-  height: 9rem;
-  object-fit: contain;
-  flex-shrink: 0;
-  /* Pull down so mascot sits on the banner floor */
-  align-self: flex-end;
-  margin-bottom: -1px;
-  filter: drop-shadow(0 4px 16px rgba(200, 120, 32, 0.45));
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  object-position: center bottom;
+  display: block;
+  pointer-events: none;
 }
 
-.heroText {
-  min-width: 0;
+/* jarCard: flat TL radius (mascot wrapper covers it),
+   enough padding-top to clear the mascot overhang inside the card,
+   left content indented past mascot column for the first row only */
+.jarCard {
+  position: relative;
+  z-index: 1;
+  border-top-left-radius: 0;
+  /* Top of card content starts below the mascot height-within-card zone.
+     Mascot wrapper = 11rem total, bleed above card = 4.5rem,
+     so it extends 6.5rem into the card top. */
+  padding-top: 7rem;
+}
+
+/* Greeting row floats in the mascot's reserved column to the right */
+.jarGreetingRow {
+  /* Absolute within jarCard — sits in the top-right of the mascot zone */
+  position: absolute;
+  top: 0;
+  left: 9.5rem;
+  right: 1.375rem;
+  /* Height matches the mascot-in-card zone */
+  height: 7rem;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 0.25rem;
-  padding: 1rem 0 0.875rem;
-  flex: 1;
+  padding: 0;
 }
 
 .heroGreeting {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 1.125rem;
+  font-size: 1.0625rem;
   color: var(--cream);
   letter-spacing: -0.02em;
   margin: 0;
-  /* Allow wrapping — never truncate the greeting */
   white-space: normal;
-  overflow: visible;
   line-height: 1.25;
 }
 
@@ -110,24 +144,28 @@
   line-height: 1.4;
 }
 
-/* Mobile: slightly smaller mascot, allow greeting to wrap freely */
+/* Mobile */
 @media (max-width: 480px) {
-  .heroBanner {
-    gap: 0.75rem;
-    padding: 0 0.875rem 0.875rem 0;
-    min-height: 6rem;
+  .jarHero {
+    padding-top: 3.5rem;
   }
 
-  .heroMascot {
-    height: 6.5rem;
+  .jarMascotWrap {
+    width: 7rem;
+    height: 9rem;
+  }
+
+  .jarCard {
+    padding-top: 5.75rem;
+  }
+
+  .jarGreetingRow {
+    left: 7.5rem;
+    height: 5.75rem;
   }
 
   .heroGreeting {
     font-size: 0.9375rem;
-    /* Explicitly allow wrapping — no ellipsis on mobile */
-    white-space: normal;
-    overflow: visible;
-    text-overflow: unset;
   }
 }
 

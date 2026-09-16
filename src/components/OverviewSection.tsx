@@ -296,89 +296,97 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
       {/* ── Left column ─────────────────────────────────────── */}
       <div className={styles.leftCol}>
 
-        {/* Hero banner — mascot + greeting */}
-        <div className={styles.heroBanner}>
-          <img src={cookieJarHug} alt="" aria-hidden="true" className={styles.heroMascot} />
-          <div className={styles.heroText}>
-            <p className={styles.heroGreeting}>{getGreeting()}, Cookie Connoisseur!</p>
-            <p className={styles.heroSub}>{heroSubtitle}</p>
+        {/* Hero banner + jar card — unified block.
+            The mascot overflows upward out of the jarCard via negative
+            margin-top on the card; the card itself stays position:relative
+            so the mascot wrapper can be absolutely anchored. */}
+        <div className={styles.jarHero}>
+          {/* Mascot — sits above the card, bleeds over the top edge */}
+          <div className={styles.jarMascotWrap}>
+            <img src={cookieJarHug} alt="" aria-hidden="true" className={styles.heroMascot} />
           </div>
-        </div>
 
-        {/* Portfolio jar card */}
-        <section className={styles.jarCard}>
-          <div className={styles.jarCardTop}>
-            <div>
-              <div className={styles.jarLabelRow}>
-                <p className={styles.jarLabel}>YOUR JAR</p>
-                <button
-                  className={styles.eyeBtn}
-                  onClick={() => setBalanceHidden(h => !h)}
-                  aria-label={balanceHidden ? "Show balance" : "Hide balance"}
-                  type="button"
-                >
-                  {balanceHidden ? (
-                    /* eye-off */
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                      <path d="M1 1l12 12M5.5 5.6A2 2 0 0 0 8.4 8.5M2.5 3.5C1.5 4.5 1 6 1 7s2 4 6 4a8 8 0 0 0 3-.6M5 2.3A8 8 0 0 1 7 2c4 0 6 2.5 6 5a5.5 5.5 0 0 1-.8 2.8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-                    </svg>
-                  ) : (
-                    /* eye */
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                      <path d="M1 7s2-4.5 6-4.5S13 7 13 7s-2 4.5-6 4.5S1 7 1 7Z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-                      <circle cx="7" cy="7" r="1.75" stroke="currentColor" strokeWidth="1.3" />
-                    </svg>
+          {/* Portfolio jar card */}
+          <section className={styles.jarCard}>
+            {/* Greeting — top of card, to the right of the mascot overhang */}
+            <div className={styles.jarGreetingRow}>
+              <p className={styles.heroGreeting}>{getGreeting()}, Cookie Connoisseur!</p>
+              <p className={styles.heroSub}>{heroSubtitle}</p>
+            </div>
+            <div className={styles.jarCardTop}>
+              <div>
+                <div className={styles.jarLabelRow}>
+                  <p className={styles.jarLabel}>YOUR JAR</p>
+                  <button
+                    className={styles.eyeBtn}
+                    onClick={() => setBalanceHidden(h => !h)}
+                    aria-label={balanceHidden ? "Show balance" : "Hide balance"}
+                    type="button"
+                  >
+                    {balanceHidden ? (
+                      /* eye-off */
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                        <path d="M1 1l12 12M5.5 5.6A2 2 0 0 0 8.4 8.5M2.5 3.5C1.5 4.5 1 6 1 7s2 4 6 4a8 8 0 0 0 3-.6M5 2.3A8 8 0 0 1 7 2c4 0 6 2.5 6 5a5.5 5.5 0 0 1-.8 2.8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+                      </svg>
+                    ) : (
+                      /* eye */
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                        <path d="M1 7s2-4.5 6-4.5S13 7 13 7s-2 4.5-6 4.5S1 7 1 7Z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+                        <circle cx="7" cy="7" r="1.75" stroke="currentColor" strokeWidth="1.3" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+                <p className={styles.jarUsd}>
+                  {balanceHidden ? "••••" : `$${totalUsd.toFixed(2)}`}
+                  {!balanceHidden && pctChange !== null && (
+                    <span className={`${styles.jarChangeBadge} ${pctChange > 0.05 ? styles.jarChangeBadgePos :
+                      pctChange < -0.05 ? styles.jarChangeBadgeNeg :
+                        styles.jarChangeBadgeFlat
+                      }`}>
+                      {pctChange > 0 ? "+" : ""}{pctChange.toFixed(1)}%
+                    </span>
                   )}
-                </button>
-              </div>
-              <p className={styles.jarUsd}>
-                {balanceHidden ? "••••" : `$${totalUsd.toFixed(2)}`}
-                {!balanceHidden && pctChange !== null && (
-                  <span className={`${styles.jarChangeBadge} ${pctChange > 0.05 ? styles.jarChangeBadgePos :
-                    pctChange < -0.05 ? styles.jarChangeBadgeNeg :
-                      styles.jarChangeBadgeFlat
-                    }`}>
-                    {pctChange > 0 ? "+" : ""}{pctChange.toFixed(1)}%
-                  </span>
-                )}
-              </p>
-              <p className={styles.jarCook}>
-                {balanceHidden
-                  ? "•••• COOK"
-                  : `${cookAmt.toLocaleString(undefined, { maximumFractionDigits: 4 })} COOK`
-                }
-              </p>
-            </div>
-            {/* Balance trend sparkline — real data, fills card width */}
-            <div className={styles.sparklinePlaceholder} aria-label={hasRealData ? "Balance trend" : "No recent activity"}>
-              <p className={styles.sparklineLabel}>{hasRealData ? "Balance trend" : "Recent activity"}</p>
-              <svg
-                viewBox="0 0 120 40"
-                className={styles.sparklineSvg}
-                aria-hidden="true"
-              >
-                <path
-                  d={sparklinePath}
-                  fill="none"
-                  stroke={
-                    !hasRealData || pctChange === null ? "var(--crumb)"
-                      : pctChange > 0.05 ? "var(--success)"
-                        : pctChange < -0.05 ? "var(--error)"
-                          : "var(--crumb)"
+                </p>
+                <p className={styles.jarCook}>
+                  {balanceHidden
+                    ? "•••• COOK"
+                    : `${cookAmt.toLocaleString(undefined, { maximumFractionDigits: 4 })} COOK`
                   }
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  opacity={hasRealData ? 0.85 : 0.3}
-                  vectorEffect="non-scaling-stroke"
-                />
-              </svg>
+                </p>
+              </div>
+              {/* Balance trend sparkline — real data, fills card width */}
+              <div className={styles.sparklinePlaceholder} aria-label={hasRealData ? "Balance trend" : "No recent activity"}>
+                <p className={styles.sparklineLabel}>{hasRealData ? "Balance trend" : "Recent activity"}</p>
+                <svg
+                  viewBox="0 0 120 40"
+                  className={styles.sparklineSvg}
+                  aria-hidden="true"
+                >
+                  <path
+                    d={sparklinePath}
+                    fill="none"
+                    stroke={
+                      !hasRealData || pctChange === null ? "var(--crumb)"
+                        : pctChange > 0.05 ? "var(--success)"
+                          : pctChange < -0.05 ? "var(--error)"
+                            : "var(--crumb)"
+                    }
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    opacity={hasRealData ? 0.85 : 0.3}
+                    vectorEffect="non-scaling-stroke"
+                  />
+                </svg>
+              </div>
             </div>
-          </div>
-          <p className={styles.jarChange}>
-            {hasRealData ? "Based on recent swaps" : "No recent transactions"}
-          </p>
-        </section>
+            <p className={styles.jarChange}>
+              {hasRealData ? "Based on recent swaps" : "No recent transactions"}
+            </p>
+          </section>
+          {/* End jarHero wrapper */}
+        </div>
 
         {/* Quick actions */}
         <section className={styles.quickActions}>
