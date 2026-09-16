@@ -192,7 +192,12 @@ function extractDescription(tx: ParsedTx, sigInfo?: ConfirmedSignatureInfo): str
 
   for (const ix of instructions) {
     if ("parsed" in ix && typeof ix.parsed === "string" && ix.parsed.trim()) {
-      return ix.parsed.trim().slice(0, 64);
+      const raw = ix.parsed.trim().slice(0, 64);
+      // The RPC sometimes returns a human-readable string like "Token transfer: 300"
+      // where the amount is already surfaced in the separate `amount` field.
+      // Strip the embedded amount to avoid showing it twice in the UI.
+      const cleaned = raw.replace(/:\s*[\d,.]+\s*\w*$/, "").trim();
+      return cleaned || raw;
     }
     if ("program" in ix && ix.program === "spl-memo") {
       const data = "data" in ix ? String(ix.data).slice(0, 64) : "";
