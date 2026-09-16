@@ -6,10 +6,7 @@ import styles from "./Dashboard.module.css";
 
 export function Dashboard() {
   const { publicKey, connected } = useWallet();
-
-  if (connected && publicKey) {
-    return <AppShell walletAddress={publicKey.toBase58()} />;
-  }
+  if (connected && publicKey) return <AppShell walletAddress={publicKey.toBase58()} />;
 
   return (
     <div className={styles.root}>
