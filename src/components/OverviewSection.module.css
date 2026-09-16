@@ -40,6 +40,13 @@
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
 }
 
+/* jarCard specifically needs position:relative for the mascot and
+   overflow:visible so it bleeds above the card's top edge */
+.jarCard {
+  position: relative;
+  overflow: visible;
+}
+
 /* SwapPanel already has its own .panel card styles — no extra wrapper needed */
 .swapCard {
   padding: 0;
@@ -53,38 +60,43 @@
   gap: 0;
 }
 
-/* ── Hero + jar card composition ──────────────────────────────────────────── */
+/* ── Hero mascot + jar card composition ───────────────────────────────────── */
 
-/* Outer wrapper: position context for the absolutely-placed mascot.
-   padding-top reserves space for the portion of the mascot that bleeds
-   above the card. overflow:visible lets the mascot render outside. */
-.jarHeroWrap {
-  position: relative;
-  padding-top: 3rem;
-}
+/* jarCard is already position:relative via the shared card rule override below.
+   The mascot is a child pinned top-left, bleeding above the card's top edge. */
 
-/* Mascot: transparent PNG, positioned so its base aligns with the notch
-   bottom boundary (235.5px from card top = 71px from card bottom).
-   In jarHeroWrap coords: bottom=71px puts mascot feet at notch bottom.
-   Upper body bleeds above card into open page space. */
 .heroMascot {
   position: absolute;
-  bottom: 71px;
-  left: 1rem;
-  width: 8rem;
+  top: -1.5rem;
+  left: 1.5rem;
+  width: 7.5rem;
   height: auto;
-  object-fit: contain;
   pointer-events: none;
   z-index: 2;
-  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.5));
+  filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.45));
 }
 
-/* Greeting row: sits at the top of the jarCard, to the right of the mascot */
+/* Elliptical contact shadow under the mascot's feet */
+.heroMascotShadow {
+  position: absolute;
+  top: calc(-1.5rem + 7.5rem * (1024 / 1536));
+  /* approx mascot bottom */
+  left: 1.5rem;
+  width: 4rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.25);
+  filter: blur(6px);
+  pointer-events: none;
+  z-index: 1;
+  transform: translateX(50%);
+}
+
+/* Greeting row — fixed padding-left clears mascot (width 7.5rem + left 1.5rem + gap) */
 .heroGreetingRow {
-  /* Left indent clears the mascot footprint */
-  padding: 1rem 0 1.125rem 10rem;
+  padding: 0.75rem 0 1rem 9rem;
   border-bottom: 1px solid rgba(240, 192, 96, 0.07);
-  margin-bottom: 1.125rem;
+  margin-bottom: 1rem;
 }
 
 .heroGreeting {
@@ -105,30 +117,26 @@
   line-height: 1.45;
 }
 
+/* Mobile: mascot 5rem, no bleed above card, indent scaled down */
 @media (max-width: 480px) {
-  .jarHeroWrap {
-    padding-top: 2.25rem;
+  .heroMascot {
+    top: 0.75rem;
+    /* sits within the card, no bleed */
+    left: 1rem;
+    width: 5rem;
   }
 
-  .heroMascot {
-    width: 6rem;
-    left: 0.75rem;
-    /* Mobile notch bottom is 198.5px from card top; card height ~372px;
-       from wrapper bottom: 372 - 198.5 = 173.5px */
-    bottom: 173.5px;
+  .heroMascotShadow {
+    display: none;
+    /* shadow not needed when mascot is fully within card */
   }
 
   .heroGreetingRow {
-    /* 112px notch - 25px row left offset = 87px; use 5.5rem=88px to clear */
-    padding: 0.875rem 0 0.875rem 5.5rem;
-  }
-
-  .jarCardTop {
-    padding-left: 5.5rem;
+    padding: 0.875rem 0 0.875rem 6.5rem;
   }
 
   .heroGreeting {
-    font-size: 1.0625rem;
+    font-size: 1rem;
   }
 
   .heroSub {
@@ -189,47 +197,13 @@
 
 /* ── Portfolio jar card ───────────────────────────────────────────────────── */
 
-/* Notch cut out of the top-left corner for the mascot.
-   Measurements from live getBoundingClientRect (Phase 1):
-     Desktop: notch right x=177px (COOK text left), notch bottom y=235.5px
-     Mobile:  notch right x=141px (greeting text left — tighter), notch bottom y=198.5px (greeting row bottom)
-   Three non-notch corners get 22px radius arcs matching var(--radius-xl). */
-.jarCard {
-  clip-path: polygon(0 235.5px,
-      177px 235.5px,
-      177px 0,
-      calc(100% - 22px) 0,
-      100% 22px,
-      100% calc(100% - 22px),
-      calc(100% - 22px) 100%,
-      22px 100%,
-      0 calc(100% - 22px));
-}
-
-@media (max-width: 480px) {
-  .jarCard {
-    /* Mobile: mascot is 96px wide, starts at left:12px → occupies x:12–108.
-       Add 4px breathing room → notch right boundary = 112px.
-       Notch bottom = greeting row bottom (198.5px from card top). */
-    clip-path: polygon(0 198.5px,
-        112px 198.5px,
-        112px 0,
-        calc(100% - 22px) 0,
-        100% 22px,
-        100% calc(100% - 22px),
-        calc(100% - 22px) 100%,
-        22px 100%,
-        0 calc(100% - 22px));
-  }
-}
-
 .jarCardTop {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  /* Indent left content past the mascot footprint (left:1rem + width:8rem = 9rem) */
-  padding-left: 9.5rem;
+  /* Fixed indent matching heroGreetingRow — clears the mascot footprint */
+  padding-left: 9rem;
 }
 
 .jarLabel {
