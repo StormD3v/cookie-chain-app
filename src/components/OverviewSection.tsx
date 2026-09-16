@@ -556,19 +556,21 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
               className={styles.heatMascot}
             />
           </div>
-          <div className={styles.heatBarWrap}>
-            <div className={styles.heatBarTrack}>
-              <div
-                className={`${styles.heatBarFill} ${heatLevel === "hot" ? styles.heatFillHot :
-                  heatLevel === "warm" ? styles.heatFillWarm :
-                    styles.heatFillCool
-                  }`}
-                style={{ width: `${heatPct}%` }}
-              />
+          <div className={styles.heatMeterWrap}>
+            <div className={styles.heatBarWrap}>
+              <div className={styles.heatBarTrack}>
+                <div
+                  className={`${styles.heatBarFill} ${heatLevel === "hot" ? styles.heatFillHot :
+                    heatLevel === "warm" ? styles.heatFillWarm :
+                      styles.heatFillCool
+                    }`}
+                  style={{ width: `${heatPct}%` }}
+                />
+              </div>
+              <span className={styles.heatPct}>{heatPct}%</span>
             </div>
-            <span className={styles.heatPct}>{heatPct}%</span>
+            <p className={styles.heatLabel}>{heatLabel}</p>
           </div>
-          <p className={styles.heatLabel}>{heatLabel}</p>
           <div className={styles.heatStats}>
             <div className={styles.heatStat}>
               <span className={styles.heatStatVal}>{txCount}</span>
