@@ -121,22 +121,29 @@ function extractAmount(
     return `${mintLabel(spent[0].mint, spent[0].decimals, spent[0].delta)} → ${mintLabel(received[0].mint, received[0].decimals, received[0].delta)}`;
   }
 
-  // Single positive (received)
+  // Single positive (received) — prefix with "+" so the client can detect direction
   if (received.length === 1 && spent.length === 0) {
-    return mintLabel(received[0].mint, received[0].decimals, received[0].delta);
+    const r = received[0];
+    const sym = MINT_SYMBOLS[r.mint] ?? r.mint.slice(0, 4) + "…";
+    const amt = r.delta.toLocaleString("en-US", { maximumFractionDigits: 4 });
+    return `+${amt} ${sym}`;
   }
 
-  // Single negative (sent token)
+  // Single negative (sent token) — no prefix needed (default is outbound)
   if (spent.length === 1 && received.length === 0) {
     return mintLabel(spent[0].mint, spent[0].decimals, spent[0].delta);
   }
 
   // Multi-delta (liquidity / complex): show largest absolute change
+  // Preserve sign on multi-delta too so direction is readable
   if (deltas.length > 0) {
     const biggest = deltas.reduce((a, b) =>
       Math.abs(a.delta) > Math.abs(b.delta) ? a : b
     );
-    return mintLabel(biggest.mint, biggest.decimals, biggest.delta);
+    const sym = MINT_SYMBOLS[biggest.mint] ?? biggest.mint.slice(0, 4) + "…";
+    const amt = Math.abs(biggest.delta).toLocaleString("en-US", { maximumFractionDigits: 4 });
+    const sign = biggest.delta > 0 ? "+" : "";
+    return `${sign}${amt} ${sym}`;
   }
 
   // Fallback: native COOK only (plain transfer)
@@ -144,7 +151,8 @@ function extractAmount(
     const cook = (Math.abs(cookDelta) / 1e9).toLocaleString("en-US", {
       maximumFractionDigits: 4,
     });
-    return `${cook} COOK`;
+    const sign = cookDelta > 0 ? "+" : "";
+    return `${sign}${cook} COOK`;
   }
 
   return null;

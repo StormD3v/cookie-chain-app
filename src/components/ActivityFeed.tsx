@@ -53,20 +53,16 @@ function classifyTx(description: string, amount?: string | null): TxIconKind {
   if (d.includes("swap") || d.includes("exchange") || d.includes("route")) return "swap";
   if (d.includes("bridge")) return "bridge";
 
-  // "Token transfer" or "Transfer X COOK" — use the amount string to tell direction.
-  // amount with "→" means swap (shouldn't usually hit here, but guard it).
-  // amount without "→": if the description or amount context is a receive we
-  // look at whether the transaction was labelled "received/receive" explicitly.
   if (d.includes("transfer") || d.includes("sent") || d.includes("send")) {
-    // Explicit receive keywords take priority
     if (d.includes("received") || d.includes("receive")) return "received";
-    // If amount contains an arrow it's a swap; already caught above but be safe
     if (a.includes("→")) return "swap";
-    // Default transfers to "sent" — the server labels outgoing as "Token transfer"
-    // and we can't distinguish direction from description alone for generic transfers
+    // Server prefixes received amounts with "+" — use that as the direction signal
+    if (a.startsWith("+")) return "received";
     return "sent";
   }
   if (d.includes("received") || d.includes("receive")) return "received";
+  // Also catch a top-level "+" amount for any other description type
+  if (a.startsWith("+")) return "received";
   return "tx";
 }
 

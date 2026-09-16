@@ -91,6 +91,8 @@ function getRowIcon(desc: string, amount?: string | null) {
   if (d.includes("swap") || d.includes("exchange") || a.includes("→")) return <SwapRowIcon />;
   if (d.includes("bridge")) return <BridgeRowIcon />;
   if (d.includes("received") || d.includes("receive")) return <ReceivedRowIcon />;
+  // Server prefixes received amounts with "+" — use as direction signal
+  if (a.startsWith("+")) return <ReceivedRowIcon />;
   if (d.includes("transfer") || d.includes("sent") || d.includes("send")) return <SentRowIcon />;
   return <TxRowIcon />;
 }
