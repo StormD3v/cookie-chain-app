@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useSwap } from "../hooks/useSwap";
@@ -66,8 +66,22 @@ interface Props {
 
 export function AppShell({ walletAddress }: Props) {
   const [section, setSection] = useState<Section>("overview");
+  const [networkOpen, setNetworkOpen] = useState(false);
+  const networkRef = useRef<HTMLDivElement>(null);
   const { connected } = useWallet();
   const swap = useSwap();
+
+  // Close network dropdown on outside click
+  useEffect(() => {
+    if (!networkOpen) return;
+    function handleOutside(e: MouseEvent) {
+      if (networkRef.current && !networkRef.current.contains(e.target as Node)) {
+        setNetworkOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, [networkOpen]);
 
   function handleBridge() {
     window.open(BRIDGE_URL, "_blank", "noopener,noreferrer");
@@ -173,10 +187,46 @@ export function AppShell({ walletAddress }: Props) {
             <span className={styles.mobileBrandName}>Cookie Chain</span>
           </div>
           <div className={styles.topbarRight}>
-            <div className={styles.chainPill}>
-              <span className={styles.chainDotSm} aria-hidden="true" />
-              <span className={styles.chainPillText}>Cookie Chain</span>
+            {/* Network selector — visual placeholder, no switching logic */}
+            <div className={styles.networkSelector} ref={networkRef}>
+              <button
+                className={`${styles.chainPill} ${networkOpen ? styles.chainPillOpen : ""}`}
+                onClick={() => setNetworkOpen((o) => !o)}
+                aria-haspopup="listbox"
+                aria-expanded={networkOpen}
+                aria-label="Network selector"
+              >
+                <span className={styles.chainDotSm} aria-hidden="true" />
+                <span className={styles.chainPillText}>Cookie Chain</span>
+                <svg
+                  className={`${styles.chainChevron} ${networkOpen ? styles.chainChevronOpen : ""}`}
+                  width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true"
+                >
+                  <path d="M2.5 3.5L5 6.5L7.5 3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+
+              {networkOpen && (
+                <div className={styles.networkDropdown} role="listbox" aria-label="Select network">
+                  {/* Active network */}
+                  <div className={styles.networkItem} role="option" aria-selected="true">
+                    <span className={styles.chainDotSm} aria-hidden="true" />
+                    <span className={styles.networkItemName}>Cookie Chain</span>
+                    <svg className={styles.networkCheck} width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                      <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+
+                  <div className={styles.networkDivider} aria-hidden="true" />
+
+                  {/* Placeholder — no switching logic */}
+                  <div className={styles.networkComingSoon}>
+                    More networks coming soon
+                  </div>
+                </div>
+              )}
             </div>
+
             {connected && <WalletMultiButton />}
           </div>
         </header>
