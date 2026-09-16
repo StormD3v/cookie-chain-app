@@ -7,12 +7,10 @@ import styles from "./Dashboard.module.css";
 export function Dashboard() {
   const { publicKey, connected } = useWallet();
 
-  // ── Connected: hand off to the full AppShell layout ─────────────────────
   if (connected && publicKey) {
     return <AppShell walletAddress={publicKey.toBase58()} />;
   }
 
-  // ── Disconnected: keep existing banner / CTA unchanged ──────────────────
   return (
     <div className={styles.root}>
       <header className={styles.header}>
@@ -22,22 +20,15 @@ export function Dashboard() {
         </div>
         <WalletMultiButton />
       </header>
-
       <main className={styles.main}>
         <div className={styles.empty}>
           <div className={styles.bannerWrap} role="img" aria-label="Cookie Chain Swap banner">
-            <img
-              src={ogBanner}
-              alt=""
-              className={styles.bannerImg}
-              draggable={false}
-            />
+            <img src={ogBanner} alt="" className={styles.bannerImg} draggable={false} />
             <div className={styles.bannerOverlay}>
               <span className={styles.bannerTitle}>Cookie Chain</span>
               <span className={styles.bannerSub}>Swap</span>
             </div>
           </div>
-
           <div className={styles.emptyInner}>
             <h2 className={styles.emptyHeading}>Your jar awaits.</h2>
             <p className={styles.emptyBody}>

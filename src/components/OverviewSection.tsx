@@ -79,12 +79,19 @@ const TxRowIcon = () => (
     <circle cx="6.5" cy="6.5" r="1.5" fill="currentColor" />
   </svg>
 );
+const ReceivedRowIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+    <path d="M10 3L3 10M3 10h5M3 10V5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
 
-function getRowIcon(desc: string) {
+function getRowIcon(desc: string, amount?: string | null) {
   const d = desc.toLowerCase();
-  if (d.includes("swap") || d.includes("exchange")) return <SwapRowIcon />;
+  const a = (amount ?? "").toLowerCase();
+  if (d.includes("swap") || d.includes("exchange") || a.includes("→")) return <SwapRowIcon />;
   if (d.includes("bridge")) return <BridgeRowIcon />;
-  if (d.includes("transfer") || d.includes("sent")) return <SentRowIcon />;
+  if (d.includes("received") || d.includes("receive")) return <ReceivedRowIcon />;
+  if (d.includes("transfer") || d.includes("sent") || d.includes("send")) return <SentRowIcon />;
   return <TxRowIcon />;
 }
 
@@ -607,7 +614,7 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
                     onKeyDown={e => e.key === "Enter" && setSelectedTx(tx)}
                   >
                     <span className={`${styles.crumbIcon} ${tx.status === "failed" ? styles.crumbIconFailed : styles.crumbIconOk}`}>
-                      {getRowIcon(tx.description)}
+                      {getRowIcon(tx.description, tx.amount)}
                     </span>
                     <div className={styles.crumbBody}>
                       <span className={styles.crumbDesc}>{tx.description}</span>
