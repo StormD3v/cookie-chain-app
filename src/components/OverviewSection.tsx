@@ -359,27 +359,51 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
             {/* Balance trend sparkline — real data, fills card width */}
             <div className={styles.sparklinePlaceholder} aria-label={hasRealData ? "Balance trend" : "No recent activity"}>
               <p className={styles.sparklineLabel}>{hasRealData ? "Balance trend" : "Recent activity"}</p>
-              <svg
-                viewBox="0 0 120 40"
-                className={styles.sparklineSvg}
-                aria-hidden="true"
-              >
-                <path
-                  d={sparklinePath}
-                  fill="none"
-                  stroke={
-                    !hasRealData || pctChange === null ? "var(--crumb)"
-                      : pctChange > 0.05 ? "var(--success)"
-                        : pctChange < -0.05 ? "var(--error)"
-                          : "var(--crumb)"
-                  }
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  opacity={hasRealData ? 0.85 : 0.3}
-                  vectorEffect="non-scaling-stroke"
-                />
-              </svg>
+              {(() => {
+                const lineColor = !hasRealData || pctChange === null ? "var(--crumb)"
+                  : pctChange > 0.05 ? "var(--success)"
+                    : pctChange < -0.05 ? "var(--error)"
+                      : "var(--crumb)";
+                const lineOpacity = hasRealData ? 0.85 : 0.3;
+                // Unique gradient ID per render — avoids collision with the
+                // flame SVG gradients already on the page
+                const gradId = "sparkFill";
+                // Close the sparkline path down to y=40 to form a filled area.
+                // Append "L 120,40 L 0,40 Z" to the existing cubic-bezier path.
+                const fillPath = sparklinePath + " L 120,40 L 0,40 Z";
+                return (
+                  <svg
+                    viewBox="0 0 120 40"
+                    className={styles.sparklineSvg}
+                    aria-hidden="true"
+                    overflow="visible"
+                  >
+                    <defs>
+                      <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={lineColor} stopOpacity={0.25 * lineOpacity} />
+                        <stop offset="100%" stopColor={lineColor} stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    {/* Gradient fill area — drawn first so line sits on top */}
+                    <path
+                      d={fillPath}
+                      fill={`url(#${gradId})`}
+                      stroke="none"
+                    />
+                    {/* Original line — unchanged */}
+                    <path
+                      d={sparklinePath}
+                      fill="none"
+                      stroke={lineColor}
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      opacity={lineOpacity}
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  </svg>
+                );
+              })()}
             </div>
           </div>
           <p className={styles.jarChange}>
