@@ -514,10 +514,20 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
 
         {/* ── Jar Heat ────────────────────────────────────── */}
         <section className={styles.heatCard}>
-          <div className={styles.heatPromoRow}>
+          {/* Running mascot — large foreground element, right side */}
+          <div className={styles.heatMascotZone} aria-hidden="true">
+            <img
+              src={cookieRunning}
+              alt=""
+              aria-hidden="true"
+              className={styles.heatMascot}
+            />
+          </div>
+
+          {/* Left content column */}
+          <div className={styles.heatContent}>
             <div className={styles.heatHeader}>
               <h2 className={styles.heatTitle}>
-                {/* Inline SVG flame — warm amber/orange, matches palette */}
                 <svg
                   className={styles.flameIcon}
                   width="16" height="18"
@@ -549,40 +559,36 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
               </h2>
               <p className={styles.heatSubtitle}>Your activity level on Cookie Chain</p>
             </div>
-            <img
-              src={cookieRunning}
-              alt=""
-              aria-hidden="true"
-              className={styles.heatMascot}
-            />
-          </div>
-          <div className={styles.heatMeterWrap}>
-            <div className={styles.heatBarWrap}>
-              <div className={styles.heatBarTrack}>
-                <div
-                  className={`${styles.heatBarFill} ${heatLevel === "hot" ? styles.heatFillHot :
-                    heatLevel === "warm" ? styles.heatFillWarm :
-                      styles.heatFillCool
-                    }`}
-                  style={{ width: `${heatPct}%` }}
-                />
+
+            <div className={styles.heatMeterWrap}>
+              <div className={styles.heatBarWrap}>
+                <div className={styles.heatBarTrack}>
+                  <div
+                    className={`${styles.heatBarFill} ${heatLevel === "hot" ? styles.heatFillHot :
+                      heatLevel === "warm" ? styles.heatFillWarm :
+                        styles.heatFillCool
+                      }`}
+                    style={{ width: `${heatPct}%` }}
+                  />
+                </div>
+                <span className={styles.heatPct}>{heatPct}%</span>
               </div>
-              <span className={styles.heatPct}>{heatPct}%</span>
+              <p className={styles.heatLabel}>{heatLabel}</p>
             </div>
-            <p className={styles.heatLabel}>{heatLabel}</p>
-          </div>
-          <div className={styles.heatStats}>
-            <div className={styles.heatStat}>
-              <span className={styles.heatStatVal}>{txCount}</span>
-              <span className={styles.heatStatKey}>Transactions</span>
-            </div>
-            <div className={styles.heatStat}>
-              <span className={styles.heatStatVal}>{swapCount}</span>
-              <span className={styles.heatStatKey}>Swaps</span>
-            </div>
-            <div className={styles.heatStat}>
-              <span className={styles.heatStatVal}>{tokenCount}</span>
-              <span className={styles.heatStatKey}>Tokens</span>
+
+            <div className={styles.heatStats}>
+              <div className={styles.heatStat}>
+                <span className={styles.heatStatVal}>{txCount}</span>
+                <span className={styles.heatStatKey}>Transactions</span>
+              </div>
+              <div className={styles.heatStat}>
+                <span className={styles.heatStatVal}>{swapCount}</span>
+                <span className={styles.heatStatKey}>Swaps</span>
+              </div>
+              <div className={styles.heatStat}>
+                <span className={styles.heatStatVal}>{tokenCount}</span>
+                <span className={styles.heatStatKey}>Tokens</span>
+              </div>
             </div>
           </div>
         </section>
