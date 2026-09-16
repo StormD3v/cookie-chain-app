@@ -40,11 +40,10 @@
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
 }
 
-/* jarCard specifically needs position:relative for the mascot and
-   overflow:visible so it bleeds above the card's top edge */
+/* jarCard: normal flow, overflow hidden so artwork stays contained */
 .jarCard {
   position: relative;
-  overflow: visible;
+  overflow: hidden;
 }
 
 /* SwapPanel already has its own .panel card styles — no extra wrapper needed */
@@ -60,47 +59,36 @@
   gap: 0;
 }
 
-/* ── Hero mascot + jar card composition ───────────────────────────────────── */
+/* ── Hero zone ────────────────────────────────────────────────────────────── */
 
-/* jarCard is already position:relative via the shared card rule override below.
-   The mascot is a child pinned top-left, bleeding above the card's top edge. */
+/* Two-column flex row: artwork left, greeting right.
+   Contained within the card — no absolute positioning, no bleed. */
+.heroZone {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0.25rem 0 1.25rem;
+}
 
+/* Cookie artwork — allowed to be tall, constrained by the zone */
 .heroMascot {
-  position: absolute;
-  top: -0.75rem;
-  left: 0.75rem;
-  height: 10rem;
+  /* Height-driven: 1.5:1 landscape image. 8rem = 128px tall → 192px wide. */
+  height: 8rem;
   width: auto;
+  flex-shrink: 0;
   pointer-events: none;
-  z-index: 2;
+  /* Subtle warm lighting; no hard drop shadow */
   filter:
-    drop-shadow(0 8px 24px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 20px rgba(200, 100, 20, 0.22));
+    drop-shadow(0 6px 20px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 16px rgba(200, 100, 20, 0.2));
 }
 
-/* Elliptical contact shadow under the mascot's feet */
-.heroMascotShadow {
-  position: absolute;
-  /* Mascot is 10rem tall, top:-3.25rem → in-card depth=6.75rem. Feet ≈ 70% of image height */
-  top: 2.5rem;
-  left: 0.75rem;
-  width: 8.5rem;
-  height: 0.6rem;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.35);
-  filter: blur(6px);
-  pointer-events: none;
-  z-index: 1;
-}
-
-/* Greeting row — indent clears mascot (left:0.75rem + width≈16.5rem + 0.75rem gap = 18rem).
-   min-height = in-card mascot depth = 10rem − 0.75rem bleed = 9.25rem. */
-.heroGreetingRow {
-  padding: 0.75rem 0 0.5rem 16.5rem;
-  margin-bottom: 0.625rem;
-  min-height: 9.25rem;
+/* Greeting text — right side of hero zone */
+.heroText {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  gap: 0.3rem;
 }
 
 .heroGreeting {
@@ -109,7 +97,7 @@
   font-size: 1.25rem;
   color: var(--cream);
   letter-spacing: -0.025em;
-  margin: 0 0 0.3rem;
+  margin: 0;
   line-height: 1.2;
   white-space: normal;
 }
@@ -121,22 +109,17 @@
   line-height: 1.45;
 }
 
-/* Mobile: mascot smaller, sits within card top-left, no bleed */
+/* Thin amber divider between hero zone and balance zone */
+.heroDivider {
+  height: 1px;
+  background: rgba(240, 192, 96, 0.1);
+  margin: 0 0 1rem;
+}
+
+/* Mobile: smaller artwork */
 @media (max-width: 480px) {
   .heroMascot {
-    top: 0.75rem;
-    left: 0.75rem;
-    height: 6rem;
-    width: auto;
-  }
-
-  .heroMascotShadow {
-    display: none;
-  }
-
-  .heroGreetingRow {
-    padding: 0.75rem 0 0.875rem 10.5rem;
-    min-height: 5rem;
+    height: 5.5rem;
   }
 
   .heroGreeting {
@@ -146,6 +129,20 @@
   .heroSub {
     font-size: 0.8125rem;
   }
+
+  .heroZone {
+    gap: 0.875rem;
+    padding-bottom: 1rem;
+  }
+}
+
+/* ── No longer used ───────────────────────────────────────────────────────── */
+.heroMascotShadow {
+  display: none;
+}
+
+.heroGreetingRow {
+  display: none;
 }
 
 /* ── Swap card chef decoration ────────────────────────────────────────────── */
@@ -206,8 +203,6 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  border-top: 1px solid rgba(240, 192, 96, 0.06);
-  padding-top: 0.75rem;
 }
 
 .jarLabel {

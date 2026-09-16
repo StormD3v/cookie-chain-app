@@ -28,9 +28,7 @@ export function Dashboard() {
           </div>
           <div className={styles.emptyInner}>
             <h2 className={styles.emptyHeading}>Your jar awaits.</h2>
-            <p className={styles.emptyBody}>
-              Connect your Nightly wallet to see your COOK balance and start swapping.
-            </p>
+            <p className={styles.emptyBody}>Connect your Nightly wallet to see your COOK balance and start swapping.</p>
             <WalletMultiButton />
           </div>
         </div>

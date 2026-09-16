@@ -305,20 +305,22 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
       {/* ── Left column ─────────────────────────────────────── */}
       <div className={styles.leftCol}>
 
-        {/* Jar card — greeting + balance in one card.
-            Mascot is position:absolute inside the card, pinned top-left,
-            bleeding 1.5rem above the card edge. */}
+        {/* Jar card — hero greeting zone + balance zone in one card */}
         <section className={styles.jarCard}>
-          {/* Mascot */}
-          <img src={cookieJarHug} alt="" aria-hidden="true" className={styles.heroMascot} />
-          {/* Contact shadow under mascot feet */}
-          <div className={styles.heroMascotShadow} aria-hidden="true" />
 
-          {/* Greeting row — padding-left clears mascot */}
-          <div className={styles.heroGreetingRow}>
-            <p className={styles.heroGreeting}>{getGreeting()}, Cookie Connoisseur! 👋</p>
-            <p className={styles.heroSub}>{heroSubtitle}</p>
+          {/* ── Hero zone: artwork left, greeting right ───────── */}
+          <div className={styles.heroZone}>
+            <img src={cookieJarHug} alt="" aria-hidden="true" className={styles.heroMascot} />
+            <div className={styles.heroText}>
+              <p className={styles.heroGreeting}>{getGreeting()}, Cookie Connoisseur! 👋</p>
+              <p className={styles.heroSub}>{heroSubtitle}</p>
+            </div>
           </div>
+
+          {/* Visual divider between hero and balance zones */}
+          <div className={styles.heroDivider} aria-hidden="true" />
+
+          {/* ── Balance zone ──────────────────────────────────── */}
           <div className={styles.jarCardTop}>
             <div>
               <div className={styles.jarLabelRow}>
@@ -412,6 +414,7 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
           <p className={styles.jarChange}>
             {hasRealData ? "Based on recent swaps" : "No recent transactions"}
           </p>
+          {/* end balance zone */}
         </section>
 
         {/* Quick actions */}
