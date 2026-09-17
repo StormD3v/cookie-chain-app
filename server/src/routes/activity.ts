@@ -6,24 +6,13 @@
 
 import type { Request, Response } from "express";
 import {
-  Connection,
   PublicKey,
   type ParsedInstruction,
   type PartiallyDecodedInstruction,
   type ConfirmedSignatureInfo,
   type ParsedTransactionWithMeta,
 } from "@solana/web3.js";
-
-// ── Connection singleton ──────────────────────────────────────────────────────
-
-let _connection: Connection | null = null;
-
-function getConnection(): Connection {
-  if (_connection) return _connection;
-  const url = process.env["COOKIE_RPC_URL"] ?? "https://rpc.cookiescan.io";
-  _connection = new Connection(url, "confirmed");
-  return _connection;
-}
+import { getConnection } from "../rpcClient.js";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

@@ -1,63 +1,44 @@
 /**
  * GET /api/balances?wallet=<address>
  *
- * Calls cookie-mcp's get_balance tool (read-only, no key needed) and
- * normalises the response into the BalancesResponse shape the frontend expects.
+ * Returns native COOK and SPL token balances for a wallet by querying
+ * the Cookie Chain RPC directly via @solana/web3.js and @solana/spl-token.
+ * No external subprocess or MCP dependency.
  *
- * Actual cookie-mcp 0.3.x response shape (confirmed from live MCP output):
- * {
- *   wallet: "...",
- *   cook: { amount: "3530.641219", usdValue: 0.29 },
- *   tokens: [
- *     { mint: "Ekpafx…", symbol: "bCOOK", amount: "75.610364908",
- *       decimals: 9, usdValue: 0.007 }
- *   ],
- *   totalUsd: 0.25
- * }
+ * Response shape (unchanged from previous cookie-mcp implementation):
+ *   { wallet: string, balances: NormalisedBalance[] }
  *
- * Both `cook` and each `tokens` entry use `amount` (string), not `uiAmount`.
+ * Each NormalisedBalance:
+ *   { mint, symbol, name, uiAmount, rawAmount, decimals, usdValue }
+ *
+ * usdValue is null — price data is not available from the RPC.
+ * The frontend already handles null gracefully (hides the ≈$ line).
  */
 
 import type { Request, Response } from "express";
-import { callTool } from "../mcpClient.js";
+import { PublicKey } from "@solana/web3.js";
+import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { getConnection } from "../rpcClient.js";
 
-// ── Types matching actual cookie-mcp 0.3.x get_balance output ─────────────
+// ── Known token metadata ──────────────────────────────────────────────────────
+// These are the only mints the app currently shows. Matches KNOWN_TOKENS in
+// SwapPanel.tsx and the MINT_SYMBOLS map in activity.ts.
 
-interface McpCookEntry {
-  /** Human-readable amount string, e.g. "3530.641219" */
-  amount: string;
-  usdValue?: number | null;
+const COOK_MINT = "So11111111111111111111111111111111111111112";
+const COOK_DECIMALS = 9;
+
+interface MintMeta {
+  symbol: string;
+  name: string;
 }
 
-interface McpSplEntry {
-  mint: string;
-  symbol?: string;
-  name?: string;
-  /**
-   * cookie-mcp 0.3.x returns `amount` (string) for SPL tokens,
-   * matching the same field name as McpCookEntry — NOT `uiAmount`.
-   * `uiAmount` and `rawAmount` are kept for forward-compatibility only.
-   */
-  amount?: string;
-  uiAmount?: number | null;
-  rawAmount?: string;
-  decimals?: number;
-  usdValue?: number | null;
-}
+const KNOWN_MINTS: Record<string, MintMeta> = {
+  [COOK_MINT]: { symbol: "COOK", name: "Cookie (native)" },
+  "EkPafx58mgwkEnGwo62jXhXDAdJ37Z8G8MFBRPsr9uhz": { symbol: "bCOOK", name: "bakedCOOK" },
+  "2wPK38gv8dWU89K5zDAAULAihnU1sRocbpzwPP6twY7Q": { symbol: "CHAT", name: "Cookie Chat" },
+};
 
-interface McpBalanceResult {
-  wallet: string;
-  /** Native COOK balance — present in cookie-mcp 0.3.x */
-  cook?: McpCookEntry;
-  /** SPL / Token-2022 token balances */
-  tokens?: McpSplEntry[];
-  totalUsd?: number | null;
-  /** Error fields */
-  error?: string;
-  hint?: string;
-}
-
-// ── Normalised entry the frontend expects ─────────────────────────────────
+// ── Output shape (identical to previous implementation) ───────────────────────
 
 interface NormalisedBalance {
   mint: string;
@@ -69,60 +50,9 @@ interface NormalisedBalance {
   usdValue: number | null;
 }
 
-// Native COOK mint on Cookie Chain (same address as wSOL on Solana —
-// the chain context here is Cookie Chain, not Solana)
-const COOK_MINT = "So11111111111111111111111111111111111111112";
-const COOK_DECIMALS = 9;
+// ── Route handler ─────────────────────────────────────────────────────────────
 
-function cookEntryToNormalised(cook: McpCookEntry): NormalisedBalance {
-  const uiAmount = Number(cook.amount);
-  // Reconstruct a raw amount from the decimal string to preserve precision
-  const rawAmount = amountStringToRaw(cook.amount, COOK_DECIMALS);
-  return {
-    mint: COOK_MINT,
-    symbol: "COOK",
-    name: "Cookie (native)",
-    uiAmount: Number.isFinite(uiAmount) ? uiAmount : null,
-    rawAmount,
-    decimals: COOK_DECIMALS,
-    usdValue: cook.usdValue ?? null,
-  };
-}
-
-function splEntryToNormalised(t: McpSplEntry): NormalisedBalance {
-  const dec = t.decimals ?? 6;
-  // cookie-mcp 0.3.x sends `amount` (string), not `uiAmount`.
-  // Fall through to `uiAmount` (number) for forward-compatibility.
-  const amountStr = t.amount ?? (t.uiAmount != null ? String(t.uiAmount) : null);
-  const uiAmount = amountStr != null ? Number(amountStr) : null;
-  const rawAmount =
-    t.rawAmount ??
-    (amountStr != null ? amountStringToRaw(amountStr, dec) : "0");
-  return {
-    mint: t.mint,
-    symbol: t.symbol ?? t.mint.slice(0, 6),
-    name: t.name ?? t.symbol ?? t.mint.slice(0, 6),
-    uiAmount: uiAmount != null && Number.isFinite(uiAmount) ? uiAmount : null,
-    rawAmount,
-    decimals: dec,
-    usdValue: t.usdValue ?? null,
-  };
-}
-
-/** Convert a decimal amount string ("3530.641219") to a raw integer string */
-function amountStringToRaw(amount: string, decimals: number): string {
-  try {
-    const [whole = "0", frac = ""] = amount.split(".");
-    const fracPadded = frac.slice(0, decimals).padEnd(decimals, "0");
-    const factor = BigInt(10 ** decimals);
-    const raw = BigInt(whole) * factor + BigInt(fracPadded || "0");
-    return raw.toString();
-  } catch {
-    return "0";
-  }
-}
-
-// ── Route handler ─────────────────────────────────────────────────────────
+const BASE58 = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
 
 export async function getBalances(req: Request, res: Response): Promise<void> {
   const wallet = (req.query["wallet"] as string | undefined)?.trim();
@@ -131,39 +61,79 @@ export async function getBalances(req: Request, res: Response): Promise<void> {
     res.status(400).json({ error: "Missing ?wallet= query parameter" });
     return;
   }
-
-  // Basic base58 sanity check (32–44 chars, no I/O/l/0)
-  if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(wallet)) {
+  if (!BASE58.test(wallet)) {
     res.status(400).json({ error: "Invalid wallet address" });
     return;
   }
 
+  let pubkey: PublicKey;
   try {
-    const result = await callTool<McpBalanceResult>("get_balance", { wallet });
+    pubkey = new PublicKey(wallet);
+  } catch {
+    res.status(400).json({ error: "Invalid public key" });
+    return;
+  }
 
-    if (result.error) {
-      res.status(502).json({ error: result.error, hint: result.hint });
-      return;
-    }
-
+  try {
+    const conn = getConnection();
     const balances: NormalisedBalance[] = [];
 
-    // Native COOK — cookie-mcp 0.3.x returns this under `cook`
-    if (result.cook && result.cook.amount) {
-      balances.push(cookEntryToNormalised(result.cook));
-    }
+    // ── Native COOK balance ───────────────────────────────────────────────────
+    const lamports = await conn.getBalance(pubkey, "confirmed");
+    const cookUi = lamports / 10 ** COOK_DECIMALS;
+    balances.push({
+      mint: COOK_MINT,
+      symbol: "COOK",
+      name: "Cookie (native)",
+      uiAmount: cookUi,
+      rawAmount: String(lamports),
+      decimals: COOK_DECIMALS,
+      usdValue: null,
+    });
 
-    // SPL / Token-2022 tokens
-    if (Array.isArray(result.tokens)) {
-      for (const t of result.tokens) {
-        if (t.mint) balances.push(splEntryToNormalised(t));
-      }
+    // ── SPL token balances ────────────────────────────────────────────────────
+    // getParsedTokenAccountsByOwner returns all SPL accounts with fully parsed
+    // token data (mint, decimals, uiAmount, raw amount string) in one call.
+    const { value: tokenAccounts } = await conn.getParsedTokenAccountsByOwner(
+      pubkey,
+      { programId: TOKEN_PROGRAM_ID },
+      "confirmed",
+    );
+
+    for (const { account } of tokenAccounts) {
+      const parsed = account.data.parsed as {
+        info: {
+          mint: string;
+          tokenAmount: {
+            uiAmount: number | null;
+            amount: string;       // raw integer string
+            decimals: number;
+          };
+        };
+      };
+
+      const mint = parsed.info.mint;
+      const tokenAmount = parsed.info.tokenAmount;
+
+      // Only include mints the app knows about; skip dust/unknown tokens.
+      const meta = KNOWN_MINTS[mint];
+      if (!meta) continue;
+
+      balances.push({
+        mint,
+        symbol: meta.symbol,
+        name: meta.name,
+        uiAmount: tokenAmount.uiAmount,
+        rawAmount: tokenAmount.amount,
+        decimals: tokenAmount.decimals,
+        usdValue: null,
+      });
     }
 
     res.json({ wallet, balances });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Internal error";
     console.error("[balances]", message);
-    res.status(502).json({ error: "Failed to fetch balances from cookie-mcp", hint: message });
+    res.status(502).json({ error: "Failed to fetch balances", hint: message });
   }
 }

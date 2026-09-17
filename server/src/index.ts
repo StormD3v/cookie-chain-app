@@ -1,18 +1,18 @@
 /**
  * Cookie Chain proxy server
  *
- * Spawns cookie-mcp as a stdio child process via the MCP SDK and exposes a
- * small REST API that the Vite/React frontend consumes.  No wallet key is
- * set — all calls are read-only.
+ * Exposes a REST API that the frontend consumes.
+ * The Express app is exported for Vercel serverless use.
+ * app.listen() is called only when this file is run directly (local dev).
  *
- * Endpoints
- *   GET  /api/health                 — liveness probe
- *   GET  /api/balances?wallet=       — token balances via cookie-mcp get_balance
- *   GET  /api/activity?wallet=       — recent tx history via Cookie Chain RPC
- *   POST /api/swap/quote             — swap quote (read-only, no key)
- *   POST /api/swap/build             — build unsigned tx (no key)
- *   POST /api/swap/submit            — submit signed tx from frontend
- *   GET  /api/swap/confirm/:sig      — poll confirmation status
+ * Endpoints:
+ *   GET  /api/health
+ *   GET  /api/balances?wallet=
+ *   GET  /api/activity?wallet=
+ *   POST /api/swap/quote
+ *   POST /api/swap/build
+ *   POST /api/swap/submit
+ *   GET  /api/swap/confirm/:sig
  */
 
 import express from "express";
@@ -26,22 +26,20 @@ import {
   getSwapConfirm,
 } from "./routes/swap.js";
 
-const PORT = Number(process.env["PORT"] ?? 3001);
-
-// ── App ───────────────────────────────────────────────────────
-
 const app = express();
 
 app.use(
   cors({
-    origin: process.env["CORS_ORIGIN"] ?? "http://localhost:5173",
+    // In production on Vercel, same origin — CORS_ORIGIN is not needed.
+    // For local dev the proxy in vite.config.ts handles /api routing so
+    // requests appear same-origin and never hit this CORS check.
+    // CORS_ORIGIN is kept for flexibility (e.g. a separate frontend origin).
+    origin: process.env["CORS_ORIGIN"] ?? "*",
     methods: ["GET", "POST"],
   })
 );
 
 app.use(express.json());
-
-// ── Routes ────────────────────────────────────────────────────
 
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true, service: "cookie-chain-proxy", ts: new Date().toISOString() });
@@ -55,14 +53,21 @@ app.post("/api/swap/build", postSwapBuild);
 app.post("/api/swap/submit", postSwapSubmit);
 app.get("/api/swap/confirm/:signature", getSwapConfirm);
 
-// 404 catch-all
 app.use((_req, res) => {
   res.status(404).json({ error: "Not found" });
 });
 
-// ── Start ─────────────────────────────────────────────────────
+// Export for Vercel serverless (api/index.ts imports this)
+export default app;
 
-app.listen(PORT, () => {
-  console.log(`[proxy] listening on http://localhost:${PORT}`);
-  console.log(`[proxy] COOKIE_RPC_URL = ${process.env["COOKIE_RPC_URL"] ?? "https://rpc.cookiescan.io (default)"}`);
-});
+// Run directly for local dev (npm run dev starts this via tsx).
+// import.meta.url comparison ensures listen() is NOT called when Vercel
+// imports this file as a module — only when tsx runs it as the entry point.
+import { pathToFileURL } from "node:url";
+if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) {
+  const PORT = Number(process.env["PORT"] ?? 3001);
+  app.listen(PORT, () => {
+    console.log(`[proxy] listening on http://localhost:${PORT}`);
+    console.log(`[proxy] COOKIE_RPC_URL = ${process.env["COOKIE_RPC_URL"] ?? "https://rpc.cookiescan.io (default)"}`);
+  });
+}

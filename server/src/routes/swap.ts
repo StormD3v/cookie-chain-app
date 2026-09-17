@@ -79,19 +79,15 @@ export async function postSwapQuote(req: Request, res: Response): Promise<void> 
     badRequest(res, "slippageBps must be an integer 0–10000"); return;
   }
 
-  // Resolve input token decimals via cookie-mcp to convert the UI amount to raw.
-  // Falls back to 9 (COOK default) if lookup fails — Candy Shop will reject bad amounts.
-  let inDecimals = 9;
-  try {
-    const { callTool } = await import("../mcpClient.js");
-    const info = await callTool<{ decimals?: number; dec?: number }>(
-      "get_token_info",
-      { mint: inputMint }
-    );
-    inDecimals = info.decimals ?? info.dec ?? 9;
-  } catch {
-    // fall through with default
-  }
+  // Decimals for known mints. Matches KNOWN_TOKENS in SwapPanel.tsx.
+  // If an unknown mint is submitted Candy Shop will reject a wrong raw amount
+  // anyway — defaulting to 9 is safe for all Cookie Chain native-token cases.
+  const MINT_DECIMALS: Record<string, number> = {
+    "So11111111111111111111111111111111111111112": 9,  // COOK
+    "EkPafx58mgwkEnGwo62jXhXDAdJ37Z8G8MFBRPsr9uhz": 9,  // bCOOK
+    "2wPK38gv8dWU89K5zDAAULAihnU1sRocbpzwPP6twY7Q": 6,  // CHAT
+  };
+  const inDecimals = MINT_DECIMALS[inputMint] ?? 9;
 
   const rawAmount = uiToRaw(amount, inDecimals);
   if (!rawAmount) {
