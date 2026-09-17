@@ -11,6 +11,7 @@ import { ReceiveModal } from "./ReceiveModal";
 import { SendModal } from "./SendModal";
 import cookieJarHug from "../assets/cookie-jar-hug.png";
 import cookieRunning from "../assets/cookie-running.png";
+import jarHeatFlame from "../assets/jar-heat-flame.png";
 import cookieChefBakingUrl from "../assets/cookie-chef-baking.png";
 import styles from "./OverviewSection.module.css";
 
@@ -588,33 +589,12 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
           <div className={styles.heatContent}>
             <div className={styles.heatHeader}>
               <h2 className={styles.heatTitle}>
-                <svg
-                  className={styles.flameIcon}
-                  width="16" height="18"
-                  viewBox="0 0 16 18"
-                  fill="none"
+                <img
+                  src={jarHeatFlame}
+                  alt=""
                   aria-hidden="true"
-                >
-                  <path
-                    d="M8 1C8 1 5 5 5 8.5C5 9.88 5.67 11.1 6.72 11.88C6.27 11.17 6 10.31 6 9.38C6 7.5 7.5 5.5 8 4C8.5 5.5 10 7.5 10 9.38C10 10.31 9.73 11.17 9.28 11.88C10.33 11.1 11 9.88 11 8.5C11 5 8 1 8 1Z"
-                    fill="url(#flameTopGrad)"
-                  />
-                  <path
-                    d="M8 17C10.76 17 13 14.76 13 12C13 9.24 10.5 7 10 5.5C10 5.5 9 7 9 9C9 10.1 9.9 11 11 11C10.5 12 9.38 13 8 13C6.62 13 5.5 12 5 11C6.1 11 7 10.1 7 9C7 7 6 5.5 6 5.5C5.5 7 3 9.24 3 12C3 14.76 5.24 17 8 17Z"
-                    fill="url(#flameBodyGrad)"
-                  />
-                  <defs>
-                    <linearGradient id="flameTopGrad" x1="8" y1="1" x2="8" y2="12" gradientUnits="userSpaceOnUse">
-                      <stop offset="0%" stopColor="#FFF0A0" />
-                      <stop offset="100%" stopColor="#F0A030" />
-                    </linearGradient>
-                    <linearGradient id="flameBodyGrad" x1="8" y1="5" x2="8" y2="17" gradientUnits="userSpaceOnUse">
-                      <stop offset="0%" stopColor="#F0C060" />
-                      <stop offset="60%" stopColor="#E06020" />
-                      <stop offset="100%" stopColor="#C03010" />
-                    </linearGradient>
-                  </defs>
-                </svg>
+                  className={styles.flameIcon}
+                />
                 {" "}Jar Heat
               </h2>
               <p className={styles.heatSubtitle}>Your activity level on Cookie Chain</p>

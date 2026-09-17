@@ -7,7 +7,9 @@
   background: var(--choco);
   color: var(--cream);
   font-family: var(--font-body);
-  overflow-x: hidden;
+  /* NOTE: overflow-x must NOT be set here — it creates a new scroll context
+     that prevents position:sticky on the header and sidebar from working.
+     The body column has its own overflow-x:hidden to contain card content. */
 }
 
 /* ── Full-width app header ────────────────────────────────────────────────── */
@@ -62,10 +64,12 @@
   flex-direction: column;
   background: var(--ganache);
   border-right: 1px solid var(--crust);
-  /* sticky inside .belowHeader — avoids fixed-positioning quirks with
-     backdrop-filter ancestors that change the containing block */
-  position: sticky;
-  top: 0;
+  /* fixed relative to the viewport — now that .shell no longer creates
+     a scroll context, this correctly sticks to the page, not a container */
+  position: fixed;
+  left: 0;
+  top: 52px;
+  /* height of .appHeader */
   height: calc(100vh - 52px);
   overflow-y: auto;
   overflow-x: hidden;
@@ -73,8 +77,6 @@
   background: rgba(50, 28, 11, 0.6);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  /* Prevent shrinking in the flex row */
-  align-self: flex-start;
 }
 
 .sidebarBrand {
@@ -392,7 +394,8 @@
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
-  /* No margin-left needed — sidebar is now sticky in the flex row */
+  /* Offset for the fixed 240px sidebar on desktop */
+  margin-left: 240px;
 }
 
 /* ── appHeader brand elements ────────────────────────────────────────────── */
@@ -669,6 +672,10 @@
 @media (max-width: 780px) {
   .sidebar {
     display: none;
+  }
+
+  .body {
+    margin-left: 0;
   }
 
   .bottomBar {
