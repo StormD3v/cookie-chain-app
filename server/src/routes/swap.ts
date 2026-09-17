@@ -1,22 +1,10 @@
 /**
- * Swap routes — all read-only on the server side; no wallet key involved.
+ * Swap routes — server-side, no wallet key involved.
  *
- * POST /api/swap/quote
- *   Body: { inputMint, outputMint, amount (UI string), slippageBps? }
- *   Returns: { quote, multiRoute } — quote is human-readable, multiRoute is
- *   opaque and must be passed back verbatim to /api/swap/build.
- *
- * POST /api/swap/build
- *   Body: { multiRoute, userPublicKey }
- *   Returns: { transactionBase64 } — unsigned versioned transaction for the
- *   frontend to sign with the user's Nightly wallet.
- *
- * POST /api/swap/submit
- *   Body: { signedTransactionBase64 }
- *   Returns: { signature, confirmed }
- *
- * GET /api/swap/confirm/:signature
- *   Returns: { confirmed, error? }
+ * POST /api/swap/quote   — get a quote; returns human-readable quote + opaque multiRoute
+ * POST /api/swap/build   — build unsigned tx; returns base64 for client to sign
+ * POST /api/swap/submit  — submit a transaction already signed by the client
+ * GET  /api/swap/confirm/:signature — poll for confirmation
  */
 
 import type { Request, Response } from "express";
@@ -27,8 +15,6 @@ import {
   confirmTx,
   type MultiRoute,
 } from "../candyShop.js";
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
 
 const BASE58 = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
 
@@ -62,12 +48,10 @@ function uiToRaw(uiAmount: string, decimals: number): string | null {
   }
 }
 
-// ── Route handlers ───────────────────────────────────────────────────────────
-
 /**
  * POST /api/swap/quote
- * No key needed. Returns the formatted quote plus the raw multiRoute object
- * (opaque, pass back to /build unchanged).
+ * Returns the formatted quote plus the raw multiRoute object
+ * (opaque — pass back to /build unchanged).
  */
 export async function postSwapQuote(req: Request, res: Response): Promise<void> {
   const { inputMint, outputMint, amount, slippageBps } = req.body as {
@@ -95,9 +79,9 @@ export async function postSwapQuote(req: Request, res: Response): Promise<void> 
     badRequest(res, "slippageBps must be an integer 0–10000"); return;
   }
 
-  // We need token decimals to convert the UI amount to raw.
-  // Resolve via cookie-mcp's get_token_info (read-only).
-  let inDecimals = 9; // COOK default
+  // Resolve input token decimals via cookie-mcp to convert the UI amount to raw.
+  // Falls back to 9 (COOK default) if lookup fails — Candy Shop will reject bad amounts.
+  let inDecimals = 9;
   try {
     const { callTool } = await import("../mcpClient.js");
     const info = await callTool<{ decimals?: number; dec?: number }>(
@@ -106,7 +90,7 @@ export async function postSwapQuote(req: Request, res: Response): Promise<void> 
     );
     inDecimals = info.decimals ?? info.dec ?? 9;
   } catch {
-    // If lookup fails fall through with default; Candy Shop will reject bad amounts
+    // fall through with default
   }
 
   const rawAmount = uiToRaw(amount, inDecimals);
@@ -138,7 +122,6 @@ export async function postSwapQuote(req: Request, res: Response): Promise<void> 
       return;
     }
 
-    // Format human-readable fields the UI needs
     const gross = multiRoute.grossOutAmount ?? multiRoute.totalOutAmount;
     const quote = {
       inputMint,

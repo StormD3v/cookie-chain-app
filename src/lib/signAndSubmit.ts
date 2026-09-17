@@ -1,26 +1,16 @@
 /**
- * signAndSubmit — shared sign + submit + poll utility.
- *
- * Extracted from useSwap.execute() so it can be reused by useSend (and any
- * future transaction flow) without duplicating the Nightly two-path logic.
- *
- * Flow:
- *   1. Deserialise base64 tx bytes.
- *   2a. signTransaction path (preferred): sign → submit via proxy → poll.
- *   2b. sendTransaction path (fallback):  sign+send combined → poll.
- *   3. Poll /api/swap/confirm/:sig until confirmed, failed, or timeout.
- *
- * The proxy's /api/swap/submit is generic — it just forwards the signed
- * base64 bytes to the chain, so it works for any transaction type.
+ * signAndSubmit — sign + submit + poll utility.
+ * Extracted from useSwap so it can be reused by useSend and other tx flows.
+ * Signing is always client-side; the server never holds a private key.
  */
 
 import { Connection, VersionedTransaction, Transaction } from "@solana/web3.js";
 import type { WalletContextState } from "@solana/wallet-adapter-react";
 import { submitSwapTx, fetchSwapConfirm } from "../api/cookieMcp";
 
-/** Poll every 2.5 s */
+/** Poll every 2.5 s — fast enough to feel responsive, slow enough not to hammer the endpoint */
 const POLL_MS = 2_500;
-/** Give up after 90 s */
+/** Abandon after 90 s and tell the user to check the explorer */
 const TIMEOUT_MS = 90_000;
 
 export type SendStage =
@@ -37,14 +27,10 @@ export interface SignAndSubmitResult {
 
 /**
  * Signs and submits a base64-encoded unsigned transaction.
- * Calls `onStage` whenever the stage changes so the caller can update UI.
- * Throws a human-readable Error on any failure.
- *
- * @param txBase64     - Base64 unsigned transaction (VersionedTransaction preferred, legacy fallback)
- * @param wallet       - Live WalletContextState from useWallet()
- * @param connection   - Live Connection from useConnection()
- * @param onStage      - Optional stage-change callback for UI updates
- * @param signal       - Cancellation token — set .cancelled = true to abort
+ * Tries signTransaction (Path A: sign then submit via proxy) first;
+ * falls back to sendTransaction (Path B: sign+send combined) if unavailable.
+ * Polls /api/swap/confirm until confirmed, failed, or the 90 s timeout.
+ * Throws a human-readable Error on any failure including wallet rejection.
  */
 export async function signAndSubmit(
   txBase64: string,
@@ -73,7 +59,8 @@ export async function signAndSubmit(
   let signedBase64: string | null = null;
   let inlineSignature: string | null = null;
 
-  // ── Path A: signTransaction (preferred) ──────────────────────────────────
+  // Path A: signTransaction — sign client-side, submit via proxy.
+  // The server never sees or holds the private key.
   if (hasSignTx && signTransaction) {
     try {
       let signed: VersionedTransaction | Transaction;
@@ -101,7 +88,7 @@ export async function signAndSubmit(
       throw new Error(isRejection ? "Transaction rejected in wallet" : `Signing failed: ${msg}`);
     }
   }
-  // ── Path B: sendTransaction (sign+send combined) ──────────────────────────
+  // Path B: sendTransaction — sign and submit in one step (Nightly fallback).
   else if (hasSendTx && sendTransaction) {
     notify("submitting");
     try {
@@ -132,7 +119,6 @@ export async function signAndSubmit(
 
   if (cancelled()) throw new Error("Cancelled");
 
-  // ── Submit (Path A only) ──────────────────────────────────────────────────
   let signature: string;
 
   if (inlineSignature) {
@@ -156,7 +142,6 @@ export async function signAndSubmit(
     throw new Error("No signed transaction to submit");
   }
 
-  // ── Poll confirmation ─────────────────────────────────────────────────────
   const deadline = Date.now() + TIMEOUT_MS;
   while (Date.now() < deadline) {
     await new Promise<void>((r) => setTimeout(r, POLL_MS));

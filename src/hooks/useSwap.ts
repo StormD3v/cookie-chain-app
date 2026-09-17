@@ -50,29 +50,24 @@ const INITIAL: SwapState = {
   error: null,
 };
 
-// ── Hook ─────────────────────────────────────────────────────────────────────
-
 export function useSwap(): UseSwapResult {
   const { connection } = useConnection();
   const wallet = useWallet();
 
-  // Keep a ref to the current wallet so the execute callback always reads
-  // the latest signTransaction/sendTransaction without needing them in its
-  // dependency array (which caused stale-closure bugs when the adapter's
-  // method references changed between renders).
+  // walletRef: execute() reads the latest signTransaction/sendTransaction
+  // without listing them as deps — avoids stale-closure bugs when the adapter's
+  // method references change between renders.
   const walletRef = useRef(wallet);
   walletRef.current = wallet;
 
   const [state, setState] = useState<SwapState>(INITIAL);
 
-  // Prevent stale async completions from overwriting newer state
+  // execId guards against stale async completions overwriting newer state.
   const execId = useRef(0);
 
   const set = useCallback((patch: Partial<SwapState>) => {
     setState((s) => ({ ...s, ...patch }));
   }, []);
-
-  // ── getQuote ──────────────────────────────────────────────────────────────
 
   const getQuote = useCallback(
     (params: {
@@ -95,8 +90,6 @@ export function useSwap(): UseSwapResult {
     [set]
   );
 
-  // ── openConfirm / cancelConfirm ───────────────────────────────────────────
-
   const openConfirm = useCallback(() => {
     set({ stage: "confirming" });
   }, [set]);
@@ -104,8 +97,6 @@ export function useSwap(): UseSwapResult {
   const cancelConfirm = useCallback(() => {
     set({ stage: "quoted" });
   }, [set]);
-
-  // ── execute ───────────────────────────────────────────────────────────────
 
   const execute = useCallback(async () => {
     const { publicKey: pk } = walletRef.current;
@@ -124,7 +115,6 @@ export function useSwap(): UseSwapResult {
       if (execId.current === id) setState((s) => ({ ...s, ...patch }));
     };
 
-    // Step 1: build the unsigned transaction via the proxy
     guard({ stage: "signing", error: null });
     let txBase64: string;
     try {
@@ -140,7 +130,6 @@ export function useSwap(): UseSwapResult {
 
     if (execId.current !== id) return;
 
-    // Steps 2–4: sign → submit → poll via shared utility
     const cancelSignal = { cancelled: false };
     try {
       const { signature } = await signAndSubmit(
@@ -148,7 +137,7 @@ export function useSwap(): UseSwapResult {
         walletRef.current,
         connection,
         (stage) => {
-          // Map generic SendStage → SwapStage (they share the same names)
+          // SendStage and SwapStage share the same string values.
           guard({ stage: stage as SwapStage });
         },
         cancelSignal,
@@ -159,8 +148,6 @@ export function useSwap(): UseSwapResult {
       guard({ stage: "error", error: err instanceof Error ? err.message : "Transaction failed" });
     }
   }, [state.multiRoute, connection, set]);
-
-  // ── reset ─────────────────────────────────────────────────────────────────
 
   const reset = useCallback(() => {
     ++execId.current; // invalidate any in-flight exec

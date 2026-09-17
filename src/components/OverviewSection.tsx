@@ -15,8 +15,7 @@ import jarHeatFlame from "../assets/jar-heat-flame.png";
 import cookieChefBakingUrl from "../assets/cookie-chef-baking.png";
 import styles from "./OverviewSection.module.css";
 
-// ── Time-of-day greeting — uses visitor's LOCAL browser time via new Date() ──
-// Confirmed: new Date().getHours() returns the browser's local hour, not UTC.
+// getGreeting() uses new Date().getHours() — that is local browser time, not UTC.
 function getGreeting(): string {
   const h = new Date().getHours();
   if (h < 12) return "Good morning";
@@ -28,15 +27,12 @@ function getGreeting(): string {
 const BRIDGE_URL = "https://hyperlane.cookiescan.io";
 const EXPLORER = "https://cookiescan.io";
 
-// ── Quick action icons ────────────────────────────────────────────────────────
-// Paper-plane send icon (matches reference)
 const SendIcon = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
     <path d="M3 10L17 3l-7 14-2-5L3 10Z" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
     <path d="M11 9l-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
   </svg>
 );
-// Download-tray receive icon (matches reference)
 const ReceiveIcon = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
     <path d="M10 3v10M6 9l4 4 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
@@ -160,7 +156,6 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
   const [showSend, setShowSend] = useState(false);
   const [balanceHidden, setBalanceHidden] = useState(false);
 
-  // Portfolio totals
   const totalUsd = balances.reduce((s, b) => s + (b.usdValue ?? 0), 0);
   const nativeCook = balances.find(b => b.symbol === "COOK");
   const cookAmt = nativeCook?.uiAmount ?? 0;
@@ -172,16 +167,14 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
     t.description.toLowerCase().includes("swap") ||
     t.description.toLowerCase().includes("exchange")
   ).length;
-  // Token count from balances (non-zero holdings only)
   const tokenCount = balances.filter(b => (b.uiAmount ?? 0) > 0).length;
 
   // Volume: sum of absolute USD value across confirmed swap transactions
-  // Uses a rough estimate: swapCount × average swap size from balance data
+  // Uses a rough estimate — numeric amount parsed from the amount string.
   const volumeUsd = (() => {
     let total = 0;
     for (const tx of confirmedTxs) {
       if (tx.amount && (tx.description.toLowerCase().includes("swap") || tx.amount.includes("→"))) {
-        // Extract numeric value from amount string like "100 COOK → 0.013 USDC"
         const match = tx.amount.match(/[\d,]+\.?\d*/);
         if (match) {
           const val = parseFloat(match[0].replace(/,/g, ""));
@@ -202,7 +195,6 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
   const HEAT_CEILING = 100;
   const heatPct = Math.min(100, Math.round((heatScore / HEAT_CEILING) * 100));
 
-  // Heat level thresholds match the new, wider scale
   const heatLevel: "hot" | "warm" | "cool" =
     heatPct >= 60 ? "hot" : heatPct >= 20 ? "warm" : "cool";
 
@@ -210,17 +202,11 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
     : heatLevel === "warm" ? "Building momentum 📈"
       : "Just warming up 🍪";
 
-  // ── Subtitle: desktop vs mobile variants per reference ───────────────────
-  // Desktop: activity-aware; Mobile: always the "possibilities" line
   const heroSubtitleDesktop = "Your jar is looking healthy. Keep cooking!";
   const heroSubtitleMobile = "Your jar is full of possibilities.";
 
-  // Percentage change: oldest known balance → current balance.
-  // Walks backwards through ALL confirmed txs (not range-filtered) via
-  // parseCookDelta to reconstruct the oldest balance. Independent of chart.
   const pctChange: number | null = (() => {
     if (confirmedTxs.length < 3) return null;
-    // Walk backwards from cookAmt through all confirmed txs to get oldest balance.
     const confirmed = confirmedTxs.slice(); // newest first
     const bal: number[] = [cookAmt];
     for (const tx of confirmed) {
@@ -242,19 +228,16 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
 
   return (
     <div className={styles.overview}>
-      {/* ── Left column ─────────────────────────────────────── */}
       <div className={styles.leftCol}>
 
-        {/* Jar card — hero greeting zone + balance zone in one card */}
         <section className={styles.jarCard}>
 
-          {/* ── Hero zone: artwork left, greeting right ───────── */}
           <div className={styles.heroZone}>
             <img src={cookieJarHug} alt="" aria-hidden="true" className={styles.heroMascot} />
             <div className={styles.heroText}>
               <p className={styles.heroGreeting}>{getGreeting()}, Cookie Connoisseur! 👋</p>
               <p className={styles.heroSub}>
-                {/* Desktop: activity-aware; Mobile: "possibilities" via CSS class */}
+                {/* Desktop subtitle via CSS class toggle; mobile subtitle shown on small screens */}
                 <span className={styles.heroSubDesktop}>{heroSubtitleDesktop}</span>
                 <span className={styles.heroSubMobile}>{heroSubtitleMobile}</span>
               </p>
@@ -264,7 +247,6 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
           {/* Visual divider between hero and balance zones */}
           <div className={styles.heroDivider} aria-hidden="true" />
 
-          {/* ── Balance zone ──────────────────────────────────── */}
           <div className={styles.jarCardTop}>
             <div>
               <div className={styles.jarLabelRow}>
@@ -308,37 +290,30 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
               </p>
             </div>
           </div>
-          {/* end balance zone */}
         </section>
 
-        {/* Quick actions */}
         <section className={styles.quickActions}>
-          {/* Send */}
           <button className={styles.qaBtn} aria-label="Send" onClick={() => setShowSend(true)}>
             <span className={styles.qaIcon}><SendIcon /></span>
             <span className={styles.qaLabel}>Send</span>
           </button>
 
-          {/* Receive — opens address modal */}
           <button className={styles.qaBtn} aria-label="Receive" onClick={() => setShowReceive(true)}>
             <span className={styles.qaIcon}><ReceiveIcon /></span>
             <span className={styles.qaLabel}>Receive</span>
           </button>
 
-          {/* Bake Swap — navigates to Bake section */}
           <button className={`${styles.qaBtn} ${styles.qaBtnPrimary}`} aria-label="Bake Swap" onClick={() => onNavigate("bake")}>
             <span className={styles.qaIcon}><BakeSwapIcon /></span>
             <span className={styles.qaLabel}>Bake Swap</span>
           </button>
 
-          {/* Bridge — external Hyperlane handoff */}
           <button className={styles.qaBtn} aria-label="Bridge to Solana" onClick={() => window.open(BRIDGE_URL, "_blank", "noopener,noreferrer")}>
             <span className={styles.qaIcon}><BridgeIcon /></span>
             <span className={styles.qaLabel}>Bridge</span>
           </button>
         </section>
 
-        {/* Pantry (token list) */}
         <section className={styles.pantryCard}>
           <div className={styles.pantryHeader}>
             <div>
@@ -362,7 +337,6 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
                 const symbol = token.symbol ?? "???";
                 return (
                   <li key={token.mint} className={styles.tokenRow}>
-                    {/* Token icon — real logo if available, emoji fallback */}
                     <span className={styles.tokenIcon} aria-hidden="true">
                       {getTokenLogo(token.mint) ? (
                         <img
@@ -397,7 +371,6 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
                         <span className={styles.tokenUsd}>≈ ${token.usdValue < 0.01 ? token.usdValue.toFixed(4) : token.usdValue.toFixed(2)}</span>
                       )}
                     </div>
-                    {/* Allocation bar */}
                     <div className={styles.allocationWrap}>
                       <div className={styles.allocationBar}>
                         <div className={styles.allocationFill} style={{ width: `${pct}%` }} />
@@ -412,9 +385,7 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
           )}
         </section>
 
-        {/* ── Jar Heat ────────────────────────────────────── */}
         <section className={styles.heatCard}>
-          {/* Running mascot — large foreground element, right side */}
           <div className={styles.heatMascotZone} aria-hidden="true">
             <img
               src={cookieRunning}
@@ -424,7 +395,6 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
             />
           </div>
 
-          {/* Left content column */}
           <div className={styles.heatContent}>
             <div className={styles.heatHeader}>
               <h2 className={styles.heatTitle}>
@@ -478,16 +448,13 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
 
       </div>
 
-      {/* ── Right column ────────────────────────────────────── */}
       <div className={styles.rightCol}>
 
-        {/* Swap panel */}
         <section className={styles.swapCard}>
           <SwapPanel swap={swap} />
-        </section >
+        </section>
 
-        {/* Mobile Bake Swap promo card — visible on mobile only.
-            Chef image is a CSS background so it never overlaps the HTML content. */}
+        {/* Mobile Bake Swap promo — chef image as CSS background to avoid HTML overlap */}
         <div
           className={styles.mobileSwapPromo}
           style={{ backgroundImage: `url(${cookieChefBakingUrl})` }}
@@ -505,7 +472,6 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
           </div>
         </div>
 
-        {/* Crumbs feed (compact) */}
         <section className={styles.crumbsCard}>
           <div className={styles.crumbsHeader}>
             <div>
@@ -570,22 +536,18 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
         </section >
       </div >
 
-      {/* TX detail modal */}
-      < TxDetailModal tx={selectedTx} onClose={() => setSelectedTx(null)
-      } />
+      <TxDetailModal tx={selectedTx} onClose={() => setSelectedTx(null)} />
 
-      {/* Receive address modal */}
       <ReceiveModal
         walletAddress={showReceive ? walletAddress : null}
         onClose={() => setShowReceive(false)}
       />
 
-      {/* Send modal */}
       <SendModal
         open={showSend}
         balances={balances}
         onClose={() => setShowSend(false)}
       />
-    </div >
+    </div>
   );
 }
