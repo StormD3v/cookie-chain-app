@@ -280,11 +280,10 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 2px;
-  /* no top padding — tabs sit flush at top of this column */
+  gap: 0;
 }
 
-/* Time-range tabs — 1D/1W/1M/ALL segmented control */
+/* Time-range tabs — sit at the top flush above the chart, no gap */
 .timeRangeTabs {
   display: flex;
   align-items: center;
@@ -293,10 +292,11 @@
   background: rgba(0, 0, 0, 0.2);
   border-radius: 6px;
   padding: 2px;
-  /* Push tabs to sit directly above the SVG — flush, not floating at top */
   align-self: flex-end;
   flex-shrink: 0;
-  margin-top: auto;
+  /* tabs at top — SVG fills remainder below */
+  margin-top: 0;
+  margin-bottom: 2px;
 }
 
 .timeRangeTab {
@@ -356,7 +356,9 @@
 
 .sparklineSvg {
   width: 100%;
-  height: 96px;
+  /* Grow to fill remaining space in .sparklinePlaceholder below the tabs */
+  flex: 1;
+  min-height: 0;
   display: block;
   overflow: visible;
 }
@@ -364,13 +366,14 @@
 .chartEmpty {
   flex: 1;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.625rem;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding-top: 0.25rem;
+  font-size: 0.5625rem;
   color: var(--crumb);
   opacity: 0.6;
   font-style: italic;
-  text-align: center;
+  text-align: right;
 }
 
 /* ── Quick actions ────────────────────────────────────────────────────────── */
@@ -708,7 +711,10 @@
 
 .mobileSwapPromoSub {
   font-size: 0.75rem;
-  color: var(--crumb);
+  /* Cream text with text-shadow so it reads against the bakery background */
+  color: var(--cream);
+  opacity: 0.85;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
   margin: 0;
   line-height: 1.4;
 }
@@ -1054,6 +1060,29 @@
   vertical-align: middle;
   margin-top: -2px;
   flex-shrink: 0;
+  /* Subtle living-flame effect: soft glow pulse + gentle scale breathing */
+  animation: flamePulse 1.8s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+
+@keyframes flamePulse {
+
+  0%,
+  100% {
+    filter: drop-shadow(0 0 3px rgba(240, 160, 40, 0.5));
+    transform: scale(1);
+  }
+
+  50% {
+    filter: drop-shadow(0 0 7px rgba(240, 160, 40, 0.85));
+    transform: scale(1.07);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flameIcon {
+    animation: none;
+  }
 }
 
 .heatHeader {

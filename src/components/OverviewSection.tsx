@@ -554,7 +554,7 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
                         {(token.uiAmount ?? 0).toLocaleString(undefined, { maximumFractionDigits: 4 })}
                       </span>
                       {token.usdValue != null && token.usdValue > 0 && (
-                        <span className={styles.tokenUsd}>≈ ${token.usdValue.toFixed(2)}</span>
+                        <span className={styles.tokenUsd}>≈ ${token.usdValue < 0.01 ? token.usdValue.toFixed(4) : token.usdValue.toFixed(2)}</span>
                       )}
                     </div>
                     {/* Allocation bar */}

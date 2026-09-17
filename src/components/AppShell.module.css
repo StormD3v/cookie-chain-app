@@ -62,10 +62,10 @@
   flex-direction: column;
   background: var(--ganache);
   border-right: 1px solid var(--crust);
-  position: fixed;
-  /* top = header height */
-  left: 0;
-  top: 52px;
+  /* sticky inside .belowHeader — avoids fixed-positioning quirks with
+     backdrop-filter ancestors that change the containing block */
+  position: sticky;
+  top: 0;
   height: calc(100vh - 52px);
   overflow-y: auto;
   overflow-x: hidden;
@@ -73,6 +73,8 @@
   background: rgba(50, 28, 11, 0.6);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
+  /* Prevent shrinking in the flex row */
+  align-self: flex-start;
 }
 
 .sidebarBrand {
@@ -390,8 +392,7 @@
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
-  /* Offset for the fixed 240px sidebar on desktop */
-  margin-left: 240px;
+  /* No margin-left needed — sidebar is now sticky in the flex row */
 }
 
 /* ── appHeader brand elements ────────────────────────────────────────────── */
@@ -670,18 +671,13 @@
     display: none;
   }
 
-  /* No sidebar offset on mobile */
-  .body {
-    margin-left: 0;
-  }
-
   .bottomBar {
     display: flex;
     align-items: flex-start;
   }
 
   .content {
-    padding: 1rem 0.875rem 9rem;
+    padding: 1rem 0.875rem 11rem;
   }
 
   /* topbar handled by the full-width header mobile rule above */

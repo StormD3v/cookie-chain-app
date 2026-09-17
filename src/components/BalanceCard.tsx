@@ -68,7 +68,7 @@ export function BalanceCard({ token }: Props) {
       <p className={styles.amount}>{formatAmount(token.uiAmount)}</p>
 
       {token.usdValue != null && token.usdValue > 0 && (
-        <p className={styles.usd}>≈ ${token.usdValue.toFixed(2)}</p>
+        <p className={styles.usd}>≈ ${token.usdValue < 0.01 ? token.usdValue.toFixed(4) : token.usdValue.toFixed(2)}</p>
       )}
 
       {showMint && (

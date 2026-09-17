@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import type { SwapToken } from "../types/cookie";
 import type { UseSwapResult } from "../hooks/useSwap";
 import styles from "./SwapPanel.module.css";
-import chefBakingUrl from "../assets/cookie-chef-baking.png";
 
 // ── Well-known tokens ─────────────────────────────────────────────────────────
 // The COOK native mint is the same address as wSOL on Solana — context is
@@ -95,17 +94,9 @@ export function SwapPanel({ swap }: Props) {
   const canConfirm = hasQuote && swap.quote !== null;
 
   return (
-    <div className={styles.panel} style={{ backgroundImage: `url(${chefBakingUrl})` }}>
-      {/* Panel heading with gear icon — no "Swap tokens" sub-heading */}
-      <div className={styles.panelHeader}>
-        <h2 className={styles.heading}>Bake Swap</h2>
-        <button className={styles.gearBtn} aria-label="Swap settings">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <circle cx="8" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.4" />
-            <path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M3.4 12.6l1.4-1.4M11.2 4.8l1.4-1.4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-          </svg>
-        </button>
-      </div>
+    <div className={styles.panel}>
+      {/* Panel heading */}
+      <h2 className={styles.heading}>Bake Swap</h2>
 
       {/* ── Input token ──────────────────────────────────────── */}
       <div className={styles.field}>
