@@ -153,17 +153,24 @@ function deriveSparklinePoints(
   txs: ActivityItem[],
   svgW = 120,
   svgH = 80,
+  windowStartSec?: number,  // left edge of the selected time window (unix seconds)
+  windowEndSec?: number,    // right edge (defaults to now)
 ): { points: Array<[number, number]>; flat: boolean } {
   // Build balance history newest→oldest, then reverse
-  const balances: number[] = [currentCook];
-  for (const tx of txs) {
-    if (tx.status === "failed") continue; // skip failed txs
+  // Only use confirmed txs for reconstruction
+  const confirmedTxs = txs.filter(t => t.status !== "failed");
+  const balances: Array<{ v: number; t: number | null }> = [
+    { v: currentCook, t: windowEndSec ?? Date.now() / 1000 }
+  ];
+  for (const tx of confirmedTxs) {
     const delta = parseCookDelta(tx.amount);
-    // Prior balance = current - what we gained (or + what we spent)
-    balances.push(balances[balances.length - 1] - delta);
+    balances.push({
+      v: balances[balances.length - 1].v - delta,
+      t: tx.blockTime,
+    });
   }
 
-  // Need at least 3 real data points for a meaningful shape
+  // Need at least 2 real balance transitions to draw a meaningful shape
   if (balances.length < 3) {
     const mid = svgH / 2;
     return { points: [[0, mid], [svgW, mid]], flat: true };
@@ -172,18 +179,32 @@ function deriveSparklinePoints(
   // Reverse so oldest is first (left side of chart)
   const pts = [...balances].reverse();
 
-  const minVal = Math.min(...pts);
-  const maxVal = Math.max(...pts);
+  const minVal = Math.min(...pts.map(p => p.v));
+  const maxVal = Math.max(...pts.map(p => p.v));
   const range = maxVal - minVal;
 
+  // Determine time bounds for x-axis scaling
+  const wStart = windowStartSec ?? (pts[0].t ?? 0);
+  const wEnd = windowEndSec ?? (pts[pts.length - 1].t ?? Date.now() / 1000);
+  const timeSpan = wEnd - wStart;
+
   // Normalise each point to SVG coordinates
-  // Y axis: higher balance = higher on card (lower SVG y)
-  const pad = 4; // px padding top/bottom
-  const coords: Array<[number, number]> = pts.map((v, i) => {
-    const x = (i / (pts.length - 1)) * svgW;
+  const pad = 4;
+  const coords: Array<[number, number]> = pts.map((p) => {
+    // X: proportional to timestamp within window (or evenly spaced if no timestamps)
+    let x: number;
+    if (timeSpan > 0 && p.t !== null) {
+      x = Math.max(0, Math.min(svgW, ((p.t - wStart) / timeSpan) * svgW));
+    } else {
+      // fallback: even spacing (when blockTime is null)
+      x = (pts.indexOf(p) / (pts.length - 1)) * svgW;
+    }
+
+    // Y: higher balance = higher on card (lower SVG y)
     const y = range === 0
       ? svgH / 2
-      : pad + ((maxVal - v) / range) * (svgH - pad * 2);
+      : pad + ((maxVal - p.v) / range) * (svgH - pad * 2);
+
     return [x, y];
   });
 
@@ -295,22 +316,32 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
   const heroSubtitleMobile = "Your jar is full of possibilities.";
 
   // ── Time-range filtering for chart ────────────────────────────────────────
-  const rangeFilteredTxs = (() => {
-    if (timeRange === "ALL") return transactions;
-    const nowSec = Date.now() / 1000;
-    const windowSec =
-      timeRange === "1D" ? 86400 :
-        timeRange === "1W" ? 604800 :
-      /* 1M */ 2592000;
-    return transactions.filter(tx =>
-      tx.blockTime !== null && tx.blockTime >= nowSec - windowSec
-    );
-  })();
+  const nowSec = Date.now() / 1000;
+  const rangeWindowSec =
+    timeRange === "1D" ? 86400 :
+      timeRange === "1W" ? 604800 :
+        timeRange === "1M" ? 2592000 : null; // null = ALL
+
+  const rangeStartSec = rangeWindowSec ? nowSec - rangeWindowSec : null;
+
+  const rangeFilteredTxs = rangeStartSec === null
+    ? transactions
+    : transactions.filter(tx => tx.blockTime !== null && tx.blockTime >= rangeStartSec);
 
   // Derive sparkline from time-range-filtered transactions
+  // Pass time window bounds so x-positions are proportional to real timestamps
   const rangeConfirmedTxs = rangeFilteredTxs.filter(t => t.status === "confirmed");
   const rangeHasData = rangeConfirmedTxs.length >= 2;
-  const sparkline = deriveSparklinePoints(cookAmt, rangeFilteredTxs);
+  const sparkline = deriveSparklinePoints(
+    cookAmt,
+    rangeFilteredTxs,
+    120,
+    80,
+    rangeStartSec ?? (transactions.length > 0
+      ? Math.min(...transactions.map(t => t.blockTime ?? nowSec))
+      : nowSec - 86400),
+    nowSec,
+  );
   const sparklinePath = smoothPath(sparkline.points);
   const hasRealData = confirmedTxs.length >= 3;
 
@@ -438,7 +469,10 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
                       : "var(--crumb)";
                 const lineOpacity = 0.9;
                 const gradId = "sparkFill";
-                const fillPath = sparklinePath + " L 120,80 L 0,80 Z";
+                // Close path along bottom edge using actual first/last x positions
+                const lastPt = sparkline.points[sparkline.points.length - 1];
+                const firstPt = sparkline.points[0];
+                const fillPath = sparklinePath + ` L ${lastPt[0]},80 L ${firstPt[0]},80 Z`;
                 return (
                   <svg
                     viewBox="0 0 120 80"

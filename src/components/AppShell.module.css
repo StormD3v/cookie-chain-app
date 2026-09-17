@@ -452,6 +452,12 @@
     /* no longer sticky on mobile — page scrolls naturally */
   }
 
+  /* Remove the desktop-only fixed-header offset — on mobile the header
+     is position:relative and in normal flow, so no offset is needed */
+  .belowHeader {
+    margin-top: 0;
+  }
+
   .appHeaderRight {
     flex-direction: column;
     align-items: flex-end;
@@ -688,7 +694,7 @@
   }
 
   .content {
-    padding: 1rem 0.875rem 11rem;
+    padding: 0.75rem 0.875rem 11rem;
   }
 
   /* topbar handled by the full-width header mobile rule above */

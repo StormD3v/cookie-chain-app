@@ -122,6 +122,12 @@
     height: 5.5rem;
   }
 
+  /* Mobile chart cap: 140px keeps the card proportionate on small screens */
+  .sparklinePlaceholder {
+    height: 140px !important;
+    max-height: 140px !important;
+  }
+
   .heroGreeting {
     font-size: 1rem;
   }
@@ -200,9 +206,9 @@
 
 .jarCardTop {
   display: flex;
-  /* stretch lets both columns grow to the same height, so the chart
-     column isn't constrained by the shorter balance-text column */
-  align-items: stretch;
+  /* flex-start: chart column is self-sizing (fixed height), balance column
+     stays at its natural height — neither dictates the other's height */
+  align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
 }
@@ -278,13 +284,16 @@
 .sparklinePlaceholder {
   flex: 1;
   min-width: 0;
-  /* min-height ensures the chart column has real height for both
-     the data state (SVG) and the empty state (text below tabs) */
-  min-height: 96px;
+  /* Fixed height cap — chart must never drive the card's height.
+     240px chosen: tall enough for a readable curve, well within card budget. */
+  height: 240px;
+  max-height: 240px;
   display: flex;
   flex-direction: column;
   align-items: stretch;
   gap: 0;
+  /* Remove flex stretching — this container sets its own height */
+  align-self: flex-start;
 }
 
 /* Time-range tabs — sit at the top flush above the chart, no gap */
