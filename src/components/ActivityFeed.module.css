@@ -259,11 +259,10 @@
 }
 
 .badgeOk {
-  /* --sky: teal-blue does real work here as the confirmed-state colour,
-     distinct from --butter (amber) and --success (green) */
-  background: rgba(74, 158, 186, 0.14);
-  color: var(--sky);
-  border: 1px solid rgba(74, 158, 186, 0.3);
+  /* Green = confirmed — standard crypto convention */
+  background: rgba(96, 192, 128, 0.12);
+  color: var(--success);
+  border: 1px solid rgba(96, 192, 128, 0.28);
 }
 
 .badgeFailed {

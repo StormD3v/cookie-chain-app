@@ -11,6 +11,7 @@ import { ReceiveModal } from "./ReceiveModal";
 import { SendModal } from "./SendModal";
 import cookieJarHug from "../assets/cookie-jar-hug.png";
 import cookieRunning from "../assets/cookie-running.png";
+import cookieChefBaking from "../assets/cookie-chef-baking.png";
 import styles from "./OverviewSection.module.css";
 
 // ── Time-of-day greeting — uses visitor's LOCAL browser time via new Date() ──
@@ -292,8 +293,21 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
   const heroSubtitleDesktop = "Your jar is looking healthy. Keep cooking!";
   const heroSubtitleMobile = "Your jar is full of possibilities.";
 
-  // Derive sparkline from transaction history
-  const sparkline = deriveSparklinePoints(cookAmt, transactions);
+  // ── Time-range filtering for chart ────────────────────────────────────────
+  const rangeFilteredTxs = (() => {
+    if (timeRange === "ALL") return transactions;
+    const nowSec = Date.now() / 1000;
+    const windowSec =
+      timeRange === "1D" ? 86400 :
+        timeRange === "1W" ? 604800 :
+      /* 1M */ 2592000;
+    return transactions.filter(tx =>
+      tx.blockTime !== null && tx.blockTime >= nowSec - windowSec
+    );
+  })();
+
+  // Derive sparkline from time-range-filtered transactions
+  const sparkline = deriveSparklinePoints(cookAmt, rangeFilteredTxs);
   const sparklinePath = smoothPath(sparkline.points);
   const hasRealData = confirmedTxs.length >= 3;
 
@@ -403,8 +417,14 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
                 ))}
               </div>
               {(() => {
-                // Chart always uses amber/butter brand color — no green/red
-                const lineColor = "var(--butter)";
+                // Chart color = trend direction: green up, red down, crumb for flat/no data
+                const lineColor = !hasRealData || pctChange === null
+                  ? "var(--crumb)"
+                  : pctChange > 0.05
+                    ? "var(--success)"
+                    : pctChange < -0.05
+                      ? "var(--error)"
+                      : "var(--crumb)";
                 const lineOpacity = hasRealData ? 0.9 : 0.3;
                 const gradId = "sparkFill";
                 const fillPath = sparklinePath + " L 120,80 L 0,80 Z";
@@ -475,9 +495,12 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
               <h2 className={styles.pantryTitle}>Your Pantry</h2>
               <p className={styles.pantrySubtitle}>All your tokens in one place</p>
             </div>
-            <button className={styles.manageLink} onClick={() => onNavigate("pantry")}>
-              Manage tokens →
-            </button>
+            <div className={styles.pantryHeaderRight}>
+              <span className={styles.pantryPctLabel}>% portfolio</span>
+              <button className={styles.manageLink} onClick={() => onNavigate("pantry")}>
+                Manage tokens →
+              </button>
+            </div>
           </div>
 
           {balances.length === 0 ? (
@@ -634,9 +657,20 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
           <SwapPanel swap={swap} />
         </section >
 
-        {/* Mobile mascot near Crumbs — visible on mobile only, hidden on desktop */}
-        <div className={styles.mobileCrumbsMascot} aria-hidden="true">
-          <img src={cookieRunning} alt="" className={styles.mobileCrumbsMascotImg} />
+        {/* Mobile Bake Swap promo card — visible on mobile only */}
+        <div className={styles.mobileSwapPromo}>
+          <div className={styles.mobileSwapPromoContent}>
+            <span className={styles.mobileSwapPromoTag}>Quick Swap</span>
+            <h3 className={styles.mobileSwapPromoHeading}>Bake Swap</h3>
+            <p className={styles.mobileSwapPromoSub}>Trade tokens on Cookie Chain</p>
+            <button
+              className={styles.mobileSwapPromoBtn}
+              onClick={() => onNavigate("bake")}
+            >
+              Start Baking →
+            </button>
+          </div>
+          <img src={cookieChefBaking} alt="" aria-hidden="true" className={styles.mobileSwapPromoImg} />
         </div>
 
         {/* Crumbs feed (compact) */}

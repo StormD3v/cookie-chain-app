@@ -12,7 +12,8 @@
   flex-direction: row;
   gap: 0.75rem;
   list-style: none;
-  padding: 0 0 0.25rem; /* small bottom padding so box-shadow isn't clipped */
+  padding: 0 0 0.25rem;
+  /* small bottom padding so box-shadow isn't clipped */
   margin: 0;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
@@ -79,5 +80,29 @@
     /* Let cards size naturally so up to 2-3 fit before scrolling */
     width: auto;
     max-width: 240px;
+  }
+}
+
+/* ── Mobile: vertical stacked list instead of horizontal carousel ─────────── */
+
+@media (max-width: 779px) {
+  .track {
+    flex-direction: column;
+    overflow-x: visible;
+    scroll-snap-type: none;
+    gap: 0.5rem;
+    padding-bottom: 0;
+  }
+
+  .slide {
+    width: 100%;
+    max-width: 100%;
+    scroll-snap-align: none;
+    flex-shrink: 1;
+  }
+
+  /* Dots are meaningless for a vertical list */
+  .dots {
+    display: none;
   }
 }

@@ -15,7 +15,7 @@ import styles from "./AppShell.module.css";
 const BRIDGE_URL = "https://hyperlane.cookiescan.io";
 
 // ── Section types ─────────────────────────────────────────────────────────────
-type Section = "overview" | "pantry" | "bake" | "crumbs";
+type Section = "overview" | "pantry" | "bake" | "crumbs" | "jarScore" | "settings";
 
 // ── Nav item SVGs ─────────────────────────────────────────────────────────────
 const HomeIcon = () => (
@@ -55,13 +55,6 @@ const BridgeIcon = () => (
 const CrumbsIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
     <path d="M2 4h12M2 8h8M2 12h10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-  </svg>
-);
-
-const AnalyticsIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-    <path d="M2 12l3.5-4 2.5 2 3-5 3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M1 13.5h14" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
   </svg>
 );
 
@@ -135,6 +128,8 @@ export function AppShell({ walletAddress }: Props) {
       case "pantry": return <PantrySection walletAddress={walletAddress} />;
       case "bake": return <BakeSection swap={swap} />;
       case "crumbs": return <CrumbsSection walletAddress={walletAddress} swapStage={swap.stage} />;
+      case "jarScore": return <JarScoreSection />;
+      case "settings": return <SettingsSection />;
       default: return <OverviewSection walletAddress={walletAddress} swap={swap} onNavigate={setSection} />;
     }
   }
@@ -175,13 +170,6 @@ export function AppShell({ walletAddress }: Props) {
           {/* DISCOVER group */}
           <div className={styles.navSpacer} />
           <p className={styles.navLabel}>Discover</p>
-          <a href="https://analytics.cookiescan.io" target="_blank" rel="noopener noreferrer" className={styles.navItem}>
-            <span className={styles.navIcon}><AnalyticsIcon /></span>
-            <span className={styles.navLabel2}>Analytics</span>
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true" className={styles.navExternal}>
-              <path d="M2 8L8 2M8 2H4.5M8 2v3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </a>
           <a href="https://cookiescan.io" target="_blank" rel="noopener noreferrer" className={styles.navItem}>
             <span className={styles.navIcon}><EcosystemIcon /></span>
             <span className={styles.navLabel2}>Ecosystem</span>
@@ -193,11 +181,19 @@ export function AppShell({ walletAddress }: Props) {
           {/* EXTRAS group */}
           <div className={styles.navSpacer} />
           <p className={styles.navLabel}>Extras</p>
-          <a href="https://cookiescan.io" target="_blank" rel="noopener noreferrer" className={styles.navItem}>
+          <button
+            className={`${styles.navItem} ${section === "jarScore" ? styles.navItemActive : ""}`}
+            onClick={() => setSection("jarScore")}
+            aria-current={section === "jarScore" ? "page" : undefined}
+          >
             <span className={styles.navIcon}><JarScoreIcon /></span>
             <span className={styles.navLabel2}>Jar Score</span>
-          </a>
-          <button className={styles.navItem} aria-label="Settings">
+          </button>
+          <button
+            className={`${styles.navItem} ${section === "settings" ? styles.navItemActive : ""}`}
+            onClick={() => setSection("settings")}
+            aria-current={section === "settings" ? "page" : undefined}
+          >
             <span className={styles.navIcon}><SettingsIcon /></span>
             <span className={styles.navLabel2}>Settings</span>
           </button>
@@ -252,7 +248,10 @@ export function AppShell({ walletAddress }: Props) {
         {/* Top header bar */}
         <header className={styles.topbar}>
           <div className={styles.topbarLeft}>
-            {/* Mobile brand */}
+            {/* Desktop logo — shown in the unified full-width header */}
+            <span className={styles.topbarLogo} aria-hidden="true">🍪</span>
+            <span className={styles.topbarBrandName}>Cookie Chain</span>
+            {/* Mobile brand (separate element, shown on mobile only) */}
             <span className={styles.mobileBrand} aria-hidden="true">🍪</span>
             <span className={styles.mobileBrandName}>Cookie Chain</span>
           </div>
@@ -329,6 +328,52 @@ export function AppShell({ walletAddress }: Props) {
 
       {/* Swap confirm modal — always mounted above everything */}
       <SwapConfirmModal swap={swap} />
+    </div>
+  );
+}
+
+// ── Jar Score placeholder section ────────────────────────────────────────────
+
+function JarScoreSection() {
+  return (
+    <div style={{ padding: "2rem 1.5rem" }}>
+      <h1 style={{ fontFamily: "var(--font-display)", fontSize: "1.5rem", fontWeight: 800, color: "var(--cream)", marginBottom: "0.5rem" }}>
+        Jar Score
+      </h1>
+      <p style={{ color: "var(--crumb)", fontSize: "0.9375rem", marginBottom: "1.5rem" }}>
+        Your Jar Score reflects your activity on Cookie Chain.
+      </p>
+      <div style={{
+        background: "rgba(50,28,11,0.55)",
+        border: "1px solid rgba(240,192,96,0.13)",
+        borderRadius: "var(--radius-xl)",
+        padding: "2rem 1.5rem",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: "0.75rem",
+        maxWidth: "360px",
+      }}>
+        <span style={{ fontSize: "4rem", fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--butter)", lineHeight: 1 }}>—</span>
+        <p style={{ color: "var(--crumb)", fontSize: "0.8125rem", textAlign: "center", margin: 0 }}>
+          Connect your wallet and make some swaps to earn a score.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ── Settings placeholder section ─────────────────────────────────────────────
+
+function SettingsSection() {
+  return (
+    <div style={{ padding: "2rem 1.5rem" }}>
+      <h1 style={{ fontFamily: "var(--font-display)", fontSize: "1.5rem", fontWeight: 800, color: "var(--cream)", marginBottom: "0.5rem" }}>
+        Settings
+      </h1>
+      <p style={{ color: "var(--crumb)", fontSize: "0.9375rem" }}>
+        Settings — coming soon.
+      </p>
     </div>
   );
 }
