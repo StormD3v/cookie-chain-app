@@ -5,35 +5,50 @@
   border: 1px solid var(--crust);
   border-radius: var(--radius-xl);
   padding: 1.5rem 1.375rem 1.375rem;
+  /* Left indent pushes all content into the right plain-brown area */
+  padding-left: 50%;
   display: flex;
   flex-direction: column;
-  /* Tighter gap — dense and intentional, not spread out */
   gap: 0.75rem;
   width: 100%;
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
+  /* bg-image applied via inline style in SwapPanel.tsx */
+  background-repeat: no-repeat;
+  /* Fit the illustration to the left half only */
+  background-size: 52% auto;
+  background-position: left center;
   box-shadow:
     0 0 0 1px rgba(240, 192, 96, 0.09) inset,
     0 8px 32px rgba(0, 0, 0, 0.55),
     0 2px 8px rgba(0, 0, 0, 0.4),
-    /* Cool-toned deep shadow adds depth beyond the warm palette */
     0 16px 48px rgba(4, 2, 12, 0.3);
   position: relative;
 }
 
 .panel::before {
+  /* Subtle vignette that fades from transparent on the left to a slight darken
+     on the right — preserves text readability without blocking the artwork */
   content: '';
   position: absolute;
   inset: 0;
   border-radius: var(--radius-xl);
   background-image:
-    radial-gradient(circle at 15% 25%, rgba(240, 192, 96, 0.06) 0%, transparent 50%),
-    radial-gradient(circle at 85% 75%, rgba(200, 120, 32, 0.05) 0%, transparent 45%);
+    linear-gradient(to right, transparent 40%, rgba(30, 14, 4, 0.65) 65%, rgba(30, 14, 4, 0.85) 100%);
   pointer-events: none;
+  z-index: 0;
 }
 
-/* ── Panel header row (title + gear) ─────────────────────────────────────── */
+/* old ::before replaced by the gradient below */
+
+/* Panel header row (title + gear) ─────────────────────────────────────── */
+
+/* All direct children sit above the ::before gradient overlay */
+.panel>* {
+  position: relative;
+  z-index: 1;
+}
 
 .panelHeader {
   display: flex;
@@ -408,16 +423,22 @@
 @media (max-width: 480px) {
   .panel {
     padding: 1.25rem 1rem;
+    padding-left: 1rem;
     border-radius: var(--radius-lg);
+    background-image: none !important;
   }
 
-  .amountInput {
-    font-size: 1.125rem;
+  .panel::before {
+    display: none;
   }
+}
 
-  .outputAmount {
-    font-size: 1.125rem;
-  }
+.amountInput {
+  font-size: 1.125rem;
+}
+
+.outputAmount {
+  font-size: 1.125rem;
 }
 
 @media (max-width: 380px) {

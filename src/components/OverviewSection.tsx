@@ -11,7 +11,7 @@ import { ReceiveModal } from "./ReceiveModal";
 import { SendModal } from "./SendModal";
 import cookieJarHug from "../assets/cookie-jar-hug.png";
 import cookieRunning from "../assets/cookie-running.png";
-import cookieChefBaking from "../assets/cookie-chef-baking.png";
+import cookieChefBakingUrl from "../assets/cookie-chef-baking.png";
 import styles from "./OverviewSection.module.css";
 
 // ── Time-of-day greeting — uses visitor's LOCAL browser time via new Date() ──
@@ -307,6 +307,8 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
   })();
 
   // Derive sparkline from time-range-filtered transactions
+  const rangeConfirmedTxs = rangeFilteredTxs.filter(t => t.status === "confirmed");
+  const rangeHasData = rangeConfirmedTxs.length >= 2;
   const sparkline = deriveSparklinePoints(cookAmt, rangeFilteredTxs);
   const sparklinePath = smoothPath(sparkline.points);
   const hasRealData = confirmedTxs.length >= 3;
@@ -417,6 +419,14 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
                 ))}
               </div>
               {(() => {
+                // No data for this range — show a simple empty state instead of blank
+                if (!rangeHasData) {
+                  return (
+                    <div className={styles.chartEmpty}>
+                      <span>No activity in this window</span>
+                    </div>
+                  );
+                }
                 // Chart color = trend direction: green up, red down, crumb for flat/no data
                 const lineColor = !hasRealData || pctChange === null
                   ? "var(--crumb)"
@@ -425,7 +435,7 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
                     : pctChange < -0.05
                       ? "var(--error)"
                       : "var(--crumb)";
-                const lineOpacity = hasRealData ? 0.9 : 0.3;
+                const lineOpacity = 0.9;
                 const gradId = "sparkFill";
                 const fillPath = sparklinePath + " L 120,80 L 0,80 Z";
                 return (
@@ -657,8 +667,12 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
           <SwapPanel swap={swap} />
         </section >
 
-        {/* Mobile Bake Swap promo card — visible on mobile only */}
-        <div className={styles.mobileSwapPromo}>
+        {/* Mobile Bake Swap promo card — visible on mobile only.
+            Chef image is a CSS background so it never overlaps the HTML content. */}
+        <div
+          className={styles.mobileSwapPromo}
+          style={{ backgroundImage: `url(${cookieChefBakingUrl})` }}
+        >
           <div className={styles.mobileSwapPromoContent}>
             <span className={styles.mobileSwapPromoTag}>Quick Swap</span>
             <h3 className={styles.mobileSwapPromoHeading}>Bake Swap</h3>
@@ -670,7 +684,6 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
               Start Baking →
             </button>
           </div>
-          <img src={cookieChefBaking} alt="" aria-hidden="true" className={styles.mobileSwapPromoImg} />
         </div>
 
         {/* Crumbs feed (compact) */}

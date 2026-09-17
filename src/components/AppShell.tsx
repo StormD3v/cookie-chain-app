@@ -95,6 +95,7 @@ interface Props {
 export function AppShell({ walletAddress }: Props) {
   const [section, setSection] = useState<Section>("overview");
   const [networkOpen, setNetworkOpen] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const networkRef = useRef<HTMLDivElement>(null);
   const { connected } = useWallet();
   const swap = useSwap();
@@ -136,181 +137,157 @@ export function AppShell({ walletAddress }: Props) {
 
   return (
     <div className={styles.shell}>
-      {/* ── Desktop sidebar ─────────────────────────────────── */}
-      <aside className={styles.sidebar} aria-label="Main navigation">
-        {/* Brand */}
-        <div className={styles.sidebarBrand}>
-          <span className={styles.sidebarLogo} aria-hidden="true">🍪</span>
-          <div className={styles.sidebarBrandText}>
-            <span className={styles.sidebarBrandName}>Cookie Chain</span>
-            <span className={styles.sidebarBrandTag}>Your on-chain kitchen.</span>
-          </div>
-        </div>
 
-        {/* Nav section: MAIN */}
-        <nav className={styles.sidebarNav}>
-          <p className={styles.navLabel}>Main</p>
-          {mainNavItems.map(({ id, label, Icon, bridge }) => (
-            <button
-              key={id}
-              className={`${styles.navItem} ${!bridge && section === id ? styles.navItemActive : ""}`}
-              onClick={() => bridge ? handleBridge() : setSection(id as Section)}
-              aria-current={!bridge && section === id ? "page" : undefined}
-            >
-              <span className={styles.navIcon}><Icon /></span>
-              <span className={styles.navLabel2}>{label}</span>
-              {bridge && (
-                <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true" className={styles.navExternal}>
-                  <path d="M2 8L8 2M8 2H4.5M8 2v3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              )}
-            </button>
-          ))}
-
-          {/* DISCOVER group */}
-          <div className={styles.navSpacer} />
-          <p className={styles.navLabel}>Discover</p>
-          <a href="https://cookiescan.io" target="_blank" rel="noopener noreferrer" className={styles.navItem}>
-            <span className={styles.navIcon}><EcosystemIcon /></span>
-            <span className={styles.navLabel2}>Ecosystem</span>
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true" className={styles.navExternal}>
-              <path d="M2 8L8 2M8 2H4.5M8 2v3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </a>
-
-          {/* EXTRAS group */}
-          <div className={styles.navSpacer} />
-          <p className={styles.navLabel}>Extras</p>
-          <button
-            className={`${styles.navItem} ${section === "jarScore" ? styles.navItemActive : ""}`}
-            onClick={() => setSection("jarScore")}
-            aria-current={section === "jarScore" ? "page" : undefined}
-          >
-            <span className={styles.navIcon}><JarScoreIcon /></span>
-            <span className={styles.navLabel2}>Jar Score</span>
-          </button>
-          <button
-            className={`${styles.navItem} ${section === "settings" ? styles.navItemActive : ""}`}
-            onClick={() => setSection("settings")}
-            aria-current={section === "settings" ? "page" : undefined}
-          >
-            <span className={styles.navIcon}><SettingsIcon /></span>
-            <span className={styles.navLabel2}>Settings</span>
-          </button>
-        </nav>
-
-        {/* Cookie cluster decoration — real asset, anchored to bottom-left corner */}
-        <img
-          src={sidebarCookieCluster}
-          alt=""
-          aria-hidden="true"
-          className={styles.sidebarCookieCluster}
-        />
-
-        {/* Chain status footer */}
-        <div className={styles.sidebarFooter}>
-          <div className={styles.sidebarStatusCard}>
-            <div className={styles.statusTopRow}>
-              <span className={styles.chainDot} aria-hidden="true" />
-              <div className={styles.chainInfo}>
-                <span className={styles.chainName}>Cookie Chain</span>
-                <span className={styles.chainStatus}>Healthy</span>
-              </div>
-            </div>
-            <div className={styles.statusStats}>
-              <div className={styles.statusStat}>
-                <span className={styles.statusStatVal}>82ms</span>
-                <span className={styles.statusStatKey}>RPC</span>
-              </div>
-              <div className={styles.statusStat}>
-                <span className={styles.statusStatVal}>~1s</span>
-                <span className={styles.statusStatKey}>Finality</span>
-              </div>
-              <div className={styles.statusStat}>
-                <span className={styles.statusStatVal}>0.00005</span>
-                <span className={styles.statusStatKey}>Fee (COOK)</span>
-              </div>
-            </div>
-            <a
-              href="https://cookiescan.io"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.statusLink}
-            >
-              View on CookieScan ↗
-            </a>
-          </div>
-        </div>
-      </aside>
-
-      {/* ── Main area ──────────────────────────────────────────── */}
-      <div className={styles.body}>
-        {/* Top header bar */}
-        <header className={styles.topbar}>
-          <div className={styles.topbarLeft}>
-            {/* Desktop logo — shown in the unified full-width header */}
-            <span className={styles.topbarLogo} aria-hidden="true">🍪</span>
+      {/* ── Full-width app header — spans sidebar + content ─── */}
+      <header className={styles.appHeader}>
+        <div className={styles.appHeaderLeft}>
+          <span className={styles.topbarLogo} aria-hidden="true">🍪</span>
+          <div className={styles.topbarBrandGroup}>
             <span className={styles.topbarBrandName}>Cookie Chain</span>
-            {/* Mobile brand (separate element, shown on mobile only) */}
-            <span className={styles.mobileBrand} aria-hidden="true">🍪</span>
-            <span className={styles.mobileBrandName}>Cookie Chain</span>
+            <span className={styles.topbarBrandTag}>Your on-chain kitchen.</span>
           </div>
-          <div className={styles.topbarRight}>
-            {/* Notification bell */}
-            <button className={styles.bellBtn} aria-label="Notifications">
-              <BellIcon />
-            </button>
-            {/* Network selector — visual placeholder, no switching logic */}
-            <div className={styles.networkSelector} ref={networkRef}>
-              <button
-                className={`${styles.chainPill} ${networkOpen ? styles.chainPillOpen : ""}`}
-                onClick={() => setNetworkOpen((o) => !o)}
-                aria-haspopup="listbox"
-                aria-expanded={networkOpen}
-                aria-label="Network selector"
-              >
-                <span className={styles.chainDotSm} aria-hidden="true" />
-                <span className={styles.chainPillText}>Cookie Chain</span>
-                <svg
-                  className={`${styles.chainChevron} ${networkOpen ? styles.chainChevronOpen : ""}`}
-                  width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true"
-                >
-                  <path d="M2.5 3.5L5 6.5L7.5 3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </button>
-
-              {networkOpen && (
-                <div className={styles.networkDropdown} role="listbox" aria-label="Select network">
-                  {/* Active network */}
-                  <div className={styles.networkItem} role="option" aria-selected="true">
-                    <span className={styles.chainDotSm} aria-hidden="true" />
-                    <span className={styles.networkItemName}>Cookie Chain</span>
-                    <svg className={styles.networkCheck} width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                      <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </div>
-
-                  <div className={styles.networkDivider} aria-hidden="true" />
-
-                  {/* Placeholder — no switching logic */}
-                  <div className={styles.networkComingSoon}>
-                    More networks coming soon
-                  </div>
-                </div>
-              )}
+          {/* Mobile brand uses same elements, CSS hides tag on narrow */}
+        </div>
+        <div className={styles.appHeaderRight}>
+          {/* Notification bell — desktop only */}
+          <button className={styles.bellBtn} aria-label="Notifications" onClick={() => setShowNotifications(v => !v)}>
+            <BellIcon />
+          </button>
+          {/* Notifications flyout */}
+          {showNotifications && (
+            <div className={styles.notificationsPanel} role="dialog" aria-label="Notifications">
+              <p className={styles.notificationsEmpty}>No notifications yet.</p>
             </div>
-
-            {connected && <WalletMultiButton />}
+          )}
+          {/* Network selector */}
+          <div className={styles.networkSelector} ref={networkRef}>
+            <button
+              className={`${styles.chainPill} ${networkOpen ? styles.chainPillOpen : ""}`}
+              onClick={() => setNetworkOpen((o) => !o)}
+              aria-haspopup="listbox"
+              aria-expanded={networkOpen}
+              aria-label="Network selector"
+            >
+              <span className={styles.chainDotSm} aria-hidden="true" />
+              <span className={styles.chainPillText}>Cookie Chain</span>
+              <svg
+                className={`${styles.chainChevron} ${networkOpen ? styles.chainChevronOpen : ""}`}
+                width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true"
+              >
+                <path d="M2.5 3.5L5 6.5L7.5 3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+            {networkOpen && (
+              <div className={styles.networkDropdown} role="listbox" aria-label="Select network">
+                <div className={styles.networkItem} role="option" aria-selected="true">
+                  <span className={styles.chainDotSm} aria-hidden="true" />
+                  <span className={styles.networkItemName}>Cookie Chain</span>
+                  <svg className={styles.networkCheck} width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                    <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+                <div className={styles.networkDivider} aria-hidden="true" />
+                <div className={styles.networkComingSoon}>More networks coming soon</div>
+              </div>
+            )}
           </div>
-        </header>
+          {connected && <WalletMultiButton />}
+        </div>
+      </header>
 
-        {/* Section content */}
-        <main className={styles.content}>
-          {renderSection()}
-        </main>
-      </div>
+      {/* ── Below-header row: sidebar + main content ─────────── */}
+      <div className={styles.belowHeader}>
 
-      {/* ── Mobile bottom tab bar ───────────────────────────────── */}
+        {/* ── Desktop sidebar — starts BELOW the header ────── */}
+        <aside className={styles.sidebar} aria-label="Main navigation">
+
+          {/* Nav section: MAIN */}
+          <nav className={styles.sidebarNav}>
+            <p className={styles.navLabel}>Main</p>
+            {mainNavItems.map(({ id, label, Icon, bridge }) => (
+              <button
+                key={id}
+                className={`${styles.navItem} ${!bridge && section === id ? styles.navItemActive : ""}`}
+                onClick={() => bridge ? handleBridge() : setSection(id as Section)}
+                aria-current={!bridge && section === id ? "page" : undefined}
+              >
+                <span className={styles.navIcon}><Icon /></span>
+                <span className={styles.navLabel2}>{label}</span>
+                {bridge && (
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true" className={styles.navExternal}>
+                    <path d="M2 8L8 2M8 2H4.5M8 2v3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                )}
+              </button>
+            ))}
+
+            {/* DISCOVER group */}
+            <div className={styles.navSpacer} />
+            <p className={styles.navLabel}>Discover</p>
+            <a href="https://cookiescan.io" target="_blank" rel="noopener noreferrer" className={styles.navItem}>
+              <span className={styles.navIcon}><EcosystemIcon /></span>
+              <span className={styles.navLabel2}>Ecosystem</span>
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true" className={styles.navExternal}>
+                <path d="M2 8L8 2M8 2H4.5M8 2v3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </a>
+
+            {/* EXTRAS group */}
+            <div className={styles.navSpacer} />
+            <p className={styles.navLabel}>Extras</p>
+            <button
+              className={`${styles.navItem} ${section === "jarScore" ? styles.navItemActive : ""}`}
+              onClick={() => setSection("jarScore")}
+              aria-current={section === "jarScore" ? "page" : undefined}
+            >
+              <span className={styles.navIcon}><JarScoreIcon /></span>
+              <span className={styles.navLabel2}>Jar Score</span>
+            </button>
+            <button
+              className={`${styles.navItem} ${section === "settings" ? styles.navItemActive : ""}`}
+              onClick={() => setSection("settings")}
+              aria-current={section === "settings" ? "page" : undefined}
+            >
+              <span className={styles.navIcon}><SettingsIcon /></span>
+              <span className={styles.navLabel2}>Settings</span>
+            </button>
+          </nav>
+
+          {/* Cookie cluster decoration */}
+          <img
+            src={sidebarCookieCluster}
+            alt=""
+            aria-hidden="true"
+            className={styles.sidebarCookieCluster}
+          />
+
+          {/* Chain status footer */}
+          <div className={styles.sidebarFooter}>
+            <div className={styles.sidebarStatusCard}>
+              <div className={styles.statusTopRow}>
+                <span className={styles.chainDot} aria-hidden="true" />
+                <div className={styles.chainInfo}>
+                  <span className={styles.chainName}>Cookie Chain</span>
+                  <span className={styles.chainStatus}>Healthy</span>
+                </div>
+              </div>
+              <a href="https://cookiescan.io" target="_blank" rel="noopener noreferrer" className={styles.statusLink}>
+                View on CookieScan ↗
+              </a>
+            </div>
+          </div>
+        </aside>
+
+        {/* ── Main content column ───────────────────────────── */}
+        <div className={styles.body}>
+          <main className={styles.content}>
+            {renderSection()}
+          </main>
+        </div>
+
+      </div>{/* end belowHeader */}
+
+      {/* ── Mobile bottom tab bar ────────────────────────────── */}
       <nav className={styles.bottomBar} aria-label="Bottom navigation">
         {mainNavItems.map(({ id, label, Icon, bridge }) => (
           <button
@@ -320,13 +297,12 @@ export function AppShell({ walletAddress }: Props) {
             aria-current={!bridge && section === id ? "page" : undefined}
           >
             <span className={styles.tabIcon}><Icon /></span>
-            {/* Mobile bottom nav: Overview → Home per mobile reference */}
             <span className={styles.tabLabel}>{label === "Overview" ? "Home" : label}</span>
           </button>
         ))}
       </nav>
 
-      {/* Swap confirm modal — always mounted above everything */}
+      {/* Swap confirm modal */}
       <SwapConfirmModal swap={swap} />
     </div>
   );

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import type { SwapToken } from "../types/cookie";
 import type { UseSwapResult } from "../hooks/useSwap";
 import styles from "./SwapPanel.module.css";
+import chefBakingUrl from "../assets/cookie-chef-baking.png";
 
 // ── Well-known tokens ─────────────────────────────────────────────────────────
 // The COOK native mint is the same address as wSOL on Solana — context is
@@ -94,7 +95,7 @@ export function SwapPanel({ swap }: Props) {
   const canConfirm = hasQuote && swap.quote !== null;
 
   return (
-    <div className={styles.panel}>
+    <div className={styles.panel} style={{ backgroundImage: `url(${chefBakingUrl})` }}>
       {/* Panel heading with gear icon — no "Swap tokens" sub-heading */}
       <div className={styles.panelHeader}>
         <h2 className={styles.heading}>Bake Swap</h2>
