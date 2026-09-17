@@ -200,7 +200,9 @@
 
 .jarCardTop {
   display: flex;
-  align-items: flex-start;
+  /* stretch lets both columns grow to the same height, so the chart
+     column isn't constrained by the shorter balance-text column */
+  align-items: stretch;
   justify-content: space-between;
   gap: 1rem;
 }
@@ -276,7 +278,9 @@
 .sparklinePlaceholder {
   flex: 1;
   min-width: 0;
-  height: 110px;
+  /* min-height ensures the chart column has real height for both
+     the data state (SVG) and the empty state (text below tabs) */
+  min-height: 96px;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -711,21 +715,22 @@
   font-family: var(--font-display);
   font-size: 1.25rem;
   font-weight: 800;
-  /* Cream — original color restored (heading was never in scope for recolor) */
   color: var(--cream);
   letter-spacing: -0.025em;
   margin: 0;
   line-height: 1.1;
+  /* Two-word pair — never wrap */
+  white-space: nowrap;
 }
 
 .mobileSwapPromoSub {
   font-size: 0.75rem;
-  /* Amber — subtitle sits entirely over the plain brown zone (confirmed by
-     live DOM measurement: all words start at x:225, artwork ends at x:209).
-     Amber here mirrors the warm oven/flame tones visible in the artwork zone. */
+  /* Amber — whole subtitle over plain brown zone (confirmed by live measurement) */
   color: var(--butter);
   margin: 0;
   line-height: 1.4;
+  /* Balance wrapping so no orphan word sits alone on the last line */
+  text-wrap: balance;
 }
 
 .mobileSwapPromoBtn {
