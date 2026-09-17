@@ -711,8 +711,8 @@
   font-family: var(--font-display);
   font-size: 1.25rem;
   font-weight: 800;
-  /* Warm amber — mirrors the oven/flame tones from the left-side artwork */
-  color: var(--butter);
+  /* Cream — original color restored (heading was never in scope for recolor) */
+  color: var(--cream);
   letter-spacing: -0.025em;
   margin: 0;
   line-height: 1.1;
@@ -720,9 +720,10 @@
 
 .mobileSwapPromoSub {
   font-size: 0.75rem;
-  /* Cream — lighter tone that pairs with amber heading; scrim ensures legibility */
-  color: var(--cream);
-  opacity: 0.9;
+  /* Amber — subtitle sits entirely over the plain brown zone (confirmed by
+     live DOM measurement: all words start at x:225, artwork ends at x:209).
+     Amber here mirrors the warm oven/flame tones visible in the artwork zone. */
+  color: var(--butter);
   margin: 0;
   line-height: 1.4;
 }

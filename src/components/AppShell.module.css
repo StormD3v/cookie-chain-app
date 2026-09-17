@@ -25,8 +25,11 @@
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid rgba(240, 192, 96, 0.1);
-  position: sticky;
+  /* fixed — avoids sticky paint lag under fast/hard scrolling */
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 30;
   gap: 1rem;
 }
@@ -48,11 +51,12 @@
   position: relative;
 }
 
-/* Below-header row: sidebar + body, fills remaining height */
+/* Below-header row: sidebar + body. margin-top offsets the fixed header. */
 .belowHeader {
   display: flex;
   flex: 1;
   min-height: 0;
+  margin-top: 52px;
 }
 
 /* ── Desktop sidebar — starts below the header ────────────────────────────── */
