@@ -122,12 +122,6 @@
     height: 5.5rem;
   }
 
-  /* Mobile chart cap: 140px keeps the card proportionate on small screens */
-  .sparklinePlaceholder {
-    height: 140px !important;
-    max-height: 140px !important;
-  }
-
   .heroGreeting {
     font-size: 1rem;
   }
@@ -205,12 +199,8 @@
 /* ── Portfolio jar card ───────────────────────────────────────────────────── */
 
 .jarCardTop {
-  display: flex;
-  /* flex-start: chart column is self-sizing (fixed height), balance column
-     stays at its natural height — neither dictates the other's height */
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
+  /* Single column — balance info only, no chart column */
+  display: block;
 }
 
 .jarLabel {
@@ -280,62 +270,6 @@
   opacity: 0.7;
 }
 
-/* CSS sparkline — fills remaining width of jar card */
-.sparklinePlaceholder {
-  flex: 1;
-  min-width: 0;
-  /* Fixed height cap — chart must never drive the card's height.
-     240px chosen: tall enough for a readable curve, well within card budget. */
-  height: 240px;
-  max-height: 240px;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0;
-  /* Remove flex stretching — this container sets its own height */
-  align-self: flex-start;
-}
-
-/* Time-range tabs — sit at the top flush above the chart, no gap */
-.timeRangeTabs {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 6px;
-  padding: 2px;
-  align-self: flex-end;
-  flex-shrink: 0;
-  /* tabs at top — SVG fills remainder below */
-  margin-top: 0;
-  margin-bottom: 2px;
-}
-
-.timeRangeTab {
-  background: transparent;
-  border: none;
-  color: var(--crumb);
-  font-family: var(--font-body);
-  font-size: 0.625rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  padding: 0.2rem 0.45rem;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.12s, color 0.12s;
-  white-space: nowrap;
-}
-
-.timeRangeTab:hover {
-  color: var(--cream);
-}
-
-.timeRangeTabActive {
-  background: rgba(240, 192, 96, 0.18);
-  color: var(--butter);
-}
-
 /* Desktop subtitle visible, mobile hidden; mobile subtitle reverse */
 .heroSubDesktop {
   display: block;
@@ -353,40 +287,6 @@
   .heroSubMobile {
     display: block;
   }
-}
-
-.sparklineLabel {
-  font-size: 0.5rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--crumb);
-  margin: 0;
-  opacity: 0.7;
-  white-space: nowrap;
-  text-align: right;
-}
-
-.sparklineSvg {
-  width: 100%;
-  /* Grow to fill remaining space in .sparklinePlaceholder below the tabs */
-  flex: 1;
-  min-height: 0;
-  display: block;
-  overflow: visible;
-}
-
-.chartEmpty {
-  flex: 1;
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-end;
-  padding-top: 0.25rem;
-  font-size: 0.5625rem;
-  color: var(--crumb);
-  opacity: 0.6;
-  font-style: italic;
-  text-align: right;
 }
 
 /* ── Quick actions ────────────────────────────────────────────────────────── */

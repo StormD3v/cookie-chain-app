@@ -110,15 +110,10 @@ function relativeTime(unixSeconds: number): string {
   return `${Math.floor(diff / 86400)}d ago`;
 }
 
-// ── Balance sparkline derivation ─────────────────────────────────────────────
-//
-// Walk backwards through transactions, extracting COOK deltas from the amount
-// string (e.g. "100 COOK → 0.013 CHAT" → -100, "500 bCOOK → 50 COOK" → +50).
-// Most-recent point = current cookAmt; each prior step reconstructs the prior
-// balance. Only COOK (native) deltas are tracked — SPL-only swaps produce 0.
-//
-// Returns an array of balance points ordered oldest→newest, normalised to
-// fit a 120×40 SVG viewBox. Falls back to a flat line if fewer than 3 points.
+// ── COOK delta parser — used by pctChange pill ───────────────────────────────
+// Extracts the signed COOK balance delta from a transaction amount string.
+// e.g. "100 COOK → 0.013 CHAT" → -100; "500 bCOOK → 50 COOK" → +50.
+// Used to walk back through confirmed txs and reconstruct oldest known balance.
 
 function parseCookDelta(amount: string | null): number {
   if (!amount) return 0;
@@ -148,100 +143,6 @@ function parseCookDelta(amount: string | null): number {
   return 0;
 }
 
-function deriveSparklinePoints(
-  currentCook: number,
-  txs: ActivityItem[],
-  svgW = 120,
-  svgH = 80,
-  windowStartSec?: number,  // left edge of the selected time window (unix seconds)
-  windowEndSec?: number,    // right edge (defaults to now)
-): { points: Array<[number, number]>; flat: boolean } {
-  // Build balance history newest→oldest, then reverse
-  // Only use confirmed txs for reconstruction
-  const confirmedTxs = txs.filter(t => t.status !== "failed");
-  const balances: Array<{ v: number; t: number | null }> = [
-    { v: currentCook, t: windowEndSec ?? Date.now() / 1000 }
-  ];
-  for (const tx of confirmedTxs) {
-    const delta = parseCookDelta(tx.amount);
-    balances.push({
-      v: balances[balances.length - 1].v - delta,
-      t: tx.blockTime,
-    });
-  }
-
-  // Need at least 2 real balance transitions to draw a meaningful shape
-  if (balances.length < 3) {
-    const mid = svgH / 2;
-    return { points: [[0, mid], [svgW, mid]], flat: true };
-  }
-
-  // Reverse so oldest is first (left side of chart)
-  const pts = [...balances].reverse();
-
-  const minVal = Math.min(...pts.map(p => p.v));
-  const maxVal = Math.max(...pts.map(p => p.v));
-  const range = maxVal - minVal;
-
-  // Determine time bounds for x-axis scaling
-  const wStart = windowStartSec ?? (pts[0].t ?? 0);
-  const wEnd = windowEndSec ?? (pts[pts.length - 1].t ?? Date.now() / 1000);
-  const timeSpan = wEnd - wStart;
-
-  // Normalise each point to SVG coordinates
-  const pad = 4;
-  const coords: Array<[number, number]> = pts.map((p) => {
-    // X: proportional to timestamp within window (or evenly spaced if no timestamps)
-    let x: number;
-    if (timeSpan > 0 && p.t !== null) {
-      x = Math.max(0, Math.min(svgW, ((p.t - wStart) / timeSpan) * svgW));
-    } else {
-      // fallback: even spacing (when blockTime is null)
-      x = (pts.indexOf(p) / (pts.length - 1)) * svgW;
-    }
-
-    // Y: higher balance = higher on card (lower SVG y)
-    const y = range === 0
-      ? svgH / 2
-      : pad + ((maxVal - p.v) / range) * (svgH - pad * 2);
-
-    return [x, y];
-  });
-
-  return { points: coords, flat: false };
-}
-
-/**
- * Converts [x,y] point array into a smooth SVG cubic-Bezier path string
- * using Catmull-Rom → Bezier conversion (tension=0.4).
- * Stays close to data points without overshoot on sparse sets.
- */
-function smoothPath(pts: Array<[number, number]>, tension = 0.4): string {
-  if (pts.length < 2) return "";
-  if (pts.length === 2) {
-    return `M ${pts[0][0]},${pts[0][1]} L ${pts[1][0]},${pts[1][1]}`;
-  }
-
-  let d = `M ${pts[0][0].toFixed(2)},${pts[0][1].toFixed(2)}`;
-
-  for (let i = 0; i < pts.length - 1; i++) {
-    const p0 = pts[Math.max(i - 1, 0)];
-    const p1 = pts[i];
-    const p2 = pts[i + 1];
-    const p3 = pts[Math.min(i + 2, pts.length - 1)];
-
-    // Control points from Catmull-Rom tangents
-    const cp1x = p1[0] + (p2[0] - p0[0]) * tension;
-    const cp1y = p1[1] + (p2[1] - p0[1]) * tension;
-    const cp2x = p2[0] - (p3[0] - p1[0]) * tension;
-    const cp2y = p2[1] - (p3[1] - p1[1]) * tension;
-
-    d += ` C ${cp1x.toFixed(2)},${cp1y.toFixed(2)} ${cp2x.toFixed(2)},${cp2y.toFixed(2)} ${p2[0].toFixed(2)},${p2[1].toFixed(2)}`;
-  }
-
-  return d;
-}
-
 
 interface Props {
   walletAddress: string;
@@ -258,7 +159,6 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
   const [showReceive, setShowReceive] = useState(false);
   const [showSend, setShowSend] = useState(false);
   const [balanceHidden, setBalanceHidden] = useState(false);
-  const [timeRange, setTimeRange] = useState<"1D" | "1W" | "1M" | "ALL">("1D");
 
   // Portfolio totals
   const totalUsd = balances.reduce((s, b) => s + (b.usdValue ?? 0), 0);
@@ -315,52 +215,23 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
   const heroSubtitleDesktop = "Your jar is looking healthy. Keep cooking!";
   const heroSubtitleMobile = "Your jar is full of possibilities.";
 
-  // ── Time-range filtering for chart ────────────────────────────────────────
-  const nowSec = Date.now() / 1000;
-  const rangeWindowSec =
-    timeRange === "1D" ? 86400 :
-      timeRange === "1W" ? 604800 :
-        timeRange === "1M" ? 2592000 : null; // null = ALL
-
-  const rangeStartSec = rangeWindowSec ? nowSec - rangeWindowSec : null;
-
-  const rangeFilteredTxs = rangeStartSec === null
-    ? transactions
-    : transactions.filter(tx => tx.blockTime !== null && tx.blockTime >= rangeStartSec);
-
-  // Derive sparkline from time-range-filtered transactions
-  // Pass time window bounds so x-positions are proportional to real timestamps
-  const rangeConfirmedTxs = rangeFilteredTxs.filter(t => t.status === "confirmed");
-  const rangeHasData = rangeConfirmedTxs.length >= 2;
-  const sparkline = deriveSparklinePoints(
-    cookAmt,
-    rangeFilteredTxs,
-    120,
-    80,
-    rangeStartSec ?? (transactions.length > 0
-      ? Math.min(...transactions.map(t => t.blockTime ?? nowSec))
-      : nowSec - 86400),
-    nowSec,
-  );
-  const sparklinePath = smoothPath(sparkline.points);
-  const hasRealData = confirmedTxs.length >= 3;
-
-  // Percentage change: oldest point → newest point in the sparkline
-  // Points are [x,y] normalised to SVG coords; we need the raw balance values.
-  // Re-derive the balance array to get the actual oldest and newest values.
+  // Percentage change: oldest known balance → current balance.
+  // Walks backwards through ALL confirmed txs (not range-filtered) via
+  // parseCookDelta to reconstruct the oldest balance. Independent of chart.
   const pctChange: number | null = (() => {
-    if (!hasRealData || sparkline.flat) return null;
-    // deriveSparklinePoints returns coords normalised from the balance array.
-    // Reconstruct oldest balance: walk backwards from cookAmt through confirmed txs.
+    if (confirmedTxs.length < 3) return null;
+    // Walk backwards from cookAmt through all confirmed txs to get oldest balance.
     const confirmed = confirmedTxs.slice(); // newest first
-    const balances: number[] = [cookAmt];
+    const bal: number[] = [cookAmt];
     for (const tx of confirmed) {
       const delta = parseCookDelta(tx.amount);
-      balances.push(balances[balances.length - 1] - delta);
+      bal.push(bal[bal.length - 1] - delta);
     }
-    const oldest = balances[balances.length - 1];
+    const oldest = bal[bal.length - 1];
     if (oldest === 0 || !Number.isFinite(oldest)) return null;
-    return ((cookAmt - oldest) / Math.abs(oldest)) * 100;
+    // Require meaningful movement to avoid noise from dust transactions
+    const change = ((cookAmt - oldest) / Math.abs(oldest)) * 100;
+    return change;
   })();
 
   // Allocation bars: percentage share of total USD per token
@@ -435,72 +306,6 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
                   : `${cookAmt.toLocaleString(undefined, { maximumFractionDigits: 4 })} COOK`
                 }
               </p>
-            </div>
-            {/* Balance trend sparkline with time-range tabs */}
-            <div className={styles.sparklinePlaceholder} aria-label={hasRealData ? "Balance trend" : "No recent activity"}>
-              {/* Time-range tabs — per reference */}
-              <div className={styles.timeRangeTabs}>
-                {(["1D", "1W", "1M", "ALL"] as const).map((r) => (
-                  <button
-                    key={r}
-                    className={`${styles.timeRangeTab} ${timeRange === r ? styles.timeRangeTabActive : ""}`}
-                    onClick={() => setTimeRange(r)}
-                  >
-                    {r}
-                  </button>
-                ))}
-              </div>
-              {(() => {
-                // No data for this range — show a simple empty state instead of blank
-                if (!rangeHasData) {
-                  return (
-                    <div className={styles.chartEmpty}>
-                      <span>No activity in this window</span>
-                    </div>
-                  );
-                }
-                // Chart color = trend direction: green up, red down, crumb for flat/no data
-                const lineColor = !hasRealData || pctChange === null
-                  ? "var(--crumb)"
-                  : pctChange > 0.05
-                    ? "var(--success)"
-                    : pctChange < -0.05
-                      ? "var(--error)"
-                      : "var(--crumb)";
-                const lineOpacity = 0.9;
-                const gradId = "sparkFill";
-                // Close path along bottom edge using actual first/last x positions
-                const lastPt = sparkline.points[sparkline.points.length - 1];
-                const firstPt = sparkline.points[0];
-                const fillPath = sparklinePath + ` L ${lastPt[0]},80 L ${firstPt[0]},80 Z`;
-                return (
-                  <svg
-                    viewBox="0 0 120 80"
-                    className={styles.sparklineSvg}
-                    aria-hidden="true"
-                    overflow="visible"
-                  >
-                    <defs>
-                      <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={lineColor} stopOpacity={0.45 * lineOpacity} />
-                        <stop offset="75%" stopColor={lineColor} stopOpacity={0.08 * lineOpacity} />
-                        <stop offset="100%" stopColor={lineColor} stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <path d={fillPath} fill={`url(#${gradId})`} stroke="none" />
-                    <path
-                      d={sparklinePath}
-                      fill="none"
-                      stroke={lineColor}
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      opacity={lineOpacity}
-                      vectorEffect="non-scaling-stroke"
-                    />
-                  </svg>
-                );
-              })()}
             </div>
           </div>
           {/* end balance zone */}
