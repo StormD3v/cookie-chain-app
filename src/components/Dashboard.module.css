@@ -1,4 +1,4 @@
-/* ── Root containment — prevents any child from causing page-level horizontal scroll */
+/* ── Root ─────────────────────────────────────────────────────────────────── */
 .root {
   min-height: 100vh;
   display: flex;
@@ -9,15 +9,13 @@
   overflow-x: hidden;
 }
 
-/* ── Header ──────────────────────────────────────────────────────────────── */
-
+/* ── Header / Nav ─────────────────────────────────────────────────────────── */
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0.875rem 1.5rem;
   border-bottom: 1px solid rgba(240, 192, 96, 0.12);
-  /* Glassmorphism: translucent warm surface + blur */
   background: rgba(50, 28, 11, 0.55);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -32,15 +30,14 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  /* Don't let the brand grow and push the wallet button off screen */
   flex-shrink: 0;
   min-width: 0;
+  text-decoration: none;
 }
 
 .brandCookie {
   font-size: 1.5rem;
   line-height: 1;
-  display: inline-block;
   flex-shrink: 0;
   transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -56,263 +53,192 @@
   letter-spacing: -0.03em;
   color: var(--cream);
   white-space: nowrap;
-  background-image: linear-gradient(var(--butter), var(--butter));
-  background-size: 0% 2px;
-  background-repeat: no-repeat;
-  background-position: 0 100%;
-  transition: background-size 0.25s ease;
 }
 
-.brand:hover .brandName {
-  background-size: 100% 2px;
+/* Nav links group — sits between brand and wallet button */
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex: 1;
+  justify-content: flex-end;
+  margin-right: 0.75rem;
 }
 
-/* Hide the text label on narrow viewports — keep just the cookie emoji */
+.navLink {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--crumb);
+  text-decoration: none;
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s, background 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  white-space: nowrap;
+}
+
+.navLink:hover {
+  color: var(--butter);
+  background: rgba(240, 192, 96, 0.07);
+}
+
+.navLinkExtIcon {
+  opacity: 0.55;
+  flex-shrink: 0;
+}
+
+/* Hide nav text labels on very narrow screens, keep brand + wallet button */
 @media (max-width: 479px) {
   .brandName {
     display: none;
   }
-}
 
-/* ── Main content ─────────────────────────────────────────────────────────── */
-
-.main {
-  flex: none;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  max-width: 1080px;
-  width: 100%;
-  margin: 0 auto;
-  /* Reduced top padding — TokenBalances .wrap carries its own top padding now */
-  padding: 0.75rem 1.5rem 2.5rem;
-  overflow-x: hidden;
-}
-
-/* ── Connected layout ─────────────────────────────────────────────────────── */
-
-.grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
-  align-items: start;
-  width: 100%;
-}
-
-/* Every direct grid child must have min-width: 0 so it respects the 1fr
-   track constraint and can't overflow the grid by defaulting to min-width: auto */
-.grid>* {
-  min-width: 0;
-  width: 100%;
-}
-
-@media (min-width: 780px) {
-  .grid {
-    grid-template-columns: 1fr 440px;
-    gap: 2rem;
-    align-items: start;
+  .navLinks {
+    display: none;
   }
 }
 
-/* Activity feed spans full grid width */
-.feedRow {
-  grid-column: 1 / -1;
-}
-
-/* ── Empty / disconnected state ───────────────────────────────────────────── */
-
-.empty {
+/* ── Hero section ─────────────────────────────────────────────────────────── */
+.hero {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* No extra gap here — spacing is controlled inside children */
-  gap: 0;
-  /* Remove the outer padding that was adding dead space */
-  padding: 0 1rem 1.5rem;
-}
-
-/* ── Banner with text overlay ─────────────────────────────────────────────── */
-
-.bannerWrap {
-  position: relative;
-  width: 100%;
-  max-width: 860px;
-  margin: 0 auto 1.75rem;
-  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
-  overflow: hidden;
-  mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
-}
-
-.bannerImg {
-  display: block;
-  width: 100%;
-  /* Fixed height on desktop so it doesn't consume all vertical space */
-  height: auto;
-  max-height: 380px;
-  object-fit: cover;
-  /* Default: show centre of image */
-  object-position: center center;
-  filter: brightness(0.82);
-}
-
-.bannerOverlay {
-  position: absolute;
-  top: 0;
-  right: 0;
-  /* Widened from 42% — needs room for "Cookie Chain" on one line */
-  width: 52%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
   justify-content: center;
-  padding: 0 8% 0 3%;
-  gap: 0.15em;
-  background: linear-gradient(to right,
-      transparent 0%,
-      rgba(20, 10, 4, 0.55) 35%,
-      rgba(20, 10, 4, 0.72) 100%);
+  padding: 3rem 1.5rem 4rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
 }
 
-.bannerTitle {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: clamp(1.125rem, 2.75vw, 2rem);
-  letter-spacing: -0.04em;
-  line-height: 1.1;
-  color: var(--butter);
-  text-shadow: 0 2px 16px rgba(200, 120, 32, 0.5);
-  /* nowrap only on desktop — at mobile widths the 5px overflow clips the
-     last character. Wrapping to two lines is intentional on small screens. */
-  white-space: normal;
+/* Ambient warm glow behind the mascot */
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 400px;
+  background: radial-gradient(ellipse at center,
+      rgba(200, 120, 32, 0.18) 0%,
+      rgba(240, 192, 96, 0.07) 40%,
+      transparent 70%);
+  pointer-events: none;
 }
 
-@media (min-width: 541px) {
-  .bannerTitle {
-    white-space: nowrap;
-  }
+/* Mascot — transparent WebP, floats above the glow */
+.heroMascot {
+  position: relative;
+  z-index: 1;
+  width: min(380px, 85vw);
+  height: auto;
+  filter:
+    drop-shadow(0 12px 40px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 24px rgba(200, 100, 20, 0.25));
+  margin-bottom: -1rem;
+  /* slight overlap so mascot feels grounded in copy */
 }
 
-.bannerSub {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: clamp(0.875rem, 2.2vw, 1.375rem);
-  letter-spacing: -0.03em;
-  line-height: 1;
-  color: var(--caramel);
-  opacity: 0.92;
-  text-shadow: 0 2px 12px rgba(200, 120, 32, 0.4);
-}
-
-/* ── CTA block below the banner ───────────────────────────────────────────── */
-
-.emptyInner {
+/* Text content sits below mascot */
+.heroContent {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
-  text-align: center;
-  max-width: 360px;
-  /* Soft radial glow behind the CTA area — warmth without distraction */
-  position: relative;
+  gap: 1rem;
+  max-width: 480px;
 }
 
-.emptyInner::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 340px;
-  height: 220px;
-  background: radial-gradient(ellipse at center,
-      rgba(200, 120, 32, 0.14) 0%,
-      rgba(240, 192, 96, 0.06) 45%,
-      transparent 70%);
-  pointer-events: none;
-  z-index: 0;
+.heroEyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--butter);
+  opacity: 0.8;
+  margin: 0;
 }
 
-/* Lift CTA content above the glow layer */
-.emptyInner>* {
-  position: relative;
-  z-index: 1;
-}
-
-.emptyHeading {
+.heroHeading {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 1.625rem;
-  letter-spacing: -0.03em;
+  font-size: clamp(1.75rem, 5vw, 2.75rem);
+  letter-spacing: -0.04em;
+  line-height: 1.1;
   color: var(--cream);
   margin: 0;
 }
 
-.emptyBody {
-  color: var(--crumb);
-  font-size: 0.9375rem;
-  margin: 0 0 0.25rem;
-  line-height: 1.6;
+.heroHeadingAccent {
+  color: var(--butter);
 }
 
-/* ── Mobile overrides (390px target — iPhone 12 Pro) ─────────────────────── */
+.heroSubtitle {
+  font-size: clamp(0.9375rem, 2.5vw, 1.0625rem);
+  color: var(--crumb);
+  line-height: 1.6;
+  margin: 0;
+}
 
+/* CTA area */
+.heroCta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.625rem;
+  margin-top: 0.25rem;
+}
+
+.heroNote {
+  font-size: 0.75rem;
+  color: var(--crumb);
+  opacity: 0.65;
+  margin: 0;
+}
+
+/* ── Footer strip ─────────────────────────────────────────────────────────── */
+.footer {
+  border-top: 1px solid rgba(240, 192, 96, 0.08);
+  padding: 0.875rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.footerLink {
+  font-size: 0.75rem;
+  color: var(--crumb);
+  text-decoration: none;
+  opacity: 0.65;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: opacity 0.15s, color 0.15s;
+}
+
+.footerLink:hover {
+  opacity: 1;
+  color: var(--butter);
+}
+
+/* ── Mobile ───────────────────────────────────────────────────────────────── */
 @media (max-width: 540px) {
-  .main {
-    /* Restore flex: 1 on mobile so the disconnected empty state
-       can center vertically in the remaining viewport height */
-    flex: 1;
-    padding: 0 0.75rem 1.25rem;
-    justify-content: center;
+  .hero {
+    padding: 2rem 1.25rem 3rem;
   }
 
-  .empty {
-    flex: 1;
-    padding: 0 0 1.25rem;
-    gap: 0;
-    /* Center the banner + CTA block vertically within the available space */
-    justify-content: center;
+  .heroMascot {
+    width: min(260px, 75vw);
+    margin-bottom: -0.5rem;
   }
 
-  .bannerWrap {
-    /* Edge-to-edge, no rounded corners */
-    border-radius: 0;
-    margin-bottom: 1.25rem;
-    /* Explicit height — natural render at 390px wide is ~204px;
-       this pins it and prevents over-tall renders */
-    height: 210px;
-    max-height: 210px;
-    /* Disable the bottom vignette mask at this height — too subtle */
-    mask-image: none;
-    -webkit-mask-image: none;
-  }
-
-  .bannerImg {
-    height: 210px;
-    max-height: 210px;
-    /* Character lives in the left ~45% of the image;
-       pull focus there so the dark right side crops cleanly */
-    object-position: 25% center;
-  }
-
-  .bannerOverlay {
-    /* Mobile matches base 52% width — already correct */
-    width: 52%;
-    padding: 0 6% 0 3%;
-  }
-
-  .emptyInner {
-    padding: 0 1.25rem;
-    gap: 0.625rem;
-  }
-
-  .emptyHeading {
-    font-size: 1.375rem;
-  }
-
-  .emptyBody {
-    font-size: 0.875rem;
+  .hero::before {
+    width: 320px;
+    height: 240px;
   }
 }

@@ -9,10 +9,10 @@ import { getTokenLogo } from "../lib/tokenLogos";
 import { TxAmount } from "./TxAmount";
 import { ReceiveModal } from "./ReceiveModal";
 import { SendModal } from "./SendModal";
-import cookieJarHug from "../assets/cookie-jar-hug.jpg";
-import cookieRunning from "../assets/cookie-running.jpg";
+import cookieJarHug from "../assets/cookie-jar-hug.webp";
+import cookieRunning from "../assets/cookie-running.webp";
 import jarHeatFlame from "../assets/jar-heat-flame.png";
-import cookieChefBakingUrl from "../assets/cookie-chef-baking.jpg";
+import cookieChefBakingUrl from "../assets/cookie-chef-baking.webp";
 import styles from "./OverviewSection.module.css";
 
 // getGreeting() uses new Date().getHours() — that is local browser time, not UTC.

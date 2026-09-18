@@ -1141,11 +1141,14 @@
 
 @media (max-width: 480px) {
   .heatContent {
-    padding-right: 1.5rem;
+    padding-right: 33%;
   }
 
   .heatMascotZone {
-    display: none;
+    /* Show mascot on mobile but narrower — 30% instead of 42%.
+       The content area (67%) is wide enough for the stat grid and bar. */
+    display: block;
+    width: 30%;
   }
 
   .heatCard {
