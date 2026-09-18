@@ -59,9 +59,11 @@ export function WalletButton({ className }: { className?: string }) {
   useEffect(() => {
     if (wallet && justPickedRef.current) {
       justPickedRef.current = false;
-      connect().catch(() => {
-        // Error is handled by WalletProvider's onError + handleConnectError,
-        // which clears the wallet selection. Nothing extra needed here.
+      connect().catch((err: unknown) => {
+        // DO NOT swallow this error silently. Log it so it's visible in the
+        // browser console for debugging (e.g. WalletNotReadyError, WalletConnectionError).
+        // WalletProvider's handleConnectError clears the selection after this.
+        console.error("[WalletButton] connect() rejected:", err);
       });
     }
   }, [wallet, connect]);

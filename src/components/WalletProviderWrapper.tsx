@@ -1,7 +1,6 @@
 import { useMemo, type ReactNode } from "react";
 import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
-import { NightlyWalletAdapter } from "@solana/wallet-adapter-nightly";
 
 import "@solana/wallet-adapter-react-ui/styles.css";
 
@@ -14,34 +13,34 @@ interface Props {
 }
 
 export function WalletProviderWrapper({ children }: Props) {
-  const wallets = useMemo(
-    () => [
-      // Desktop / iOS Safari extension: Nightly detects via window.nightly.solana.
-      //
-      // Mobile (Android): Nightly does NOT implement the generic MWA protocol
-      // (SolanaMobileWalletAdapter was removed — it opened Phantom instead of
-      // Nightly because Phantom is MWA-registered and Nightly is not).
-      // Mobile users connect via the "Open in Nightly" deeplink button in the UI,
-      // which opens the site inside Nightly's in-app browser where the extension
-      // is injected automatically.
-      new NightlyWalletAdapter(),
-    ],
-    []
-  );
+  // Empty wallets array — all wallet detection is handled automatically by
+  // @solana/wallet-adapter-react's useStandardWalletAdapters hook, which
+  // discovers every Wallet Standard-compliant wallet installed in the browser
+  // (Nightly, Trust Wallet, Phantom, etc.) and wraps them with StandardWalletAdapter.
+  //
+  // StandardWalletAdapter calls features['standard:connect'].connect() which
+  // is Nightly's recommended connection API (per https://docs.nightly.app/docs/solana/solana/connect).
+  //
+  // NightlyWalletAdapter (legacy) was removed because:
+  //   1. It used the old window.nightly.solana.connect() API which is unreliable
+  //      in current Nightly extension versions.
+  //   2. useStandardWalletAdapters already filters it out when Nightly registers
+  //      as a Standard wallet (producing a console warning about redundancy).
+  //   3. Having it in the array created ambiguity about which adapter was selected.
+  //
+  // Mobile: NightlyMobileButton uses the nightly:// deeplink to open the Nightly
+  // app's in-app browser, where window.nightly registers as a Standard wallet
+  // and is picked up automatically.
+  const wallets = useMemo(() => [], []);
 
   return (
     <ConnectionProvider endpoint={COOKIE_RPC_URL}>
       <WalletProvider
         wallets={wallets}
         autoConnect={false}
-        // Custom localStorage key. This makes it easy to reason about which
-        // key to inspect/clear in browser DevTools if needed.
         localStorageKey="cookie-chain-wallet"
         onError={(error) => {
-          // Log connection errors. WalletProvider's own handleConnectError
-          // already calls changeWallet(null) before this fires, so
-          // localStorage is already cleared at this point.
-          console.warn("[wallet]", error.name, error.message);
+          console.warn("[wallet] error:", error.name, error.message);
         }}
       >
         <WalletModalProvider>{children}</WalletModalProvider>
