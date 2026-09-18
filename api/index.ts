@@ -1,35 +1,53 @@
 /**
- * Vercel serverless entry point — complete Express API.
- *
- * All source files are co-located in api/ so Vercel can compile and
- * bundle everything in a single pass without cross-workspace imports.
+ * Vercel serverless entry point — Express API with error surface.
  */
-import express from "express";
-import cors from "cors";
-import { getBalances } from "./routes/balances.js";
-import { getActivity } from "./routes/activity.js";
-import {
-    postSwapQuote,
-    postSwapBuild,
-    postSwapSubmit,
-    getSwapConfirm,
-} from "./routes/swap.js";
+import type { IncomingMessage, ServerResponse } from "node:http";
 
-const app = express();
-app.use(cors({ origin: "*", methods: ["GET", "POST"] }));
-app.use(express.json());
+// Lazy-load the Express app so startup errors are catchable
+let _app: ((req: IncomingMessage, res: ServerResponse) => void) | null = null;
+let _loadError: string | null = null;
 
-app.get("/api/health", (_req, res) => {
-    res.json({ ok: true, service: "cookie-chain-proxy", ts: new Date().toISOString() });
-});
+async function loadApp() {
+    if (_app) return _app;
+    if (_loadError) return null;
+    try {
+        const express = (await import("express")).default;
+        const cors = (await import("cors")).default;
+        const { getBalances } = await import("./routes/balances.js");
+        const { getActivity } = await import("./routes/activity.js");
+        const { postSwapQuote, postSwapBuild, postSwapSubmit, getSwapConfirm } =
+            await import("./routes/swap.js");
 
-app.get("/api/balances", getBalances);
-app.get("/api/activity", getActivity);
-app.post("/api/swap/quote", postSwapQuote);
-app.post("/api/swap/build", postSwapBuild);
-app.post("/api/swap/submit", postSwapSubmit);
-app.get("/api/swap/confirm/:signature", getSwapConfirm);
+        const app = express();
+        app.use(cors({ origin: "*", methods: ["GET", "POST"] }));
+        app.use(express.json());
 
-app.use((_req, res) => { res.status(404).json({ error: "Not found" }); });
+        app.get("/api/health", (_req, res) => {
+            res.json({ ok: true, service: "cookie-chain-proxy", ts: new Date().toISOString() });
+        });
+        app.get("/api/balances", getBalances);
+        app.get("/api/activity", getActivity);
+        app.post("/api/swap/quote", postSwapQuote);
+        app.post("/api/swap/build", postSwapBuild);
+        app.post("/api/swap/submit", postSwapSubmit);
+        app.get("/api/swap/confirm/:signature", getSwapConfirm);
+        app.use((_req, res) => { res.status(404).json({ error: "Not found" }); });
 
-export default app;
+        _app = app;
+        return _app;
+    } catch (err: unknown) {
+        _loadError = err instanceof Error ? err.stack ?? err.message : String(err);
+        return null;
+    }
+}
+
+export default async function handler(req: IncomingMessage, res: ServerResponse) {
+    const app = await loadApp();
+    if (!app) {
+        (res as any).statusCode = 500;
+        (res as any).setHeader("Content-Type", "application/json");
+        (res as any).end(JSON.stringify({ error: "App failed to load", detail: _loadError }));
+        return;
+    }
+    app(req, res);
+}
