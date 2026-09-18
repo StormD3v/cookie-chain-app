@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useSwap } from "../hooks/useSwap";
 import { SwapConfirmModal } from "./SwapConfirmModal";
+import { WalletButton } from "./WalletButton";
 import { OverviewSection } from "./OverviewSection";
 import { PantrySection } from "./PantrySection";
 import { BakeSection } from "./BakeSection";
@@ -191,7 +191,7 @@ export function AppShell({ walletAddress }: Props) {
               </div>
             )}
           </div>
-          {connected && <WalletMultiButton />}
+          {connected && <WalletButton />}
         </div>
       </header>
 

@@ -2,22 +2,12 @@ import { useMemo, type ReactNode } from "react";
 import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import { NightlyWalletAdapter } from "@solana/wallet-adapter-nightly";
-import {
-  SolanaMobileWalletAdapter,
-  createDefaultAddressSelector,
-  createDefaultAuthorizationResultCache,
-  createDefaultWalletNotFoundHandler,
-} from "@solana-mobile/wallet-adapter-mobile";
 
 import "@solana/wallet-adapter-react-ui/styles.css";
 
-// Cookie Chain mainnet RPC — falls back to the public endpoint.
+// Cookie Chain mainnet RPC
 const COOKIE_RPC_URL =
   import.meta.env.VITE_COOKIE_RPC_URL ?? "https://rpc.cookiescan.io";
-
-// Production URL of the deployed app — used as the MWA app identity so
-// Android wallets show the correct name and icon in their approval screen.
-const APP_URI = "https://cookie-chain-app-stormd3v-projects.vercel.app";
 
 interface Props {
   children: ReactNode;
@@ -26,28 +16,14 @@ interface Props {
 export function WalletProviderWrapper({ children }: Props) {
   const wallets = useMemo(
     () => [
-      // Android mobile browsers: SolanaMobileWalletAdapter hands off to any
-      // MWA-compatible wallet app (including Nightly) via a local WebSocket
-      // intent on Android Chrome. WalletProvider already auto-injects MWA
-      // when it detects a mobile environment, but providing an explicit instance
-      // here sets the correct appIdentity so wallets display "Cookie Chain"
-      // rather than "Unknown app" in their approval screen.
-      // On non-Android environments this adapter is silently unavailable.
-      new SolanaMobileWalletAdapter({
-        addressSelector: createDefaultAddressSelector(),
-        appIdentity: {
-          name: "Cookie Chain",
-          uri: APP_URI,
-          icon: "/favicon.png",
-        },
-        authorizationResultCache: createDefaultAuthorizationResultCache(),
-        cluster: "mainnet-beta",
-        onWalletNotFound: createDefaultWalletNotFoundHandler(),
-      }),
-
-      // Desktop (and iOS in-app browser / Safari extension): Nightly extension.
-      // Detected via window.nightly.solana injection. If not present the adapter
-      // stays in NotDetected state and WalletMultiButton shows it as installable.
+      // Desktop / iOS Safari extension: Nightly detects via window.nightly.solana.
+      //
+      // Mobile (Android): Nightly does NOT implement the generic MWA protocol
+      // (SolanaMobileWalletAdapter was removed — it opened Phantom instead of
+      // Nightly because Phantom is MWA-registered and Nightly is not).
+      // Mobile users connect via the "Open in Nightly" deeplink button in the UI,
+      // which opens the site inside Nightly's in-app browser where the extension
+      // is injected automatically.
       new NightlyWalletAdapter(),
     ],
     []
@@ -55,7 +31,19 @@ export function WalletProviderWrapper({ children }: Props) {
 
   return (
     <ConnectionProvider endpoint={COOKIE_RPC_URL}>
-      <WalletProvider wallets={wallets} autoConnect={false}>
+      <WalletProvider
+        wallets={wallets}
+        autoConnect={false}
+        // Custom localStorage key. This makes it easy to reason about which
+        // key to inspect/clear in browser DevTools if needed.
+        localStorageKey="cookie-chain-wallet"
+        onError={(error) => {
+          // Log connection errors. WalletProvider's own handleConnectError
+          // already calls changeWallet(null) before this fires, so
+          // localStorage is already cleared at this point.
+          console.warn("[wallet]", error.name, error.message);
+        }}
+      >
         <WalletModalProvider>{children}</WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>
