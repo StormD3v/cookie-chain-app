@@ -17,6 +17,7 @@
     "server"
   ],
   "dependencies": {
+    "@solana-mobile/wallet-adapter-mobile": "2.3.0",
     "@solana/wallet-adapter-base": "^0.9.23",
     "@solana/wallet-adapter-nightly": "^0.1.8",
     "@solana/wallet-adapter-react": "^0.15.35",
@@ -32,6 +33,7 @@
     "concurrently": "^9.1.2",
     "eslint": "^9.15.0",
     "playwright": "^1.63.0",
+    "sharp": "^0.33.5",
     "typescript": "^5.7.2",
     "vite": "^6.0.5"
   },

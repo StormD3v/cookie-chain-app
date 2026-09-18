@@ -1,7 +1,7 @@
 import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { AppShell } from "./AppShell";
-import ogBanner from "../assets/og-banner.png";
+import ogBanner from "../assets/og-banner.jpg";
 import styles from "./Dashboard.module.css";
 
 export function Dashboard() {
