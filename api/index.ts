@@ -1,19 +1,19 @@
 /**
- * Vercel serverless entry point — full Express API.
+ * Vercel serverless entry point — complete Express API.
  *
- * Self-contained: all routes defined here, server/src imported directly.
- * Vercel compiles this file and all its local imports at build time.
+ * All source files are co-located in api/ so Vercel can compile and
+ * bundle everything in a single pass without cross-workspace imports.
  */
 import express from "express";
 import cors from "cors";
-import { getBalances } from "../server/src/routes/balances.js";
-import { getActivity } from "../server/src/routes/activity.js";
+import { getBalances } from "./routes/balances.js";
+import { getActivity } from "./routes/activity.js";
 import {
     postSwapQuote,
     postSwapBuild,
     postSwapSubmit,
     getSwapConfirm,
-} from "../server/src/routes/swap.js";
+} from "./routes/swap.js";
 
 const app = express();
 app.use(cors({ origin: "*", methods: ["GET", "POST"] }));
