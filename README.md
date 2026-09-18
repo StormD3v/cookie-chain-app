@@ -81,7 +81,25 @@ Set these environment variables in your Vercel project settings
 
 The `VITE_COOKIE_RPC_URL` variable (frontend) is only needed in local `.env.local` — in production the frontend and API share the same origin so no explicit RPC URL is required in the browser bundle.
 
-## Swap flow
+## Wallet connection
+
+### Desktop
+
+All browser-extension wallets that support the Wallet Standard are detected automatically. This includes Nightly, Trust Wallet, Phantom, Backpack, and others. Install the extension, open the app, tap **Select Wallet**, and pick your wallet — the extension popup will appear to approve the connection.
+
+### Android
+
+**Phantom and Solflare** connect directly via the Solana Mobile Wallet Adapter (MWA) — the standard Android wallet-connection protocol. Tap **Select Wallet**, pick your wallet from the list, and the wallet app will open to an approval screen. No browser extension needed.
+
+**Nightly on Android** does not implement MWA (a platform limitation of the Nightly app itself, not this project). To connect Nightly on Android: open the site from inside Nightly's built-in DApp browser. The app will automatically prompt to connect when it detects Nightly's browser. You can get there via the "Open in Nightly" button on the landing page, or by pasting the URL directly into Nightly's browser tab.
+
+**Trust Wallet and other Wallet Standard wallets** on Android: if the wallet app injects a Wallet Standard provider in its in-app browser, the same auto-prompt applies — open the site from inside the wallet's browser.
+
+### iOS
+
+Mobile Wallet Adapter is not supported on any iOS browser — this is an Apple platform restriction, not a wallet or app limitation. On iOS, the only working path is a wallet that provides a Safari Web Extension (Nightly does; check Nightly's app page for the extension). With the Safari extension enabled, the site works identically to the desktop extension flow.
+
+
 
 1. Enter an amount and select input/output tokens in the Swap panel.
 2. A quote is fetched automatically (debounced 600 ms) — rate, price impact, min received, and route are displayed before any action.

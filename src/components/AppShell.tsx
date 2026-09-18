@@ -7,7 +7,7 @@ import { OverviewSection } from "./OverviewSection";
 import { PantrySection } from "./PantrySection";
 import { BakeSection } from "./BakeSection";
 import { CrumbsSection } from "./CrumbsSection";
-import sidebarCookieCluster from "../assets/sidebar-cookie-cluster.png";
+import sidebarCookieCluster from "../assets/sidebar-cookie-cluster.jpg";
 import styles from "./AppShell.module.css";
 
 // ── Hyperlane bridge URL ──────────────────────────────────────────────────────
