@@ -41,6 +41,7 @@
     },
     "@solana/wallet-adapter-react-ui": {
       "@types/react": "^18.3.12"
-    }
+    },
+    "uuid": "^8.3.2"
   }
 }
