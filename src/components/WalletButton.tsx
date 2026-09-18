@@ -1,30 +1,78 @@
 /**
  * WalletButton — replaces WalletMultiButton everywhere.
  *
- * Key behavioral difference from WalletMultiButton:
- *   - When NOT connected: always opens the wallet picker modal on click,
- *     regardless of any wallet name stored in localStorage. This prevents
- *     the stuck state where a previously selected (but never connected)
- *     wallet causes the button to skip the picker and try to auto-connect.
- *   - When connected: shows a truncated address. Clicking opens a small
- *     dropdown with "Change wallet" and "Disconnect".
+ * Behavioral contract:
  *
- * The stuck state root cause: SolanaMobileWalletAdapter (now removed) left
- * 'Mobile Wallet Adapter' in localStorage when Android closed the intent
- * without firing a disconnect event. WalletMultiButton in 'has-wallet' state
- * went straight to connect — no picker, no escape. This button eliminates
- * that path entirely.
+ *   When NOT connected:
+ *   - Always opens the wallet picker modal on click. Never auto-connects to
+ *     whatever wallet name is sitting in localStorage from a previous session.
+ *     (This was the Round 14 fix: a stale 'Mobile Wallet Adapter' entry was
+ *     causing WalletMultiButton to skip the picker and go to a dead state.)
+ *
+ *   After the user picks a wallet IN THIS SESSION (in the modal):
+ *   - Calls connect() immediately. This is the path that was accidentally
+ *     removed in Round 14 along with the stuck-picker fix.
+ *
+ *   Telling the two cases apart:
+ *   - justPickedRef starts false and is only set true when THIS component
+ *     opens the modal (i.e. a live user action). It is never true on page
+ *     load. When the wallet context's `wallet` changes from null → non-null
+ *     AND justPickedRef is true, connect() is called and the flag is cleared.
+ *     This mirrors @solana/wallet-adapter-react's own hasUserSelectedAWallet
+ *     pattern (WalletProvider.js line 130) which is private to that package.
+ *
+ *   When connected:
+ *   - Shows truncated address. Click opens dropdown with "Change wallet" and
+ *     "Disconnect".
+ *   - Disconnect calls both disconnect() and select(null) to clear localStorage.
+ *
+ *   On connect error / user rejection:
+ *   - The adapter fires an error → WalletProvider's handleConnectError calls
+ *     changeWallet(null) → localStorage cleared → wallet → null → button
+ *     returns to "Select Wallet". justPickedRef is reset on the same cycle.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 
 export function WalletButton({ className }: { className?: string }) {
-  const { connected, connecting, disconnecting, publicKey, disconnect, select } =
-    useWallet();
+  const {
+    wallet,
+    connected,
+    connecting,
+    disconnecting,
+    publicKey,
+    connect,
+    disconnect,
+    select,
+  } = useWallet();
   const { setVisible } = useWalletModal();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // True only when the user opened the picker in this browser session.
+  // False on page load — even if localStorage contains a wallet name.
+  const justPickedRef = useRef(false);
+
+  // When wallet goes from null → non-null AND the user just picked it in
+  // this session, trigger connect() immediately.
+  useEffect(() => {
+    if (wallet && justPickedRef.current) {
+      justPickedRef.current = false;
+      connect().catch(() => {
+        // Error is handled by WalletProvider's onError + handleConnectError,
+        // which clears the wallet selection. Nothing extra needed here.
+      });
+    }
+  }, [wallet, connect]);
+
+  // Reset justPickedRef if wallet becomes null (error / disconnect / deselect)
+  // so a stale true value can never cause a spurious connect on next selection.
+  useEffect(() => {
+    if (!wallet) {
+      justPickedRef.current = false;
+    }
+  }, [wallet]);
 
   // Close dropdown on outside click / touch
   useEffect(() => {
@@ -43,25 +91,28 @@ export function WalletButton({ className }: { className?: string }) {
   }, [menuOpen]);
 
   const openPicker = useCallback(() => {
-    // Always show the full wallet picker — never auto-connect.
+    // Mark that the next wallet selection came from a live user action
+    // in this session — not from restored localStorage state.
+    justPickedRef.current = true;
     setVisible(true);
   }, [setVisible]);
 
   const handleDisconnect = useCallback(() => {
     setMenuOpen(false);
-    disconnect().catch(() => {});
-    // Also deselect so localStorage is cleared and next tap shows the picker
+    disconnect().catch(() => { });
     select(null);
   }, [disconnect, select]);
 
   const handleChangeWallet = useCallback(() => {
     setMenuOpen(false);
+    // Re-opening the picker counts as a new pick action
+    justPickedRef.current = true;
     setVisible(true);
   }, [setVisible]);
 
-  // ── Label ──────────────────────────────────────────────────────────────────
+  // ── Label ─────────────────────────────────────────────────────────────────
   let label: string;
-  if (connecting)    label = "Connecting…";
+  if (connecting) label = "Connecting…";
   else if (disconnecting) label = "Disconnecting…";
   else if (connected && publicKey) {
     const b = publicKey.toBase58();
@@ -70,9 +121,11 @@ export function WalletButton({ className }: { className?: string }) {
     label = "Select Wallet";
   }
 
-  const baseClass = `wallet-adapter-button wallet-adapter-button-trigger${className ? " " + className : ""}`;
+  const baseClass =
+    `wallet-adapter-button wallet-adapter-button-trigger` +
+    (className ? ` ${className}` : "");
 
-  // ── Not connected ──────────────────────────────────────────────────────────
+  // ── Not connected ─────────────────────────────────────────────────────────
   if (!connected) {
     return (
       <button
@@ -85,7 +138,7 @@ export function WalletButton({ className }: { className?: string }) {
     );
   }
 
-  // ── Connected: address + dropdown ──────────────────────────────────────────
+  // ── Connected: address + dropdown ─────────────────────────────────────────
   return (
     <div className="wallet-adapter-dropdown" ref={menuRef}>
       <button
