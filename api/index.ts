@@ -1,9 +1,35 @@
 /**
- * Vercel serverless entry point — minimal diagnostic version.
+ * Vercel serverless entry point — full Express API.
+ *
+ * Self-contained: all routes defined here, server/src imported directly.
+ * Vercel compiles this file and all its local imports at build time.
  */
-import type { IncomingMessage, ServerResponse } from "node:http";
+import express from "express";
+import cors from "cors";
+import { getBalances } from "../server/src/routes/balances.js";
+import { getActivity } from "../server/src/routes/activity.js";
+import {
+    postSwapQuote,
+    postSwapBuild,
+    postSwapSubmit,
+    getSwapConfirm,
+} from "../server/src/routes/swap.js";
 
-export default function handler(req: IncomingMessage, res: ServerResponse) {
-    res.setHeader("Content-Type", "application/json");
-    res.end(JSON.stringify({ ok: true, path: (req as any).url, ts: new Date().toISOString() }));
-}
+const app = express();
+app.use(cors({ origin: "*", methods: ["GET", "POST"] }));
+app.use(express.json());
+
+app.get("/api/health", (_req, res) => {
+    res.json({ ok: true, service: "cookie-chain-proxy", ts: new Date().toISOString() });
+});
+
+app.get("/api/balances", getBalances);
+app.get("/api/activity", getActivity);
+app.post("/api/swap/quote", postSwapQuote);
+app.post("/api/swap/build", postSwapBuild);
+app.post("/api/swap/submit", postSwapSubmit);
+app.get("/api/swap/confirm/:signature", getSwapConfirm);
+
+app.use((_req, res) => { res.status(404).json({ error: "Not found" }); });
+
+export default app;
