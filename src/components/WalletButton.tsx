@@ -3,33 +3,28 @@
  *
  * Behavioral contract:
  *
- *   When NOT connected:
- *   - Always opens the wallet picker modal on click. Never auto-connects to
- *     whatever wallet name is sitting in localStorage from a previous session.
- *     (This was the Round 14 fix: a stale 'Mobile Wallet Adapter' entry was
- *     causing WalletMultiButton to skip the picker and go to a dead state.)
+ *   When NOT connected, clicking always opens the picker modal.
+ *   After the user picks a wallet, connect() fires immediately in two cases:
  *
- *   After the user picks a wallet IN THIS SESSION (in the modal):
- *   - Calls connect() immediately. This is the path that was accidentally
- *     removed in Round 14 along with the stuck-picker fix.
+ *   Case A — user picked a DIFFERENT wallet than was previously selected:
+ *     `wallet` changes null→non-null (or old→new). The useEffect on `wallet`
+ *     detects this and calls connect() iff justPickedRef is true.
  *
- *   Telling the two cases apart:
- *   - justPickedRef starts false and is only set true when THIS component
- *     opens the modal (i.e. a live user action). It is never true on page
- *     load. When the wallet context's `wallet` changes from null → non-null
- *     AND justPickedRef is true, connect() is called and the flag is cleared.
- *     This mirrors @solana/wallet-adapter-react's own hasUserSelectedAWallet
- *     pattern (WalletProvider.js line 130) which is private to that package.
+ *   Case B — user picked the SAME wallet that's already selected (but not
+ *     connected, e.g. after a failed attempt or page refresh):
+ *     WalletProvider's changeWallet() no-ops when walletName===nextWalletName,
+ *     so `wallet` never changes and the useEffect never fires. We handle this
+ *     by checking at modal-open time: if `wallet` is already set and we open
+ *     the picker again (justPickedRef=true), we call connect() directly when
+ *     the modal closes (detected by watching `visible` going false) — provided
+ *     wallet is still the same non-null value and we're not already connected.
  *
- *   When connected:
- *   - Shows truncated address. Click opens dropdown with "Change wallet" and
- *     "Disconnect".
- *   - Disconnect calls both disconnect() and select(null) to clear localStorage.
+ *   Page-load stale localStorage:
+ *     justPickedRef is false on load; useEffect skips connect(). ✓
  *
- *   On connect error / user rejection:
- *   - The adapter fires an error → WalletProvider's handleConnectError calls
- *     changeWallet(null) → localStorage cleared → wallet → null → button
- *     returns to "Select Wallet". justPickedRef is reset on the same cycle.
+ *   Connect error / rejection:
+ *     Adapter fires 'error' → WalletProvider.handleConnectError → changeWallet(null)
+ *     → wallet→null → button returns to "Select Wallet". ✓
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -46,37 +41,56 @@ export function WalletButton({ className }: { className?: string }) {
     disconnect,
     select,
   } = useWallet();
-  const { setVisible } = useWalletModal();
+  const { visible, setVisible } = useWalletModal();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // True only when the user opened the picker in this browser session.
-  // False on page load — even if localStorage contains a wallet name.
   const justPickedRef = useRef(false);
+  // The wallet name that was already selected when the picker was opened.
+  // Used to detect "re-selected same wallet" (Case B above).
+  const walletNameAtPickerOpen = useRef<string | null>(null);
 
-  // When wallet goes from null → non-null AND the user just picked it in
-  // this session, trigger connect() immediately.
+  // Case A: wallet changed to non-null after picker was opened → connect.
   useEffect(() => {
     if (wallet && justPickedRef.current) {
       justPickedRef.current = false;
+      walletNameAtPickerOpen.current = null;
       connect().catch((err: unknown) => {
-        // DO NOT swallow this error silently. Log it so it's visible in the
-        // browser console for debugging (e.g. WalletNotReadyError, WalletConnectionError).
-        // WalletProvider's handleConnectError clears the selection after this.
         console.error("[WalletButton] connect() rejected:", err);
       });
     }
   }, [wallet, connect]);
 
-  // Reset justPickedRef if wallet becomes null (error / disconnect / deselect)
-  // so a stale true value can never cause a spurious connect on next selection.
+  // Case B: modal closed, wallet is still the same non-null value (same wallet
+  // re-selected — WalletProvider no-ops on changeWallet when name matches).
+  // `visible` going false signals the modal closed.
+  useEffect(() => {
+    if (
+      !visible &&
+      justPickedRef.current &&
+      wallet &&
+      wallet.adapter.name === walletNameAtPickerOpen.current &&
+      !connected &&
+      !connecting
+    ) {
+      justPickedRef.current = false;
+      walletNameAtPickerOpen.current = null;
+      connect().catch((err: unknown) => {
+        console.error("[WalletButton] connect() rejected (re-select same wallet):", err);
+      });
+    }
+  }, [visible, wallet, connected, connecting, connect]);
+
+  // Reset on wallet→null (error / disconnect / deselect).
   useEffect(() => {
     if (!wallet) {
       justPickedRef.current = false;
+      walletNameAtPickerOpen.current = null;
     }
   }, [wallet]);
 
-  // Close dropdown on outside click / touch
+  // Close dropdown on outside click / touch.
   useEffect(() => {
     if (!menuOpen) return;
     function handler(e: MouseEvent | TouchEvent) {
@@ -93,11 +107,12 @@ export function WalletButton({ className }: { className?: string }) {
   }, [menuOpen]);
 
   const openPicker = useCallback(() => {
-    // Mark that the next wallet selection came from a live user action
-    // in this session — not from restored localStorage state.
     justPickedRef.current = true;
+    // Record which wallet is currently selected (if any) so Case B can
+    // detect "user re-selected the same wallet."
+    walletNameAtPickerOpen.current = wallet?.adapter.name ?? null;
     setVisible(true);
-  }, [setVisible]);
+  }, [setVisible, wallet]);
 
   const handleDisconnect = useCallback(() => {
     setMenuOpen(false);
@@ -107,10 +122,10 @@ export function WalletButton({ className }: { className?: string }) {
 
   const handleChangeWallet = useCallback(() => {
     setMenuOpen(false);
-    // Re-opening the picker counts as a new pick action
     justPickedRef.current = true;
+    walletNameAtPickerOpen.current = wallet?.adapter.name ?? null;
     setVisible(true);
-  }, [setVisible]);
+  }, [setVisible, wallet]);
 
   // ── Label ─────────────────────────────────────────────────────────────────
   let label: string;
