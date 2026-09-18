@@ -1,8 +1,9 @@
 /**
- * Vercel serverless entry point.
- * Imports from the compiled server output in server/dist/.
+ * Vercel serverless entry point — minimal diagnostic version.
  */
-// @ts-ignore
-import app from "../server/dist/index.js";
+import type { IncomingMessage, ServerResponse } from "node:http";
 
-export default app;
+export default function handler(req: IncomingMessage, res: ServerResponse) {
+    res.setHeader("Content-Type", "application/json");
+    res.end(JSON.stringify({ ok: true, path: (req as any).url, ts: new Date().toISOString() }));
+}
