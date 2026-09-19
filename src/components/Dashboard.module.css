@@ -106,18 +106,19 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 3rem 1.5rem 4rem;
+  justify-content: flex-start;
+  /* No horizontal padding — hero image breaks out to full viewport width */
+  padding: 0 0 4rem;
   text-align: center;
   position: relative;
   overflow: hidden;
 }
 
-/* Ambient warm glow behind the mascot */
+/* Ambient warm glow — sits behind the hero image */
 .hero::before {
   content: '';
   position: absolute;
-  top: 30%;
+  top: 40%;
   left: 50%;
   transform: translate(-50%, -50%);
   width: 600px;
@@ -127,23 +128,27 @@
       rgba(240, 192, 96, 0.07) 40%,
       transparent 70%);
   pointer-events: none;
+  z-index: 0;
 }
 
-/* Mascot — transparent WebP, floats above the glow */
-/* Hero image — full-bleed scene (og-banner: fire-swirl running cookie) */
+/* Hero image — true full-bleed, no width cap, no border-radius */
 .heroMascot {
   position: relative;
   z-index: 1;
-  width: min(720px, 100%);
+  /* 100vw breaks out of any centering constraint */
+  width: 100vw;
   height: auto;
-  border-radius: var(--radius-xl);
-  -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
-  mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
-  filter: brightness(0.9) drop-shadow(0 8px 32px rgba(0, 0, 0, 0.5));
-  margin-bottom: -2rem;
+  /* No border-radius — full bleed never has rounded corners */
+  border-radius: 0;
+  /* Fade bottom into page background so headline text sits on it naturally */
+  -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+  filter: brightness(0.88);
+  /* Pull image up so bottom fade overlaps with the headline */
+  margin-bottom: -4rem;
 }
 
-/* Text content sits below mascot */
+/* Text content sits below the hero image */
 .heroContent {
   position: relative;
   z-index: 1;
@@ -152,6 +157,10 @@
   align-items: center;
   gap: 1rem;
   max-width: 480px;
+  /* Text needs its own horizontal padding since .hero has none */
+  padding: 0 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .heroEyebrow {
@@ -231,13 +240,14 @@
 /* ── Mobile ───────────────────────────────────────────────────────────────── */
 @media (max-width: 540px) {
   .hero {
-    padding: 1.5rem 0 2.5rem;
+    padding-bottom: 3rem;
   }
 
   .heroMascot {
-    width: 100%;
-    border-radius: 0;
-    margin-bottom: -1.5rem;
+    /* Already 100vw — just tighten the fade on smaller screens */
+    -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+    margin-bottom: -3rem;
   }
 
   .hero::before {
