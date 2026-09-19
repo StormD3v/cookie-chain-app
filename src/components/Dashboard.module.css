@@ -102,62 +102,68 @@
 
 /* ── Hero section ─────────────────────────────────────────────────────────── */
 .hero {
+  /* Fill all remaining height between the sticky header and the footer.
+     The image fills this zone as a positioned backdrop; content overlays it. */
   flex: 1;
+  position: relative;
+  overflow: hidden;
+  /* Minimum height so the section never collapses on very short viewports */
+  min-height: 420px;
+  /* Center the overlay content horizontally + vertically */
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  /* No horizontal padding — hero image breaks out to full viewport width */
-  padding: 0 0 4rem;
+  justify-content: center;
   text-align: center;
-  position: relative;
-  overflow: hidden;
 }
 
-/* Ambient warm glow — sits behind the hero image */
+/* Subtle dark overlay ensures text is legible over any image region */
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /* Darker at bottom-centre where text sits, transparent at top */
+  background:
+    radial-gradient(ellipse at 50% 80%, rgba(10, 4, 1, 0.65) 0%, transparent 70%),
+    linear-gradient(to bottom, transparent 30%, rgba(10, 4, 1, 0.55) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Ambient warm glow */
 .hero::before {
   content: '';
   position: absolute;
-  top: 40%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 600px;
-  height: 400px;
-  background: radial-gradient(ellipse at center,
-      rgba(200, 120, 32, 0.18) 0%,
-      rgba(240, 192, 96, 0.07) 40%,
-      transparent 70%);
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 40%,
+      rgba(200, 120, 32, 0.12) 0%,
+      transparent 65%);
   pointer-events: none;
+  z-index: 1;
+}
+
+/* Hero image — absolute backdrop, covers the entire section */
+.heroMascot {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Keep the character (right side of the image) in frame across viewport widths */
+  object-position: 65% center;
+  filter: brightness(0.85);
   z-index: 0;
 }
 
-/* Hero image — true full-bleed, no width cap, no border-radius */
-.heroMascot {
-  position: relative;
-  z-index: 1;
-  /* 100vw breaks out of any centering constraint */
-  width: 100vw;
-  height: auto;
-  /* No border-radius — full bleed never has rounded corners */
-  border-radius: 0;
-  /* Fade bottom into page background so headline text sits on it naturally */
-  -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
-  mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
-  filter: brightness(0.88);
-  /* Pull image up so bottom fade overlaps with the headline */
-  margin-bottom: -4rem;
-}
-
-/* Text content sits below the hero image */
+/* Text content — overlaid on the image via z-index */
 .heroContent {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1rem;
-  max-width: 480px;
-  /* Text needs its own horizontal padding since .hero has none */
+  max-width: 560px;
   padding: 0 1.5rem;
   width: 100%;
   box-sizing: border-box;
@@ -239,19 +245,17 @@
 
 /* ── Mobile ───────────────────────────────────────────────────────────────── */
 @media (max-width: 540px) {
-  .hero {
-    padding-bottom: 3rem;
-  }
-
   .heroMascot {
-    /* Already 100vw — just tighten the fade on smaller screens */
-    -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
-    mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
-    margin-bottom: -3rem;
+    object-position: 55% center;
   }
 
-  .hero::before {
-    width: 320px;
-    height: 240px;
+  .heroContent {
+    padding-bottom: 2rem;
+  }
+
+  /* Hide the footer on mobile — it duplicates nav links already in the header,
+     and removing it lets the hero fill the full viewport without scrolling. */
+  .footer {
+    display: none;
   }
 }

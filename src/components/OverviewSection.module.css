@@ -1141,31 +1141,30 @@
 
 @media (max-width: 480px) {
   .heatContent {
-    /* 40% mascot zone — content gets 60% (~216px on 360px card) */
+    /* 40% mascot zone — content gets ~58% (~208px on 360px card) */
     padding-right: 42%;
   }
 
   .heatMascotZone {
-    /* Widen to 40% — gives the character enough room for the bleed treatment */
     display: block;
     width: 40%;
   }
 
-  /* Restore the bleed: same approach as desktop (height overflows zone,
-     negative offsets push the character to the corner), just scaled for
-     the narrower mobile card. The card's overflow:hidden clips the bleed
-     at the card boundary — that's the intentional bursting-from-corner effect. */
+  /* Mobile bleed: pull bottom up so feet are visible; slight right bleed
+     keeps the bold corner presence from Round 20c without clipping the feet. */
   .heatMascot {
     position: absolute;
-    right: -6%;
-    bottom: -10%;
-    height: 110%;
+    right: -4%;
+    bottom: 0%;
+    height: 100%;
     width: auto;
     object-fit: unset;
     object-position: unset;
+    /* Keep mascot behind stat labels */
+    z-index: 0;
   }
 
-  /* Stat values: tighten font on mobile so 4 columns fit in ~60% card width */
+  /* Stat values: tighter font so 4 columns fit in ~58% card width */
   .heatStatVal {
     font-size: 0.9375rem;
   }
