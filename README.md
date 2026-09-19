@@ -1,5 +1,7 @@
 # Cookie Chain cApp
 
+My Cookie Chain cApp is a swap and activity dashboard for Cookie Chain. Features: connect Nightly, Phantom or Solflare, swap COOK and Cookie Chain tokens on-chain, and track your balances and transactions in one place.
+
 A Vite + React frontend for Cookie Chain — wallet connect, token balances, and token swaps via the Candy Shop aggregator.
 
 ## Architecture
