@@ -1141,32 +1141,38 @@
 
 @media (max-width: 480px) {
   .heatContent {
-    /* 40% mascot zone — content gets ~58% (~208px on 360px card) */
-    padding-right: 42%;
+    /* padding-right = zone width so stats use all remaining space */
+    padding-right: calc(30% + 6px);
   }
 
   .heatMascotZone {
     display: block;
-    width: 40%;
+    width: 30%;
   }
 
-  /* Mobile bleed: pull bottom up so feet are visible; slight right bleed
-     keeps the bold corner presence from Round 20c without clipping the feet. */
+  /* object-fit:contain scales the full character to fit within the zone.
+     object-position:right bottom anchors it to the corner for the best
+     visual placement. This ensures feet are always visible — the previous
+     bleed approach was clipping the feet via the zone's left edge. */
   .heatMascot {
     position: absolute;
-    right: -4%;
-    bottom: 0%;
+    inset: 0;
+    width: 100%;
     height: 100%;
-    width: auto;
-    object-fit: unset;
-    object-position: unset;
-    /* Keep mascot behind stat labels */
+    object-fit: contain;
+    object-position: right bottom;
+    right: unset;
+    bottom: unset;
     z-index: 0;
   }
 
-  /* Stat values: tighter font so 4 columns fit in ~58% card width */
   .heatStatVal {
-    font-size: 0.9375rem;
+    font-size: 0.8125rem;
+  }
+
+  .heatStatKey {
+    font-size: 0.5rem;
+    letter-spacing: 0.06em;
   }
 
   .heatCard {

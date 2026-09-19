@@ -122,10 +122,11 @@
   content: '';
   position: absolute;
   inset: 0;
-  /* Darker at bottom-centre where text sits, transparent at top */
+  /* Darkens the centre-bottom where the text block sits.
+     Strengthened to cover the mid-zone where the subtitle overlaps the character. */
   background:
-    radial-gradient(ellipse at 50% 80%, rgba(10, 4, 1, 0.65) 0%, transparent 70%),
-    linear-gradient(to bottom, transparent 30%, rgba(10, 4, 1, 0.55) 100%);
+    radial-gradient(ellipse at 50% 60%, rgba(5, 2, 0, 0.72) 0%, rgba(5, 2, 0, 0.35) 45%, transparent 72%),
+    linear-gradient(to bottom, transparent 20%, rgba(5, 2, 0, 0.6) 100%);
   pointer-events: none;
   z-index: 1;
 }
@@ -187,6 +188,7 @@
   line-height: 1.1;
   color: var(--cream);
   margin: 0;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.7);
 }
 
 .heroHeadingAccent {
@@ -195,9 +197,13 @@
 
 .heroSubtitle {
   font-size: clamp(0.9375rem, 2.5vw, 1.0625rem);
-  color: var(--crumb);
+  color: var(--cream);
   line-height: 1.6;
   margin: 0;
+  text-shadow:
+    0 1px 8px rgba(0, 0, 0, 0.9),
+    0 2px 20px rgba(0, 0, 0, 0.7);
+  opacity: 0.9;
 }
 
 /* CTA area */
@@ -211,9 +217,10 @@
 
 .heroNote {
   font-size: 0.75rem;
-  color: var(--crumb);
-  opacity: 0.65;
+  color: var(--cream);
+  opacity: 0.6;
   margin: 0;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
 }
 
 /* ── Footer strip ─────────────────────────────────────────────────────────── */
