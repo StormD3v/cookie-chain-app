@@ -25,7 +25,8 @@ function badRequest(res: Response, msg: string): void {
 function serverError(res: Response, context: string, err: unknown): void {
   const msg = err instanceof Error ? err.message : "Internal error";
   console.error(`[swap/${context}]`, msg);
-  res.status(502).json({ error: `Swap ${context} failed`, hint: msg });
+  // Don't leak internal error details to the client
+  res.status(502).json({ error: `Swap ${context} failed` });
 }
 
 /**

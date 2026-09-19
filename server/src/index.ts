@@ -30,11 +30,11 @@ const app = express();
 
 app.use(
   cors({
-    // In production on Vercel, same origin — CORS_ORIGIN is not needed.
-    // For local dev the proxy in vite.config.ts handles /api routing so
-    // requests appear same-origin and never hit this CORS check.
-    // CORS_ORIGIN is kept for flexibility (e.g. a separate frontend origin).
-    origin: process.env["CORS_ORIGIN"] ?? "*",
+    // Frontend and API are same-origin on Vercel, so this header is rarely
+    // checked by browsers in production. Scoped to the deployed URL as a
+    // defence-in-depth measure — prevents third-party sites from calling the
+    // API directly. Falls back to env var for local dev flexibility.
+    origin: process.env["CORS_ORIGIN"] ?? "https://cookie-chain-app-stormd3v-projects.vercel.app",
     methods: ["GET", "POST"],
   })
 );

@@ -193,6 +193,6 @@ export async function getBalances(req: Request, res: Response): Promise<void> {
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Internal error";
     console.error("[balances]", message);
-    res.status(502).json({ error: "Failed to fetch balances", hint: message });
+    res.status(502).json({ error: "Failed to fetch balances" });
   }
 }

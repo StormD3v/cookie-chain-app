@@ -11,8 +11,10 @@ import { ReceiveModal } from "./ReceiveModal";
 import { SendModal } from "./SendModal";
 import cookieJarHug from "../assets/cookie-jar-hug.webp";
 import cookieRunning from "../assets/cookie-running.webp";
+import mobileJarHeatMascot from "../assets/mobile-jarheat-mascot.webp";
 import jarHeatFlame from "../assets/jar-heat-flame.png";
 import cookieChefBakingUrl from "../assets/cookie-chef-baking.webp";
+import { isMobileBrowser } from "../lib/isMobile";
 import styles from "./OverviewSection.module.css";
 
 // getGreeting() uses new Date().getHours() — that is local browser time, not UTC.
@@ -388,7 +390,7 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
         <section className={styles.heatCard}>
           <div className={styles.heatMascotZone} aria-hidden="true">
             <img
-              src={cookieRunning}
+              src={isMobileBrowser() ? mobileJarHeatMascot : cookieRunning}
               alt=""
               aria-hidden="true"
               className={styles.heatMascot}

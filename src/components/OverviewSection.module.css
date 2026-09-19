@@ -1141,26 +1141,22 @@
 
 @media (max-width: 480px) {
   .heatContent {
-    /* padding-right = zone width so stats use all remaining space */
-    padding-right: calc(30% + 6px);
+    /* Zone 31% — content 69% (~249px on 360px card), TOKENS fits at 62px/col */
+    padding-right: calc(31% + 4px);
   }
 
   .heatMascotZone {
     display: block;
-    width: 30%;
+    width: 31%;
   }
 
-  /* object-fit:contain scales the full character to fit within the zone.
-     object-position:right bottom anchors it to the corner for the best
-     visual placement. This ensures feet are always visible — the previous
-     bleed approach was clipping the feet via the zone's left edge. */
   .heatMascot {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: contain;
-    object-position: right bottom;
+    object-fit: cover;
+    object-position: center center;
     right: unset;
     bottom: unset;
     z-index: 0;

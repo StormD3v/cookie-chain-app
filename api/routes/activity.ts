@@ -292,9 +292,6 @@ export async function getActivity(req: Request, res: Response): Promise<void> {
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Internal error";
     console.error("[activity]", message);
-    res.status(502).json({
-      error: "Failed to fetch transaction history",
-      hint: message,
-    });
+    res.status(502).json({ error: "Failed to fetch transaction history" });
   }
 }
