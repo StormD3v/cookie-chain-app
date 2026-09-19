@@ -5,7 +5,7 @@ import { AppShell } from "./AppShell";
 import { WalletButton } from "./WalletButton";
 import { NightlyMobileButton } from "./NightlyMobileButton";
 import { isMobileBrowser } from "../lib/isMobile";
-import cookieJarHug from "../assets/cookie-jar-hug.webp";
+import ogBanner from "../assets/og-banner.webp";
 import styles from "./Dashboard.module.css";
 
 // ── External links ─────────────────────────────────────────────────────────
@@ -73,7 +73,7 @@ export function Dashboard() {
 
         {/* Mascot — transparent WebP, no UI baked in */}
         <img
-          src={cookieJarHug}
+          src={ogBanner}
           alt=""
           aria-hidden="true"
           className={styles.heroMascot}

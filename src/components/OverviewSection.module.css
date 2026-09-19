@@ -1145,10 +1145,23 @@
   }
 
   .heatMascotZone {
-    /* Show mascot on mobile but narrower — 30% instead of 42%.
-       The content area (67%) is wide enough for the stat grid and bar. */
+    /* Show mascot on mobile at 30% card width (vs 42% desktop) */
     display: block;
     width: 30%;
+  }
+
+  /* On mobile the zone is narrow (~108px). The desktop rule positions the
+     mascot with height:115% + right:-4% + bottom:-8% which causes it to
+     overflow the narrow zone and only render a fragment.
+     Reset to a contained fit so the full character is visible. */
+  .heatMascot {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    height: 100%;
+    width: 100%;
+    object-fit: contain;
+    object-position: right bottom;
   }
 
   .heatCard {
