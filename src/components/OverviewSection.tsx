@@ -11,7 +11,6 @@ import { ReceiveModal } from "./ReceiveModal";
 import { SendModal } from "./SendModal";
 import cookieJarHug from "../assets/cookie-jar-hug.webp";
 import cookieRunning from "../assets/cookie-running.webp";
-import mobileJarHeatMascot from "../assets/mobile-jarheat-mascot.webp";
 import jarHeatFlame from "../assets/jar-heat-flame.png";
 import cookieChefBakingUrl from "../assets/cookie-chef-baking.webp";
 import { useSprinkle } from "../lib/useSprinkle";
@@ -397,20 +396,11 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
 
         <section className={styles.heatCard}>
           <div className={styles.heatMascotZone} aria-hidden="true">
-            {/* CSS shows one or the other via media query — no UA sniffing */}
             <img
               src={cookieRunning}
               alt=""
               aria-hidden="true"
-              className={`${styles.heatMascot} ${styles.heatMascotDesktop}`}
-              onClick={sprinkle}
-              style={{ cursor: "pointer" }}
-            />
-            <img
-              src={mobileJarHeatMascot}
-              alt=""
-              aria-hidden="true"
-              className={`${styles.heatMascot} ${styles.heatMascotMobile}`}
+              className={styles.heatMascot}
               onClick={sprinkle}
               style={{ cursor: "pointer" }}
             />

@@ -955,11 +955,6 @@
   filter: drop-shadow(0 4px 18px rgba(200, 100, 20, 0.4)) drop-shadow(0 0 6px rgba(240, 160, 40, 0.2));
 }
 
-/* Desktop = running cookie; mobile = jar-heat mascot */
-.heatMascotMobile {
-  display: none;
-}
-
 /* Contact shadow under mascot feet */
 .heatMascotZone::after {
   content: "";
@@ -1146,35 +1141,11 @@
 
 @media (max-width: 480px) {
   .heatContent {
-    /* Zone 31% — content 69% (~249px on 360px card), TOKENS fits at 62px/col */
-    padding-right: calc(31% + 4px);
+    padding-right: 1.5rem;
   }
 
   .heatMascotZone {
-    display: block;
-    width: 31%;
-  }
-
-  .heatMascot {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    object-position: right center;
-    right: unset;
-    bottom: unset;
-    z-index: 0;
-    pointer-events: auto;
-  }
-
-  /* Swap mascots at mobile breakpoint */
-  .heatMascotDesktop {
     display: none;
-  }
-
-  .heatMascotMobile {
-    display: block;
   }
 
   .heatStatVal {
