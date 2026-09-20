@@ -32,3 +32,4 @@ scripts/check-assets.mjs
 scripts/check-env.mjs
 scripts/check-github.mjs
 scripts/check-github2.mjs
+scripts/screenshot-fixes.mjs

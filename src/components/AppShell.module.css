@@ -694,7 +694,7 @@
   }
 
   .content {
-    padding: 0.75rem 0.875rem 11rem;
+    padding: 0.75rem 0.875rem calc(4.5rem + env(safe-area-inset-bottom, 0px));
   }
 
   /* topbar handled by the full-width header mobile rule above */

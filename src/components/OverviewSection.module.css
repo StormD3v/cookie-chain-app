@@ -955,6 +955,11 @@
   filter: drop-shadow(0 4px 18px rgba(200, 100, 20, 0.4)) drop-shadow(0 0 6px rgba(240, 160, 40, 0.2));
 }
 
+/* Desktop = running cookie; mobile = jar-heat mascot */
+.heatMascotMobile {
+  display: none;
+}
+
 /* Contact shadow under mascot feet */
 .heatMascotZone::after {
   content: "";
@@ -1155,11 +1160,21 @@
     inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    object-position: center center;
+    object-fit: contain;
+    object-position: right center;
     right: unset;
     bottom: unset;
     z-index: 0;
+    pointer-events: auto;
+  }
+
+  /* Swap mascots at mobile breakpoint */
+  .heatMascotDesktop {
+    display: none;
+  }
+
+  .heatMascotMobile {
+    display: block;
   }
 
   .heatStatVal {

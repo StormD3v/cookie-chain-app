@@ -14,7 +14,7 @@ import cookieRunning from "../assets/cookie-running.webp";
 import mobileJarHeatMascot from "../assets/mobile-jarheat-mascot.webp";
 import jarHeatFlame from "../assets/jar-heat-flame.png";
 import cookieChefBakingUrl from "../assets/cookie-chef-baking.webp";
-import { isMobileBrowser } from "../lib/isMobile";
+import { useSprinkle } from "../lib/useSprinkle";
 import styles from "./OverviewSection.module.css";
 
 // getGreeting() uses new Date().getHours() — that is local browser time, not UTC.
@@ -157,6 +157,7 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
   const [showReceive, setShowReceive] = useState(false);
   const [showSend, setShowSend] = useState(false);
   const [balanceHidden, setBalanceHidden] = useState(false);
+  const sprinkle = useSprinkle();
 
   const totalUsd = balances.reduce((s, b) => s + (b.usdValue ?? 0), 0);
   const nativeCook = balances.find(b => b.symbol === "COOK");
@@ -235,7 +236,14 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
         <section className={styles.jarCard}>
 
           <div className={styles.heroZone}>
-            <img src={cookieJarHug} alt="" aria-hidden="true" className={styles.heroMascot} />
+            <img
+              src={cookieJarHug}
+              alt=""
+              aria-hidden="true"
+              className={styles.heroMascot}
+              onClick={sprinkle}
+              style={{ cursor: "pointer" }}
+            />
             <div className={styles.heroText}>
               <p className={styles.heroGreeting}>{getGreeting()}, Cookie Connoisseur! 👋</p>
               <p className={styles.heroSub}>
@@ -389,11 +397,22 @@ export function OverviewSection({ walletAddress, swap, onNavigate }: Props) {
 
         <section className={styles.heatCard}>
           <div className={styles.heatMascotZone} aria-hidden="true">
+            {/* CSS shows one or the other via media query — no UA sniffing */}
             <img
-              src={isMobileBrowser() ? mobileJarHeatMascot : cookieRunning}
+              src={cookieRunning}
               alt=""
               aria-hidden="true"
-              className={styles.heatMascot}
+              className={`${styles.heatMascot} ${styles.heatMascotDesktop}`}
+              onClick={sprinkle}
+              style={{ cursor: "pointer" }}
+            />
+            <img
+              src={mobileJarHeatMascot}
+              alt=""
+              aria-hidden="true"
+              className={`${styles.heatMascot} ${styles.heatMascotMobile}`}
+              onClick={sprinkle}
+              style={{ cursor: "pointer" }}
             />
           </div>
 
