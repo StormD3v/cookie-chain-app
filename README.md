@@ -1,6 +1,6 @@
 # Cookie Chain cApp
 
-**Cookie Chain Swap** is a wallet-connected dashboard for Cookie Chain: swap COOK and bCOOK, send and receive tokens, and track your balances and transaction history.
+**Cookie Chain Swap** is a wallet-connected dashboard for Cookie Chain. Swap COOK and bCOOK, send and receive tokens, and track your balances and transaction history.
 
 Live app: https://cookie-chain-app-stormd3v-projects.vercel.app
 
