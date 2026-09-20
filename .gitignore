@@ -23,3 +23,12 @@ npm-debug.log*
 
 # ── Dev screenshots (Playwright output — not project assets) ──
 screenshots/
+
+.vercel
+
+# ── One-off diagnostic scripts (not app code) ─────────────────
+scripts/audit.mjs
+scripts/check-assets.mjs
+scripts/check-env.mjs
+scripts/check-github.mjs
+scripts/check-github2.mjs
