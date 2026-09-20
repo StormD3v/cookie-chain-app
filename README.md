@@ -8,7 +8,7 @@ Live app: https://cookie-chain-app-stormd3v-projects.vercel.app
 
 - **Swaps (COOK ⇄ bCOOK)** — live quote, review step, mainnet warning, stage-by-stage status (signing → pending → confirmed), explorer link on completion
 - **Balances** — native COOK and SPL tokens with live USD values from Candy Shop
-- **Send & Receive** — send COOK, bCOOK to any address; receive via address display with copy
+- **Send & Receive** — send COOK, bCOOK or CHAT to any address; receive via address display with copy
 - **Crumbs** — recent transaction history with type icons, timestamps, and per-tx explorer links
 - **Jar Heat** — composite activity score (transactions, swaps, token count) shown as a progress bar
 - **Bridge** — link out to the Cookie Chain bridge at https://hyperlane.cookiescan.io
@@ -38,7 +38,7 @@ Signing always happens client-side in the user's wallet. The server never holds 
 ## Requirements
 
 - **Node ≥ 22** (check with `node --version`)
-- Any Wallet Standard wallet: **Nightly, Phantom, Trust Wallet, Solflare** — all supported and tested. Nightly is the primary tested wallet.
+- Any Wallet Standard wallet: **Nightly, Phantom, Trust Wallet, Solflare** — all supported. Nightly is the primary tested wallet.
 
 ## Setup
 
