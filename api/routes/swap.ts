@@ -167,8 +167,12 @@ export async function postSwapBuild(req: Request, res: Response): Promise<void> 
     const result = await buildSwapTx(multiRoute, userPublicKey);
     res.json({ transactionBase64: result.transactionBase64 });
   } catch (err) {
-    serverError(res, "build", err);
+    const msg = err instanceof Error ? err.message : "Internal error";
+    console.error("[swap/build]", msg);
+    // Forward the Candy Shop error text so the client can show a specific message
+    res.status(502).json({ error: msg });
   }
+}
 }
 
 /**

@@ -14,19 +14,14 @@ export const KNOWN_TOKENS: SwapToken[] = [
     decimals: 9,
   },
   {
-    // Real Cookie Chain bCOOK mint — liquid-staked COOK via the bCOOK stake pool
     mint: "EkPafx58mgwkEnGwo62jXhXDAdJ37Z8G8MFBRPsr9uhz",
     symbol: "bCOOK",
     name: "bakedCOOK",
     decimals: 9,
   },
-  {
-    // Highest 24h volume on Cookie Chain as of last pool check
-    mint: "2wPK38gv8dWU89K5zDAAULAihnU1sRocbpzwPP6twY7Q",
-    symbol: "CHAT",
-    name: "Cookie Chat",
-    decimals: 6,
-  },
+  // CHAT removed from swap pairs: Candy Shop build fails with ACCOUNT_ERROR
+  // (no CHAT token account exists on most wallets). CHAT still shows in
+  // Pantry balances and in the Send modal.
 ];
 
 // ── Debounce ──────────────────────────────────────────────────────────────────

@@ -50,6 +50,18 @@ const INITIAL: SwapState = {
   error: null,
 };
 
+function friendlySwapError(raw: string): string {
+  const s = raw.toLowerCase();
+  if (s.includes("no route") || s.includes("route found")) return "No route found for this pair.";
+  if (s.includes("low liquidity") || s.includes("liquidity")) return "Liquidity too low. Try a smaller amount.";
+  if (s.includes("account_error") || s.includes("token account not found")) return "No token account for the output token. Use a wallet that has held it before.";
+  if (s.includes("amount") && (s.includes("too low") || s.includes("too small") || s.includes("minimum"))) return "Amount too low for this swap.";
+  if (s.includes("slippage")) return "Slippage exceeded. Try again or increase slippage tolerance.";
+  if (s.includes("invalid amount") || s.includes("must be a positive")) return "Enter a valid positive amount.";
+  if (s.includes("wallet not connected")) return "Wallet not connected.";
+  return "Swap failed. Try a different amount or pair.";
+}
+
 export function useSwap(): UseSwapResult {
   const { connection } = useConnection();
   const wallet = useWallet();
@@ -84,7 +96,7 @@ export function useSwap(): UseSwapResult {
         })
         .catch((err: unknown) => {
           const msg = err instanceof Error ? err.message : "Failed to get quote";
-          set({ stage: "error", error: msg });
+          set({ stage: "error", error: friendlySwapError(msg) });
         });
     },
     [set]
@@ -124,7 +136,7 @@ export function useSwap(): UseSwapResult {
       });
       txBase64 = built.transactionBase64;
     } catch (err: unknown) {
-      guard({ stage: "error", error: err instanceof Error ? err.message : "Failed to build transaction" });
+      guard({ stage: "error", error: friendlySwapError(err instanceof Error ? err.message : "Failed to build transaction") });
       return;
     }
 
@@ -145,7 +157,7 @@ export function useSwap(): UseSwapResult {
       guard({ stage: "confirmed", signature });
     } catch (err: unknown) {
       if (execId.current !== id) return;
-      guard({ stage: "error", error: err instanceof Error ? err.message : "Transaction failed" });
+      guard({ stage: "error", error: friendlySwapError(err instanceof Error ? err.message : "Transaction failed") });
     }
   }, [state.multiRoute, connection, set]);
 

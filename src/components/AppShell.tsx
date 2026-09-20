@@ -221,7 +221,6 @@ export function AppShell({ walletAddress }: Props) {
               </button>
             ))}
 
-            {/* DISCOVER group */}
             <div className={styles.navSpacer} />
             <p className={styles.navLabel}>Discover</p>
             <a href="https://cookiescan.io" target="_blank" rel="noopener noreferrer" className={styles.navItem}>
@@ -231,26 +230,6 @@ export function AppShell({ walletAddress }: Props) {
                 <path d="M2 8L8 2M8 2H4.5M8 2v3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </a>
-
-            {/* EXTRAS group */}
-            <div className={styles.navSpacer} />
-            <p className={styles.navLabel}>Extras</p>
-            <button
-              className={`${styles.navItem} ${section === "jarScore" ? styles.navItemActive : ""}`}
-              onClick={() => setSection("jarScore")}
-              aria-current={section === "jarScore" ? "page" : undefined}
-            >
-              <span className={styles.navIcon}><JarScoreIcon /></span>
-              <span className={styles.navLabel2}>Jar Score</span>
-            </button>
-            <button
-              className={`${styles.navItem} ${section === "settings" ? styles.navItemActive : ""}`}
-              onClick={() => setSection("settings")}
-              aria-current={section === "settings" ? "page" : undefined}
-            >
-              <span className={styles.navIcon}><SettingsIcon /></span>
-              <span className={styles.navLabel2}>Settings</span>
-            </button>
           </nav>
 
           {/* Cookie cluster decoration */}
