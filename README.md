@@ -1,8 +1,17 @@
 # Cookie Chain cApp
 
-My Cookie Chain cApp is a swap and activity dashboard for Cookie Chain. Features: connect Nightly, Phantom or Solflare, swap COOK and Cookie Chain tokens on-chain, and track your balances and transactions in one place.
+**Cookie Chain Swap** is a wallet-connected dashboard for Cookie Chain: swap COOK and bCOOK, send and receive tokens, and track your balances and transaction history.
 
-A Vite + React frontend for Cookie Chain — wallet connect, token balances, and token swaps via the Candy Shop aggregator.
+Live app: https://cookie-chain-app-stormd3v-projects.vercel.app
+
+## Features
+
+- **Swaps (COOK ⇄ bCOOK)** — live quote, review step, mainnet warning, stage-by-stage status (signing → pending → confirmed), explorer link on completion
+- **Balances** — native COOK and SPL tokens with live USD values from Candy Shop
+- **Send & Receive** — send COOK, bCOOK to any address; receive via address display with copy
+- **Crumbs** — recent transaction history with type icons, timestamps, and per-tx explorer links
+- **Jar Heat** — composite activity score (transactions, swaps, token count) shown as a progress bar
+- **Bridge** — link out to the Cookie Chain bridge at https://hyperlane.cookiescan.io
 
 ## Architecture
 
@@ -24,12 +33,12 @@ https://swap.cookiescan.io   https://rpc.cookiescan.io
 
 The serverless function and the frontend are deployed together as a single Vercel project. In local development, `npm run dev` starts both an Express process on port 3001 and Vite on port 5173; Vite proxies all `/api/*` requests to Express.
 
-Signing always happens client-side in the user's Nightly wallet. The server never holds or uses a wallet key.
+Signing always happens client-side in the user's wallet. The server never holds or uses a wallet key.
 
 ## Requirements
 
 - **Node ≥ 22** (check with `node --version`)
-- [Nightly wallet](https://nightly.app) browser extension
+- Any Wallet Standard wallet: **Nightly, Phantom, Trust Wallet, Solflare** — all supported and tested. Nightly is the primary tested wallet.
 
 ## Setup
 
@@ -79,39 +88,47 @@ Set these environment variables in your Vercel project settings
 |---|---|---|---|
 | `COOKIE_RPC_URL` | No | `https://rpc.cookiescan.io` | Cookie Chain RPC endpoint |
 | `COOKIE_SWAP_API_URL` | No | `https://swap.cookiescan.io/api` | Candy Shop aggregator base URL |
-| `CORS_ORIGIN` | No | `*` | Restrict CORS origin if needed |
-
-The `VITE_COOKIE_RPC_URL` variable (frontend) is only needed in local `.env.local` — in production the frontend and API share the same origin so no explicit RPC URL is required in the browser bundle.
+| `CORS_ORIGIN` | No | production URL | Restrict CORS origin if needed |
 
 ## Wallet connection
 
 ### Desktop
 
-All browser-extension wallets that support the Wallet Standard are detected automatically. This includes Nightly, Trust Wallet, Phantom, Backpack, and others. Install the extension, open the app, tap **Select Wallet**, and pick your wallet — the extension popup will appear to approve the connection.
+All Wallet Standard browser extensions are detected automatically — Nightly, Trust Wallet, Phantom, Backpack, and others. Install the extension, open the app, tap **Select Wallet**, and pick your wallet.
 
 ### Android
 
-**Phantom and Solflare** connect directly via the Solana Mobile Wallet Adapter (MWA) — the standard Android wallet-connection protocol. Tap **Select Wallet**, pick your wallet from the list, and the wallet app will open to an approval screen. No browser extension needed.
+**Phantom and Solflare** connect via the Solana Mobile Wallet Adapter (MWA). Tap **Select Wallet**, pick your wallet, and the wallet app opens to an approval screen.
 
-**Nightly on Android** does not implement MWA (a platform limitation of the Nightly app itself, not this project). To connect Nightly on Android: open the site from inside Nightly's built-in DApp browser. The app will automatically prompt to connect when it detects Nightly's browser. You can get there via the "Open in Nightly" button on the landing page, or by pasting the URL directly into Nightly's browser tab.
+**Nightly on Android** does not implement MWA (a Nightly app limitation). Open the site from inside Nightly's built-in DApp browser — the app auto-prompts to connect. Use the "Open in Nightly" button on the landing page, or paste the URL into Nightly's browser tab.
 
-**Trust Wallet and other Wallet Standard wallets** on Android: if the wallet app injects a Wallet Standard provider in its in-app browser, the same auto-prompt applies — open the site from inside the wallet's browser.
+**Other Wallet Standard wallets** on Android: open the site from inside the wallet's in-app browser.
 
 ### iOS
 
-Mobile Wallet Adapter is not supported on any iOS browser — this is an Apple platform restriction, not a wallet or app limitation. On iOS, the only working path is a wallet that provides a Safari Web Extension (Nightly does; check Nightly's app page for the extension). With the Safari extension enabled, the site works identically to the desktop extension flow.
+MWA is not supported on iOS (Apple platform restriction). Use a wallet with a Safari Web Extension — Nightly supports this.
 
-
+## Swapping
 
 1. Enter an amount and select input/output tokens in the Swap panel.
 2. A quote is fetched automatically (debounced 600 ms) — rate, price impact, min received, and route are displayed before any action.
 3. Click **Review swap** to open the confirmation modal.
 4. Read the mainnet warning, verify the details, then click **Confirm & sign**.
-5. Nightly prompts for approval — the transaction is built server-side as an *unsigned* VersionedTransaction and signed entirely in your browser.
+5. Your wallet prompts for approval — the transaction is built server-side as an *unsigned* VersionedTransaction and signed entirely in your browser.
 6. The signed transaction is submitted via the Candy Shop relay and confirmation is polled until on-chain.
 7. A link to the Cookie Chain explorer appears once confirmed.
 
 Every step that could spend value requires explicit user action. There is no auto-submit anywhere in the codebase.
+
+## Ecosystem
+
+Swaps route through the **Candy Shop aggregator** (`swap.cookiescan.io`), drawing liquidity from **Cookiebox** (CLMM) and **Cookieswap** (CPAMM). Balance and transaction data come from `rpc.cookiescan.io`. The block explorer is [cookiescan.io](https://cookiescan.io).
+
+## Known limitations
+
+- **CHAT is not swappable.** CHAT appears in balances and Send, but Candy Shop returns "Token account not found" when the wallet has never held the output token. Removing this restriction requires creating an associated token account as part of the swap transaction, which is not yet implemented.
+- **Jar Score and Settings are not built yet.** The nav items are hidden; the sections are placeholders.
+- **First wallet tap in an in-app browser can hang.** In some wallet in-app browsers on mobile, the first "Select Wallet" tap may not respond. Tap it again or use the header button.
 
 ## API endpoints
 
@@ -152,7 +169,7 @@ npm run typecheck  # tsc --noEmit for both frontend and server
 ## Mainnet notice
 
 Cookie Chain is **mainnet-only**. Every transaction spends real value.
-All swap actions require explicit confirmation in both the app UI and the Nightly wallet before any transaction is signed or sent.
+All swap actions require explicit confirmation in both the app UI and your wallet before any transaction is signed or sent.
 
 ## Licence
 
